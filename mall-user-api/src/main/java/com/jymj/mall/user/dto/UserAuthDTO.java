@@ -1,0 +1,31 @@
+package com.jymj.mall.user.dto;
+
+import lombok.Data;
+import lombok.experimental.Accessors;
+
+/**
+ * @author J.Tang
+ * @version 1.0
+ * @email seven_tjb@163.com
+ * @date 2022-08-08
+ */
+@Data
+@Accessors(chain = true)
+public class UserAuthDTO {
+    /**
+     * 用户ID
+     */
+    private Long userId;
+
+    /**
+     * 会员名(openId、mobile)
+     */
+    private String username;
+
+    /**
+     * 状态(1:正常；0：禁用)
+     */
+    private Integer status;
+
+    private String password;
+}

@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: mall-oauth
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:9200
+        group: MALL-MANAGE
+        username: jymj-nacos
+        password: jymj-nacos
+      config:
+        file-extension: yaml
+        group: DEFAULT_GROUP
+        prefix: ${spring.application.name}
+        server-addr: localhost:9200
+        username: jymj-nacos
+        password: jymj-nacos
+

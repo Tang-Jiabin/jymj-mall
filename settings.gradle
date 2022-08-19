@@ -1,0 +1,13 @@
+rootProject.name = 'jymj-mall'
+include 'mall-common'
+include 'mall-common-redis'
+include 'mall-common-web'
+include 'mall-oauth'
+include 'mall-gateway'
+include 'mall-user-api'
+include 'mall-user-boot'
+include 'mall-admin-api'
+include 'mall-admin-boot'
+include 'mall-shop-boot'
+include 'mall-shop-api'
+
