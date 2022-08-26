@@ -6,6 +6,7 @@ import com.jymj.mall.oauth.repository.OauthClientDetailsRepository;
 import com.jymj.mall.oauth.dto.ClientAuthDTO;
 import com.jymj.mall.oauth.entity.OauthClientDetails;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
@@ -23,7 +24,7 @@ import java.util.Optional;
  * @email seven_tjb@163.com
  * @date 2022-08-08
  */
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ClientDetailsServiceImpl implements ClientDetailsService {
@@ -35,6 +36,7 @@ public class ClientDetailsServiceImpl implements ClientDetailsService {
     public ClientDetails loadClientByClientId(String clientId) {
         try {
             Optional<OauthClientDetails> oauthClientDetails = oauthClientDetailsRepository.findByClientId(clientId);
+            log.info("loadClient:{}",oauthClientDetails.toString());
             if (oauthClientDetails.isPresent()) {
                 ClientAuthDTO client = client2dto(oauthClientDetails.get());
                 BaseClientDetails clientDetails = new BaseClientDetails(

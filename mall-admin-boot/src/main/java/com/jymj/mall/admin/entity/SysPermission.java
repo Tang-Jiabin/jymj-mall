@@ -5,6 +5,8 @@ import com.jymj.mall.common.web.pojo.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -20,12 +22,15 @@ import com.jymj.mall.common.web.pojo.BaseEntity;
 @Data
 @Entity
 @Table(name = "sys_permission")
+@Where(clause = "deleted = 0")
+@SQLDelete(sql = "UPDATE sys_permission SET deleted = 1 where perm_id = ?")
 @EqualsAndHashCode(callSuper=false)
 @EntityListeners({AuditingEntityListener.class})
 public class SysPermission extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "sys_permission_perm_id_seq")
+    @SequenceGenerator(name = "sys_permission_perm_id_seq",sequenceName = "sys_permission_perm_id_seq",allocationSize = 1)
     private Long permId;
 
     @ApiModelProperty("资源名称")

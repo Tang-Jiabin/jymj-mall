@@ -1,5 +1,6 @@
 package com.jymj.mall.user;
 
+import com.alibaba.cloud.seata.rest.SeataRestTemplateAutoConfiguration;
 import com.jymj.mall.admin.api.AdminFeignClient;
 import com.jymj.mall.admin.api.DeptFeignClient;
 import org.springframework.boot.SpringApplication;

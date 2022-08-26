@@ -3,6 +3,8 @@ package com.jymj.mall.admin.entity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -18,12 +20,15 @@ import com.jymj.mall.common.web.pojo.BaseEntity;
 @Data
 @Entity
 @Table(name = "sys_district")
+@Where(clause = "deleted = 0")
+@SQLDelete(sql = "UPDATE sys_district SET deleted = 1 where district_id = ?")
 @EqualsAndHashCode(callSuper=false)
 @EntityListeners({AuditingEntityListener.class})
 public class SysDistrict extends BaseEntity{
     @Id
     @ApiModelProperty("主键id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "sys_district_district_id_seq")
+    @SequenceGenerator(name = "sys_district_district_id_seq",sequenceName = "sys_district_district_id_seq",allocationSize = 1)
     private Long districtId;
 
     @ApiModelProperty("父id")

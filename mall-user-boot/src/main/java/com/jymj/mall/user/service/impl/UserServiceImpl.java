@@ -2,7 +2,7 @@ package com.jymj.mall.user.service.impl;
 
 import com.google.common.collect.Lists;
 import com.jymj.mall.admin.dto.AdminAuthDTO;
-import com.jymj.mall.user.entity.User;
+import com.jymj.mall.user.entity.MallUser;
 import com.jymj.mall.user.repository.UserRepository;
 import com.jymj.mall.user.service.UserService;
 import org.springframework.stereotype.Service;
@@ -26,16 +26,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void findUserById(int id) {
-        Optional<User> userOptional = userRepository.findById(id);
+        Optional<MallUser> userOptional = userRepository.findById(id);
 
     }
 
     @Override
     public AdminAuthDTO findUserByUsername(String username) {
 
-        Optional<User> userOptional = userRepository.findByUsername(username);
+        Optional<MallUser> userOptional = userRepository.findByUsername(username);
         if (userOptional.isPresent()) {
-            User user = userOptional.get();
+            MallUser user = userOptional.get();
             AdminAuthDTO adminAuthDTO = new AdminAuthDTO();
             adminAuthDTO.setUserId(1L);
             adminAuthDTO.setUsername("admin");

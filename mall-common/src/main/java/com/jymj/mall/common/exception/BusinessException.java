@@ -3,6 +3,8 @@ package com.jymj.mall.common.exception;
 import com.jymj.mall.common.result.IResultCode;
 import lombok.Getter;
 
+import java.util.function.Supplier;
+
 /**
  * @author J.Tang
  * @version 1.0
@@ -10,7 +12,7 @@ import lombok.Getter;
  * @date 2022-08-08
  */
 @Getter
-public class BusinessException extends RuntimeException{
+public class BusinessException extends RuntimeException  {
 
     public IResultCode resultCode;
 

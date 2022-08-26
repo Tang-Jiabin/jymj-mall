@@ -1,11 +1,13 @@
 package com.jymj.mall.shop.dto;
 
+import com.jymj.mall.shop.enums.MallType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.util.List;
 
 /**
@@ -47,7 +49,7 @@ public class AddMallDTO {
 
     @NotNull(message = "商场类型不能为空")
     @ApiModelProperty("商场类型 1-自营 2-授权等")
-    private Integer type;
+    private MallType type;
 
     @NotNull(message = "行政区id不能为空")
     @ApiModelProperty("行政区Id")
@@ -57,6 +59,7 @@ public class AddMallDTO {
     @ApiModelProperty("标签id")
     private List<Long> tagId;
 
+    @Pattern(regexp = "^1(3\\d|4[5-9]|5[0-35-9]|6[2567]|7[0-8]|8\\d|9[0-35-9])\\d{8}$", message = "手机号格式不正确")
     @NotBlank(message = "手机号不能为空")
     @ApiModelProperty("手机号")
     private String mobile;

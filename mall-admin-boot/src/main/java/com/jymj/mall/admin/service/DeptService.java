@@ -1,6 +1,7 @@
 package com.jymj.mall.admin.service;
 
 import com.jymj.mall.admin.dto.AddDeptDTO;
+import com.jymj.mall.admin.dto.UpdateDeptDTO;
 import com.jymj.mall.admin.entity.SysDept;
 import com.jymj.mall.admin.vo.DeptInfo;
 
@@ -21,4 +22,8 @@ public interface DeptService {
     Optional<SysDept> findById(Long deptId);
 
     DeptInfo dept2vo(SysDept dept);
+
+    void updateDept(UpdateDeptDTO updateDeptDTO);
+
+    void deleteDept(String ids);
 }

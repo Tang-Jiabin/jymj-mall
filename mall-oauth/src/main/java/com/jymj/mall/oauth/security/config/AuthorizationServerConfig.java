@@ -17,6 +17,7 @@ import com.jymj.mall.oauth.security.extension.wechat.WechatTokenGranter;
 import com.jymj.mall.common.result.ResultCode;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -58,6 +59,7 @@ import java.util.*;
  * @email seven_tjb@163.com
  * @date 2022-08-08
  */
+@Slf4j
 @Configuration
 @EnableAuthorizationServer
 @AllArgsConstructor
@@ -73,7 +75,8 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Override
     @SneakyThrows
     public void configure(ClientDetailsServiceConfigurer clients) {
-        clients.withClientDetails((ClientDetailsService) clientDetailsService);
+        log.info("load clients");
+        clients.withClientDetails(clientDetailsService);
     }
 
     /**

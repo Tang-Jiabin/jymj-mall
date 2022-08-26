@@ -4,7 +4,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: localhost:9200
+        server-addr: localhost:20200
         group: MALL-MANAGE
         username: jymj-nacos
         password: jymj-nacos
@@ -12,7 +12,7 @@ spring:
         file-extension: yaml
         group: DEFAULT_GROUP
         prefix: ${spring.application.name}
-        server-addr: localhost:9200
+        server-addr: localhost:20200
         username: jymj-nacos
         password: jymj-nacos
 

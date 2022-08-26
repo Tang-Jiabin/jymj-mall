@@ -1,7 +1,7 @@
 package com.jymj.mall.user.repository;
 
 
-import com.jymj.mall.user.entity.User;
+import com.jymj.mall.user.entity.MallUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,6 +14,6 @@ import java.util.Optional;
  * @date 2022-08-04
  */
 @Repository
-public interface UserRepository extends JpaRepository<User,Integer> {
-    Optional<User> findByUsername(String username);
+public interface UserRepository extends JpaRepository<MallUser,Integer> {
+    Optional<MallUser> findByUsername(String username);
 }

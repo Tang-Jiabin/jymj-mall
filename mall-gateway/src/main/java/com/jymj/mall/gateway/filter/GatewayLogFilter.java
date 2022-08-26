@@ -101,11 +101,11 @@ public class GatewayLogFilter implements GlobalFilter, Ordered {
         if (sb.length() > 0) {
             traceLog.setQueryParams(sb.substring(0, sb.length() - 1));
         }
-        log.info(traceLog.toRequestString());
+//        log.info(traceLog.toRequestString());
         ServerHttpResponseDecorator serverHttpResponseDecorator = serverHttpResponseDecorator(exchange, traceLog);
         return chain.filter(exchange.mutate().response(serverHttpResponseDecorator)
                         .build())
-                .then(Mono.fromRunnable(() -> log.info(traceLog.toResponseString())));
+                .then(Mono.fromRunnable(() -> log.info(traceLog.toString())));
     }
 
 
@@ -135,7 +135,8 @@ public class GatewayLogFilter implements GlobalFilter, Ordered {
         Mono<String> cachedBody = serverRequest.bodyToMono(String.class).flatMap(body -> {
             traceLog.setRequestBody(body);
             return Mono.just(body);
-        }).doFinally(body -> log.info(traceLog.toRequestString()));
+        });
+//                .doFinally(body -> log.info(traceLog.toRequestString()));
 
         BodyInserter bodyInserter = BodyInserters.fromPublisher(cachedBody, String.class);
         HttpHeaders headers = new HttpHeaders();
@@ -148,7 +149,7 @@ public class GatewayLogFilter implements GlobalFilter, Ordered {
                     ServerHttpRequest serverHttpRequest = serverHttpRequestDecorator(exchange, headers, outputMessage);
                     ServerHttpResponseDecorator serverHttpResponseDecorator = serverHttpResponseDecorator(exchange, traceLog);
                     return chain.filter(exchange.mutate().request(serverHttpRequest).response(serverHttpResponseDecorator).build())
-                            .then(Mono.fromRunnable(() -> log.info(traceLog.toResponseString())));
+                            .then(Mono.fromRunnable(() -> log.info(traceLog.toString())));
                 }));
     }
 
@@ -294,6 +295,7 @@ public class GatewayLogFilter implements GlobalFilter, Ordered {
             return System.lineSeparator() + "========网关请求响应日志=======" + System.lineSeparator() +
                     "请求路径:" + requestPath + System.lineSeparator() +
                     "请求方法:" + requestMethod + System.lineSeparator() +
+                    "查询参数:" + queryParams + System.lineSeparator() +
                     "请求参数:" + requestBody + System.lineSeparator() +
                     "响应数据:" + responseBody + System.lineSeparator() +
                     "请求时间:" + requestTime + System.lineSeparator() +

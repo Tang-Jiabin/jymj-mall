@@ -2,30 +2,32 @@ package com.jymj.mall.admin.service.impl;
 
 import com.google.common.collect.Lists;
 import com.jymj.mall.admin.dto.AddAdminDTO;
+import com.jymj.mall.admin.dto.AdminAuthDTO;
+import com.jymj.mall.admin.dto.UpdateAdminDTO;
 import com.jymj.mall.admin.entity.*;
+import com.jymj.mall.admin.repository.SysAdminRepository;
+import com.jymj.mall.admin.repository.SysAdminRoleRepository;
 import com.jymj.mall.admin.repository.SysRoleMenuRepository;
+import com.jymj.mall.admin.service.AdminService;
 import com.jymj.mall.admin.service.DeptService;
 import com.jymj.mall.admin.service.MenuService;
 import com.jymj.mall.admin.service.RoleService;
 import com.jymj.mall.admin.vo.AdminInfo;
 import com.jymj.mall.admin.vo.MenuInfo;
 import com.jymj.mall.admin.vo.RoleInfo;
-import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.common.constants.SecurityConstants;
 import com.jymj.mall.common.constants.SystemConstants;
-import com.jymj.mall.admin.dto.AdminAuthDTO;
 import com.jymj.mall.common.exception.BusinessException;
-import com.jymj.mall.admin.repository.SysAdminRoleRepository;
-import com.jymj.mall.admin.service.AdminService;
-import com.jymj.mall.admin.repository.SysAdminRepository;
+import com.jymj.mall.common.result.ResultCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -59,18 +61,15 @@ public class AdminServiceImpl implements AdminService {
         SysAdmin admin = new SysAdmin();
         BeanUtils.copyProperties(adminDTO, admin);
         admin.setPassword(passwordEncoder.encode(adminDTO.getPassword()));
+        admin.setDeleted(SystemConstants.DELETED_NO);
         admin = adminRepository.save(admin);
-
         Long addAdminId = admin.getAdminId();
-        Long adminId = UserUtils.getAdminId();
-        List<SysAdminRole> adminRoles = adminRoleRepository.findAllByAdminId(adminId);
-        List<Long> roleIdList = adminRoles.stream().map(SysAdminRole::getRoleId).filter(Objects::nonNull).collect(Collectors.toList());
 
         List<SysAdminRole> adminRoleList = Lists.newArrayList();
+
         Optional.ofNullable(adminDTO.getRoleIdList())
                 .orElse(Lists.newArrayList())
                 .stream()
-                .filter(roleIdList::contains)
                 .forEach(roleId -> {
                     SysAdminRole adminRole = new SysAdminRole();
                     adminRole.setAdminId(addAdminId);
@@ -107,8 +106,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Optional<SysAdmin> findById(Long adminId) {
-        return adminRepository.findByAdminIdAndDeleted(adminId, SystemConstants.DELETED_NO);
-
+        return adminRepository.findById(adminId);
     }
 
     @Override
@@ -128,12 +126,68 @@ public class AdminServiceImpl implements AdminService {
         adminInfo.setRoleInfoList(roleInfoList);
 
         Optional<SysDept> deptOptional = deptService.findById(admin.getDeptId());
-        deptOptional.ifPresent(dept->adminInfo.setDeptInfo(deptService.dept2vo(dept)));
+        deptOptional.ifPresent(dept -> adminInfo.setDeptInfo(deptService.dept2vo(dept)));
 
         List<SysMenu> menuList = menuService.findAllByRoleIdIn(roleList.stream().map(SysRole::getRoleId).collect(Collectors.toList()));
-        List<MenuInfo> menuInfoList = menuService.list2tree(menuList,SystemConstants.ROOT_MENU_ID);
+        List<MenuInfo> menuInfoList = menuService.list2tree(menuList, SystemConstants.ROOT_MENU_ID);
         adminInfo.setMenuInfoList(menuInfoList);
 
         return adminInfo;
+    }
+
+    @Override
+    public void deleteAdmin(String ids) {
+
+    }
+
+    @Override
+    public void updateAdmin(UpdateAdminDTO updateAdminDTO) {
+        Optional<SysAdmin> adminOptional = adminRepository.findById(updateAdminDTO.getAdminId());
+        SysAdmin admin = adminOptional.orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_EXIST));
+
+        if (StringUtils.hasText(updateAdminDTO.getUsername())) {
+            Optional<SysAdmin> byUsername = adminRepository.findByUsername(updateAdminDTO.getUsername());
+            if (byUsername.isPresent()) {
+                throw new BusinessException("用户名已注册");
+            }
+            admin.setUsername(updateAdminDTO.getUsername());
+        }
+        if (StringUtils.hasText(updateAdminDTO.getMobile())) {
+            Optional<SysAdmin> byUsername = adminRepository.findByMobile(updateAdminDTO.getMobile());
+            if (byUsername.isPresent()) {
+                throw new BusinessException("手机号已注册");
+            }
+            admin.setMobile(updateAdminDTO.getMobile());
+        }
+
+        if (StringUtils.hasText(updateAdminDTO.getPassword())) {
+            admin.setPassword(passwordEncoder.encode(updateAdminDTO.getPassword()));
+        }
+
+        admin.setNickname(StringUtils.hasText(updateAdminDTO.getNickname()) ? updateAdminDTO.getNickname() : admin.getNickname());
+        admin.setAvatar(StringUtils.hasText(updateAdminDTO.getAvatar()) ? updateAdminDTO.getAvatar() : admin.getAvatar());
+        admin.setEmail(StringUtils.hasText(updateAdminDTO.getEmail()) ? updateAdminDTO.getEmail() : admin.getEmail());
+        admin.setGender(updateAdminDTO.getGender() != null ? updateAdminDTO.getGender() : admin.getGender());
+        admin.setStatus(updateAdminDTO.getStatus() != null ? updateAdminDTO.getStatus() : admin.getStatus());
+        if (updateAdminDTO.getDeptId() != null) {
+            Optional<SysDept> deptOptional = deptService.findById(updateAdminDTO.getDeptId());
+            SysDept sysDept = deptOptional.orElseThrow(() -> new BusinessException("部门不存在"));
+            admin.setDeptId(updateAdminDTO.getDeptId());
+        }
+        if (!ObjectUtils.isEmpty(updateAdminDTO.getRoleIdList())) {
+            List<SysRole> newRoleList = roleService.findAllById(updateAdminDTO.getRoleIdList());
+            List<SysRole> oldRoleList = roleService.findAllByAdminId(admin.getAdminId());
+            List<SysRole> deleteRoleList = oldRoleList.stream().filter(role -> !newRoleList.contains(role)).collect(Collectors.toList());
+            List<SysRole> addRoleList = newRoleList.stream().filter(role -> !oldRoleList.contains(role)).collect(Collectors.toList());
+            roleService.deleteAdminRole(admin.getAdminId(), deleteRoleList);
+            roleService.addAdminRole(admin.getAdminId(), addRoleList);
+        }
+        adminRepository.save(admin);
+    }
+
+    @Override
+    public Optional<SysAdmin> findByMobile(String mobile) {
+
+        return adminRepository.findByMobile(mobile);
     }
 }

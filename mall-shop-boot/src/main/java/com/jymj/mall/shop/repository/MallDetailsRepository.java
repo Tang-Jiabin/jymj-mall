@@ -4,7 +4,10 @@ package com.jymj.mall.shop.repository;
 import com.jymj.mall.shop.entity.MallDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * 店铺详情
@@ -16,4 +19,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface MallDetailsRepository extends JpaRepository<MallDetails,Long>, JpaSpecificationExecutor<MallDetails> {
+
 }

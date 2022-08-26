@@ -3,6 +3,7 @@ package com.jymj.mall.common.web.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -35,6 +36,16 @@ public class BasePageQueryDTO {
     private String properties;
 
     public Integer getPage() {
-        return this.page - 1;
+        if (this.page != null) {
+            return this.page - 1;
+        }
+        return 0;
+    }
+
+    public Integer getSize() {
+        if (this.size != null) {
+            return this.size;
+        }
+        return 10;
     }
 }

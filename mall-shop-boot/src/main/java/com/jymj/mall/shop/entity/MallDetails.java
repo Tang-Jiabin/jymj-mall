@@ -6,6 +6,8 @@ import com.jymj.mall.shop.enums.MallType;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -23,12 +25,15 @@ import javax.persistence.*;
 @Entity
 @Table(name = "mall_details")
 @EqualsAndHashCode(callSuper=false)
+@Where(clause = "deleted = 0")
+@SQLDelete(sql = "UPDATE mall_details SET deleted = 1 where mall_id = ?")
 @EntityListeners({AuditingEntityListener.class})
 public class MallDetails extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long mdId;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "mall_details_mall_id_seq")
+    @SequenceGenerator(name = "mall_details_mall_id_seq",sequenceName = "mall_details_mall_id_seq",allocationSize = 1)
+    private Long mallId;
 
     @ApiModelProperty("部门id")
     private Long deptId;

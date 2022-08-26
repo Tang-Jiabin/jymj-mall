@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../Gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.24/13a394eed5c4f9efb2a6d956e2086f1d81e857d9/lombok-1.18.24.jar" />
+        </processorPath>
+        <module name="jymj-mall.mall-common-redis.main" />
+        <module name="jymj-mall.mall-user-api.main" />
+        <module name="jymj-mall.mall-shop-api.main" />
+        <module name="jymj-mall.mall-user-boot.main" />
+        <module name="jymj-mall.mall-oauth.main" />
+        <module name="jymj-mall.test" />
+        <module name="jymj-mall.main" />
+        <module name="jymj-mall.mall-admin-api.test" />
+        <module name="jymj-mall.mall-common-web.main" />
+        <module name="jymj-mall.mall-admin-api.main" />
+        <module name="jymj-mall.mall-common.main" />
+        <module name="jymj-mall.mall-common-web.test" />
+        <module name="jymj-mall.mall-oauth.test" />
+        <module name="jymj-mall.mall-shop-boot.test" />
+        <module name="jymj-mall.mall-admin-boot.main" />
+        <module name="jymj-mall.mall-admin-boot.test" />
+        <module name="jymj-mall.mall-common-redis.test" />
+        <module name="jymj-mall.mall-user-boot.test" />
+        <module name="jymj-mall.mall-user-api.test" />
+        <module name="jymj-mall.mall-shop-api.test" />
+        <module name="jymj-mall.mall-common.test" />
+        <module name="jymj-mall.mall-gateway.test" />
+        <module name="jymj-mall.mall-shop-boot.main" />
+      </profile>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../Gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.24/13a394eed5c4f9efb2a6d956e2086f1d81e857d9/lombok-1.18.24.jar" />
+          <entry name="$PROJECT_DIR$/../../Gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-configuration-processor/2.7.1/f36230aff2834f4fa07e1fc30544a6f8ce54bd19/spring-boot-configuration-processor-2.7.1.jar" />
+        </processorPath>
+        <module name="jymj-mall.mall-gateway.main" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel target="1.8" />
+  </component>
+</project>

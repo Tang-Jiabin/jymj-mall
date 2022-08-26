@@ -2,6 +2,7 @@ package com.jymj.mall.admin.service;
 
 import com.jymj.mall.admin.dto.AddAdminDTO;
 import com.jymj.mall.admin.dto.AdminAuthDTO;
+import com.jymj.mall.admin.dto.UpdateAdminDTO;
 import com.jymj.mall.admin.entity.SysAdmin;
 import com.jymj.mall.admin.vo.AdminInfo;
 
@@ -21,4 +22,10 @@ public interface AdminService {
     Optional<SysAdmin> findById(Long adminId);
 
     AdminInfo admin2vo(SysAdmin admin);
+
+    void deleteAdmin(String ids);
+
+    void updateAdmin(UpdateAdminDTO updateAdminDTO);
+
+    Optional<SysAdmin> findByMobile(String mobile);
 }

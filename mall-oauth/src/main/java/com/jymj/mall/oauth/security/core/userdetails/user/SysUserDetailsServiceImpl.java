@@ -7,6 +7,7 @@ import com.jymj.mall.common.result.ResultCode;
 import com.jymj.mall.user.api.UserFeignClient;
 import com.jymj.mall.user.dto.UserAuthDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
  * @email seven_tjb@163.com
  * @date 2022-08-08
  */
+@Slf4j
 @Service("sysUserDetailsService")
 @RequiredArgsConstructor
 public class SysUserDetailsServiceImpl implements UserDetailsService {
@@ -31,7 +33,7 @@ public class SysUserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) {
         SysUserDetails userDetails = null;
         Result<UserAuthDTO> result = userFeignClient.loadUserByUsername(username);
-        System.out.println(result);
+        log.info("loadUser:{}",result.toString());
         if (Result.isSuccess(result)) {
             UserAuthDTO user = result.getData();
             if (null != user) {

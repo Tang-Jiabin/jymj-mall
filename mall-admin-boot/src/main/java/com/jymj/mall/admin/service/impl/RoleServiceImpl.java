@@ -91,6 +91,24 @@ public class RoleServiceImpl implements RoleService {
 
     }
 
+    @Override
+    public void deleteAdminRole(Long adminId, List<SysRole> deleteRoleList) {
+        adminRoleRepository.deleteAllByAdminIdAndRoleIdIn(adminId, deleteRoleList);
+    }
+
+    @Override
+    public void addAdminRole(Long adminId, List<SysRole> addRoleList) {
+        List<SysAdminRole> adminRoleList = Lists.newArrayList();
+        addRoleList.forEach(role -> {
+            SysAdminRole adminRole = new SysAdminRole();
+            adminRole.setAdminId(adminId);
+            adminRole.setRoleId(role.getRoleId());
+            adminRole.setDeleted(SystemConstants.DELETED_NO);
+            adminRoleList.add(adminRole);
+        });
+        adminRoleRepository.saveAll(adminRoleList);
+    }
+
     public RoleInfo role2vo(SysRole role) {
         RoleInfo roleInfo = new RoleInfo();
         roleInfo.setRoleId(role.getRoleId());

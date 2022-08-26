@@ -36,4 +36,8 @@ public interface RoleService {
     List<RoleInfo> list2vo(List<SysRole> roleList);
 
     List<SysRole> findAllByAdminId(Long adminId);
+
+    void deleteAdminRole(Long adminId, List<SysRole> deleteRoleList);
+
+    void addAdminRole(Long adminId, List<SysRole> addRoleList);
 }

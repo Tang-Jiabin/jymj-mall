@@ -21,4 +21,8 @@ public interface SysAdminRepository extends JpaRepository<SysAdmin,Long> {
     List<SysAdmin> findAllByUsernameOrMobile(String username, String mobile);
 
     Optional<SysAdmin> findByAdminIdAndDeleted(Long adminId, int deleted);
+
+    Optional<SysAdmin> findByMobile(String mobile);
+
+    Optional<SysAdmin> findByUsername(String username);
 }

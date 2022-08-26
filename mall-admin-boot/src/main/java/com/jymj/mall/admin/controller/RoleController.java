@@ -60,7 +60,7 @@ public class RoleController {
     }
 
     @ApiOperation(value = "修改角色")
-    @PutMapping(value = "/{id}")
+    @PutMapping
     public Result updateRole(@Valid @RequestBody RoleFormDTO roleForm) {
         boolean result = sysRoleService.saveRole(roleForm);
         return Result.judge(result);
@@ -74,7 +74,7 @@ public class RoleController {
     }
 
     @ApiOperation(value = "修改角色状态")
-    @PutMapping(value = "/{roleId}/status")
+    @PutMapping(value = "/status")
     public Result updateRoleStatus(@ApiParam("角色ID") @PathVariable Long roleId, @ApiParam("角色状态:1-正常；0-禁用") @RequestParam Integer status) {
         boolean result = sysRoleService.updateRoleStatus(roleId, status);
         return Result.judge(result);
@@ -88,7 +88,7 @@ public class RoleController {
     }
 
     @ApiOperation(value = "分配角色的资源权限")
-    @PutMapping("/{roleId}/resources")
+    @PutMapping("/resources")
     public Result updateRoleResource(@PathVariable Long roleId, @RequestBody RoleResourceFormDTO roleResourceForm) {
         boolean result = sysRoleService.updateRoleResource(roleId, roleResourceForm);
         return Result.judge(result);

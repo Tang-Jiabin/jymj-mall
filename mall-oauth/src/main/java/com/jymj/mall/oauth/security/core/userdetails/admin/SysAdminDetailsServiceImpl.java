@@ -34,7 +34,7 @@ public class SysAdminDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         SysAdminDetails userDetails = null;
         Result<AdminAuthDTO> result = adminFeignClient.loadAdminByUsername(username);
-
+        log.info("loadAdmin:{}",result.toString());
         if (Result.isSuccess(result)) {
             AdminAuthDTO user = result.getData();
             if (null != user) {

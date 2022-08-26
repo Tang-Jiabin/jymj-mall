@@ -1,6 +1,7 @@
 
 package com.jymj.mall.common.web.config;
 
+import feign.Logger;
 import feign.RequestInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -57,12 +58,24 @@ public class FeignConfig {
                     while (headerNames.hasMoreElements()) {
                         String name = headerNames.nextElement();
                         String values = request.getHeader(name);
-                        //将请求头保存到模板中
-                        template.header(name, values);
+                        if (name.equals("payload")){
+                            //将请求头保存到模板中
+                            template.header(name, values);
+                        }
+
                     }
                 }
             }
         };
+    }
+
+    /**
+     * 日志
+     * @return
+     */
+    @Bean
+    Logger.Level feignLoggerLevel() {
+        return Logger.Level.FULL; //设置日志级别为FULL
     }
 }
 

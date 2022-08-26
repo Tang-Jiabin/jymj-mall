@@ -4,6 +4,8 @@ import com.jymj.mall.common.web.pojo.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -20,12 +22,15 @@ import com.jymj.mall.common.web.pojo.BaseEntity;
 @Data
 @Entity
 @Table(name = "sys_role_menu")
+@Where(clause = "deleted = 0")
+@SQLDelete(sql = "UPDATE sys_role_menu SET deleted = 1 where rm_id = ?")
 @EqualsAndHashCode(callSuper=false)
 @EntityListeners({AuditingEntityListener.class})
 public class SysRoleMenu extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "sys_role_menu_rm_id_seq")
+    @SequenceGenerator(name = "sys_role_menu_rm_id_seq",sequenceName = "sys_role_menu_rm_id_seq",allocationSize = 1)
     private Long rmId;
 
     @ApiModelProperty("角色id")

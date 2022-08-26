@@ -28,6 +28,7 @@ public class AuthExceptionHandler {
      */
     @ExceptionHandler(InvalidGrantException.class)
     public Result handleInvalidGrantException(InvalidGrantException e) {
+        e.printStackTrace();
         return Result.failed(ResultCode.USERNAME_OR_PASSWORD_ERROR);
     }
 
@@ -36,6 +37,7 @@ public class AuthExceptionHandler {
      */
     @ExceptionHandler({UsernameNotFoundException.class})
     public Result usernameNotFoundException(UsernameNotFoundException e) {
+        e.printStackTrace();
         return Result.failed(e.getMessage());
     }
 
@@ -44,6 +46,7 @@ public class AuthExceptionHandler {
      */
     @ExceptionHandler({DisabledException.class})
     public Result disabledException(DisabledException e) {
+        e.printStackTrace();
         return Result.failed(e.getMessage());
     }
 
@@ -56,7 +59,7 @@ public class AuthExceptionHandler {
 
     @ExceptionHandler(NoSuchClientException.class)
     public Result noSuchClientException(NoSuchClientException e)  {
-
+        e.printStackTrace();
         return Result.failed(e.getMessage());
     }
 }

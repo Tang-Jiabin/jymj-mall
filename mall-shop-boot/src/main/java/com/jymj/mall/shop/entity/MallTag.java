@@ -4,6 +4,8 @@ import com.jymj.mall.common.web.pojo.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -19,12 +21,15 @@ import javax.persistence.*;
 @Data
 @Entity
 @Table(name = "mall_tag")
+@Where(clause = "deleted = 0")
+@SQLDelete(sql = "UPDATE mall_tag SET deleted = 1 where tag_id = ?")
 @EqualsAndHashCode(callSuper=false)
 @EntityListeners({AuditingEntityListener.class})
 public class MallTag extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "mall_tag_tag_id_seq")
+    @SequenceGenerator(name = "mall_tag_tag_id_seq",sequenceName = "mall_tag_tag_id_seq",allocationSize = 1)
     private Long tagId;
 
     @ApiModelProperty("标签名称")

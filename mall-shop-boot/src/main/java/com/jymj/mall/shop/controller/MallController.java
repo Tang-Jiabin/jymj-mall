@@ -1,26 +1,28 @@
 package com.jymj.mall.shop.controller;
 
 
+import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.vo.PageVO;
 import com.jymj.mall.shop.dto.AddMallDTO;
 import com.jymj.mall.shop.dto.MallPageQueryDTO;
+import com.jymj.mall.shop.dto.UpdateMallDTO;
 import com.jymj.mall.shop.entity.MallDetails;
+import com.jymj.mall.shop.enums.MallType;
 import com.jymj.mall.shop.service.MallService;
-import com.jymj.mall.shop.vo.MallVO;
+import com.jymj.mall.shop.vo.MallInfo;
+import com.jymj.mall.shop.vo.MallTypeInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 商场
@@ -40,18 +42,47 @@ public class MallController {
 
     @ApiOperation(value = "添加商场")
     @PostMapping
-    private Result addMall(@Valid @RequestBody AddMallDTO mallDTO) {
-        mallService.add(mallDTO);
+    private Result addMall(@Valid  @RequestBody AddMallDTO mallDTO) {
+        mallService.addMall(mallDTO);
+        return Result.success();
+    }
+
+    @ApiOperation(value = "删除商场")
+    @DeleteMapping("/{ids}")
+    private Result deleteMall(@ApiParam("删除商场，多个以英文逗号(,)分割") @Valid @PathVariable String ids) {
+        mallService.deleteMall(ids);
+        return Result.success();
+    }
+
+    @ApiOperation(value = "修改商场")
+    @PutMapping
+    private Result updateMall(@Valid @RequestBody UpdateMallDTO updateMallDTO) {
+        mallService.updateMall(updateMallDTO);
         return Result.success();
     }
 
     @ApiOperation(value = "商场分页")
     @GetMapping("/pages")
-    public Result<PageVO<MallVO>> page(@Valid MallPageQueryDTO mallPageQuery){
+    public Result<PageVO<MallInfo>> page(@Valid MallPageQueryDTO mallPageQuery){
         Page<MallDetails> page = mallService.findPage(mallPageQuery);
-        List<MallVO> mallVOList = mallService.list2vo(page.getContent());
-        PageVO<MallVO> pageVo = PageUtils.toPageVO(page, mallVOList);
+        List<MallInfo> mallVOList = mallService.list2vo(page.getContent());
+        PageVO<MallInfo> pageVo = PageUtils.toPageVO(page, mallVOList);
         return Result.success(pageVo);
+    }
+
+    @ApiOperation(value = "商场信息")
+    @GetMapping("/{mallId}/info")
+    public Result<MallInfo> getMallById(@PathVariable Long mallId) {
+        Optional<MallDetails> mallOptional = mallService.findById(mallId);
+        MallDetails mallDetails = mallOptional.orElseThrow(() -> new BusinessException("商场不存在"));
+        MallInfo mallInfo = mallService.mall2vo(mallDetails);
+        return Result.success(mallInfo);
+    }
+
+    @ApiOperation(value = "商场类型")
+    @GetMapping("/type")
+    public Result<List<MallTypeInfo>> getMallType() {
+        return Result.success(MallType.toList());
     }
 
 
