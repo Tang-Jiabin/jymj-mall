@@ -1,5 +1,6 @@
 package com.jymj.mall.admin.entity;
 
+import com.jymj.mall.common.web.pojo.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -8,7 +9,6 @@ import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import com.jymj.mall.common.web.pojo.BaseEntity;
 /**
  * 行政区
  *

@@ -5,7 +5,6 @@ import com.jymj.mall.common.constants.RedisConstants;
 import com.jymj.mall.common.enums.BusinessTypeEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 

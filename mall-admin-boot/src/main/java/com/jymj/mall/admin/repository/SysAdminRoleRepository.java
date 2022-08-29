@@ -1,7 +1,6 @@
 package com.jymj.mall.admin.repository;
 
 import com.jymj.mall.admin.entity.SysAdminRole;
-import com.jymj.mall.admin.entity.SysRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,5 +20,7 @@ public interface SysAdminRoleRepository extends JpaRepository<SysAdminRole,Long>
 
     List<SysAdminRole> findAllByAdminId(Long adminId);
 
-    void deleteAllByAdminIdAndRoleIdIn(Long adminId, List<SysRole> deleteRoleList);
+    void deleteAllByAdminIdAndRoleIdIn(Long adminId, List<Long> deleteRoleList);
+
+    long countByRoleId(Long roleId);
 }

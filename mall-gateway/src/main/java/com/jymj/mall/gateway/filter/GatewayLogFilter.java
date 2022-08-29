@@ -292,7 +292,8 @@ public class GatewayLogFilter implements GlobalFilter, Ordered {
 
         @Override
         public String toString() {
-            return System.lineSeparator() + "========网关请求响应日志=======" + System.lineSeparator() +
+            return System.lineSeparator() +
+                    "================================  网关请求响应日志  ===============================" + System.lineSeparator() +
                     "请求路径:" + requestPath + System.lineSeparator() +
                     "请求方法:" + requestMethod + System.lineSeparator() +
                     "查询参数:" + queryParams + System.lineSeparator() +
@@ -300,7 +301,8 @@ public class GatewayLogFilter implements GlobalFilter, Ordered {
                     "响应数据:" + responseBody + System.lineSeparator() +
                     "请求时间:" + requestTime + System.lineSeparator() +
                     "响应时间:" + responseTime + System.lineSeparator() +
-                    "执行耗时:" + executeTime + "毫秒";
+                    "执行耗时:" + executeTime + "毫秒" + System.lineSeparator() +
+                    "==================================================================================" + System.lineSeparator();
         }
     }
 }

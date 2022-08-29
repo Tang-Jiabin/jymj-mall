@@ -3,8 +3,6 @@ package com.jymj.mall.common.exception;
 import com.jymj.mall.common.result.IResultCode;
 import lombok.Getter;
 
-import java.util.function.Supplier;
-
 /**
  * @author J.Tang
  * @version 1.0

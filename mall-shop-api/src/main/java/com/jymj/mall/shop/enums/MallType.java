@@ -41,7 +41,7 @@ public enum MallType {
     public static List<MallTypeInfo> toList(){
         List<MallTypeInfo> mallTypeInfoList = Lists.newArrayList();
         for (MallType value : MallType.values()) {
-            MallTypeInfo info = new MallTypeInfo(value.getValue(),value.getLabel(),value);
+            MallTypeInfo info = new MallTypeInfo(value,value.getLabel());
 
             mallTypeInfoList.add(info);
         }

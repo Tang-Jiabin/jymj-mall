@@ -9,7 +9,6 @@ import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import com.jymj.mall.common.web.pojo.BaseEntity;
 /**
  * 角色菜单关联表
  *
@@ -38,5 +37,7 @@ public class SysRoleMenu extends BaseEntity {
 
     @ApiModelProperty("菜单ID")
     private Long menuId;
+
+
 
 }

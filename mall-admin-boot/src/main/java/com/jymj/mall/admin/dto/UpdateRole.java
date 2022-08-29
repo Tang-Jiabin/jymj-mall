@@ -1,31 +1,30 @@
 package com.jymj.mall.admin.dto;
 
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
+ * 修改角色
+ *
  * @author J.Tang
  * @version 1.0
  * @email seven_tjb@163.com
- * @date 2022-08-15
+ * @date 2022-08-29
  */
-
 @Data
-@ApiModel("角色表单对象")
-public class RoleFormDTO {
+public class UpdateRole {
 
+
+    @NotNull(message = "角色id不能为空")
     @ApiModelProperty("角色ID")
     private Long id;
 
     @ApiModelProperty("角色名称")
-    @NotBlank(message = "角色名称不能为空")
     private String name;
 
     @ApiModelProperty("角色编码")
-    @NotBlank(message = "角色编码不能为空")
     private String code;
 
     @ApiModelProperty("排序")
@@ -33,4 +32,5 @@ public class RoleFormDTO {
 
     @ApiModelProperty("角色状态(1-正常；0-停用)")
     private Integer status;
+
 }

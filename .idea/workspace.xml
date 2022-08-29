@@ -5,321 +5,29 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c37fce6f-e3d8-4f7f-b535-c9d68bda8397" name="变更" comment="商场模块">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/1fe3f280-adef-47d4-b0ca-fd2378dafe97.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/1fe3f280-adef-47d4-b0ca-fd2378dafe97/storage_v2/_src_/database/jymj-mall-admin.lzPdhw.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/1fe3f280-adef-47d4-b0ca-fd2378dafe97/storage_v2/_src_/database/jymj-mall-admin.lzPdhw/schema/information_schema.FNRwLQ.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/1fe3f280-adef-47d4-b0ca-fd2378dafe97/storage_v2/_src_/database/jymj-mall-admin.lzPdhw/schema/pg_catalog.0S1ZNQ.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/1fe3f280-adef-47d4-b0ca-fd2378dafe97/storage_v2/_src_/database/jymj-mall-admin.lzPdhw/schema/public.abK9xQ.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/ea582202-f41b-4be5-b340-f7dfe97d5404.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/ea582202-f41b-4be5-b340-f7dfe97d5404/storage_v2/_src_/database/jymj-mall-shop.roGTqQ.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/ea582202-f41b-4be5-b340-f7dfe97d5404/storage_v2/_src_/database/jymj-mall-shop.roGTqQ/schema/information_schema.FNRwLQ.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/ea582202-f41b-4be5-b340-f7dfe97d5404/storage_v2/_src_/database/jymj-mall-shop.roGTqQ/schema/pg_catalog.0S1ZNQ.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources/ea582202-f41b-4be5-b340-f7dfe97d5404/storage_v2/_src_/database/jymj-mall-shop.roGTqQ/schema/public.abK9xQ.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules/mall-common-swagger/jymj-mall.mall-common-swagger.test.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules/mall-shop/jymj-mall.mall-shop.test.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/api/PermissionFeignClient.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/dto/UpdateAdminDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/dto/UpdateDeptDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/PermissionController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/config/DataSourceConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/LICENSE" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/bin/seata-server.bat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/bin/seata-server.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/bin/startup.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/conf/application.example.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/conf/application.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/conf/logback-spring.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/conf/logback/console-appender.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/conf/logback/file-appender.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/conf/logback/kafka-appender.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/conf/logback/logstash-appender.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/ext/apm-skywalking/plugins/apm-jdbc-commons-8.6.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/ext/apm-skywalking/plugins/apm-mysql-5.x-plugin-8.6.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/ext/apm-skywalking/plugins/apm-mysql-6.x-plugin-8.6.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/ext/apm-skywalking/plugins/apm-mysql-8.x-plugin-8.6.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/ext/apm-skywalking/plugins/apm-mysql-commons-8.6.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/ext/apm-skywalking/plugins/apm-seata-skywalking-plugin-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/ext/apm-skywalking/skywalking-agent.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/HikariCP-3.4.3.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/animal-sniffer-annotations-1.17.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/ant-1.10.6.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/ant-launcher-1.10.6.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/antlr-2.7.7.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/antlr-runtime-3.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/aopalliance-1.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/apollo-client-1.6.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/apollo-core-1.6.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/archaius-core-0.7.6.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/asm-5.0.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/audience-annotations-0.5.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/bolt-1.4.6.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/cglib-3.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/checker-qual-2.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/commons-codec-1.15.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/commons-compress-1.19.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/commons-configuration-1.10.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/commons-dbcp2-2.7.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/commons-io-2.7.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/commons-jxpath-1.3.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/commons-lang-2.6.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/commons-logging-1.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/commons-math-2.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/commons-pool-1.6.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/commons-pool2-2.9.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/compactmap-2.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/config-1.2.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/consul-api-1.4.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/dexx-collections-0.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/druid-1.2.6.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/error_prone_annotations-2.2.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/eureka-client-1.10.17.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/failureaccess-1.0.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/fastjson-1.2.83.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/fst-2.57.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/grpc-context-1.17.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/grpc-core-1.17.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/grpc-grpclb-1.17.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/grpc-netty-1.17.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/grpc-protobuf-1.17.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/grpc-protobuf-lite-1.17.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/grpc-stub-1.17.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/gson-2.8.9.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/guava-27.0.1-jre.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/guice-4.1.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/h2-1.4.181.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/hessian-3.3.6.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/hessian-4.0.63.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/httpasyncclient-4.1.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/httpclient-4.5.13.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/httpcore-4.4.14.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/httpcore-nio-4.4.14.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/j2objc-annotations-1.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jackson-annotations-2.11.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jackson-core-2.11.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jackson-databind-2.11.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jackson-datatype-jdk8-2.11.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jackson-datatype-jsr310-2.11.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jackson-module-parameter-names-2.11.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jakarta.annotation-api-1.3.5.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jakarta.el-3.0.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/javassist-3.21.0-GA.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/javax.inject-1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/javax.servlet-api-4.0.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jcommander-1.72.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jdbc/mysql-connector-java-5.1.35.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jdbc/mysql-connector-java-8.0.27.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jedis-3.2.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jersey-apache-client4-1.19.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jersey-client-1.19.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jersey-core-1.19.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jetcd-common-0.3.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jetcd-core-0.3.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jetcd-resolver-0.3.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jettison-1.4.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jjwt-api-0.10.5.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jjwt-impl-0.10.5.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jjwt-jackson-0.10.5.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/joda-time-2.3.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jsr305-3.0.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jsr311-api-1.1.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/jul-to-slf4j-1.7.32.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/kafka-clients-2.6.3.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/kryo-4.0.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/kryo-serializers-0.42.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/logback-classic-1.2.9.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/logback-core-1.2.9.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/logback-kafka-appender-0.2.0-RC2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/logstash-logback-encoder-6.5.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/lookout-api-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/lz4-java-1.7.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/minlog-1.3.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/mxparser-1.2.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/nacos-api-1.4.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/nacos-client-1.4.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/nacos-common-1.4.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netflix-eventbus-0.3.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netflix-infix-0.3.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-all-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-buffer-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-codec-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-codec-dns-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-codec-haproxy-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-codec-http-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-codec-http2-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-codec-memcache-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-codec-mqtt-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-codec-redis-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-codec-smtp-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-codec-socks-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-codec-stomp-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-codec-xml-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-common-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-handler-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-handler-proxy-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-resolver-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-resolver-dns-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-resolver-dns-classes-macos-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-resolver-dns-native-macos-4.1.70.Final-osx-aarch_64.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-resolver-dns-native-macos-4.1.70.Final-osx-x86_64.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-transport-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-transport-classes-epoll-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-transport-classes-kqueue-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-transport-native-epoll-4.1.70.Final-linux-aarch_64.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-transport-native-epoll-4.1.70.Final-linux-x86_64.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-transport-native-epoll-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-transport-native-kqueue-4.1.70.Final-osx-aarch_64.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-transport-native-kqueue-4.1.70.Final-osx-x86_64.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-transport-native-unix-common-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-transport-rxtx-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-transport-sctp-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/netty-transport-udt-4.1.70.Final.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/objenesis-2.6.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/opencensus-api-0.17.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/opencensus-contrib-grpc-metrics-0.17.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/postgresql-42.1.4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/proto-google-common-protos-1.0.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/protobuf-java-3.7.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/protobuf-java-util-3.5.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/reflectasm-1.11.3.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/registry-client-all-5.2.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-common-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-compressor-7z-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-compressor-all-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-compressor-bzip2-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-compressor-deflater-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-compressor-gzip-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-compressor-lz4-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-compressor-zip-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-compressor-zstd-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-config-all-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-config-apollo-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-config-consul-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-config-core-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-config-etcd3-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-config-nacos-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-config-spring-cloud-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-config-zk-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-console-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-core-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-discovery-all-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-discovery-consul-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-discovery-core-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-discovery-custom-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-discovery-etcd3-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-discovery-eureka-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-discovery-nacos-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-discovery-redis-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-discovery-sofa-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-discovery-zk-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-metrics-all-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-metrics-api-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-metrics-core-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-metrics-exporter-prometheus-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-metrics-registry-compact-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-serializer-all-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-serializer-fst-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-serializer-hessian-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-serializer-kryo-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-serializer-protobuf-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-serializer-seata-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-spring-autoconfigure-core-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/seata-spring-autoconfigure-server-1.5.2.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/servo-core-0.12.21.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/simpleclient-0.5.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/simpleclient_common-0.6.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/simpleclient_httpserver-0.6.0.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/slf4j-api-1.7.32.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/snakeyaml-1.27.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/snappy-java-1.1.7.3.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/sofa-common-tools-1.0.12.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-aop-5.3.18.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-beans-5.3.18.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-boot-2.4.13.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-boot-autoconfigure-2.4.13.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-boot-starter-2.4.13.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-boot-starter-json-2.4.13.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-boot-starter-logging-2.4.13.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-boot-starter-security-2.4.13.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-boot-starter-tomcat-2.4.13.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-boot-starter-web-2.4.13.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-context-5.3.18.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-core-5.3.18.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-expression-5.3.18.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-jcl-5.3.18.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-security-config-5.4.9.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-security-core-5.4.9.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-security-web-5.4.9.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-web-5.3.18.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/spring-webmvc-5.3.18.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/stringtemplate-3.2.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/tomcat-embed-core-9.0.55.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/tomcat-embed-websocket-9.0.55.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/xmlpull-1.1.3.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/xstream-1.4.19.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/xz-1.8.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/zkclient-0.11.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/zookeeper-3.5.9.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/zookeeper-jute-3.5.9.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/lib/zstd-jni-1.5.0-4.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/logs/start.out" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/config-center/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/config-center/apollo/apollo-config-interactive.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/config-center/apollo/apollo-config.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/config-center/config.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/config-center/consul/consul-config-interactive.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/config-center/consul/consul-config.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/config-center/etcd3/etcd3-config-interactive.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/config-center/etcd3/etcd3-config.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/config-center/nacos/nacos-config-interactive.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/config-center/nacos/nacos-config-interactive.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/config-center/nacos/nacos-config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/config-center/nacos/nacos-config.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/config-center/zk/zk-config-interactive.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/config-center/zk/zk-config.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/logstash/config/logstash-kafka.conf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/logstash/config/logstash-logback.conf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/server/db/mysql.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/server/db/oracle.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/server/db/postgresql.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/server/docker-compose/docker-compose.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/server/helm/seata-server/.helmignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/server/helm/seata-server/Chart.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/server/helm/seata-server/templates/NOTES.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/server/helm/seata-server/templates/_helpers.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/server/helm/seata-server/templates/deployment.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/server/helm/seata-server/templates/service.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/server/helm/seata-server/templates/tests/test-connection.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/server/helm/seata-server/values.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/script/server/kubernetes/seata-server.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-seata/target/seata-server.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/enums/MallType.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/vo/MallTypeInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/vo/TagInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/dto/UpdateMallDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/entity/MallDetailsTag.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/repository/MallDetailsTagRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-user-boot/src/main/java/com/jymj/mall/user/entity/MallUser.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/dto/RolePageQuery.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/dto/UpdateRole.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/dto/AddMallAuth.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/dto/UpdateMallAuth.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/vo/MallAuthInfo.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/controller/AuthController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/entity/MallAuth.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/repository/MallAuthRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/MallAuthService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/impl/MallAuthServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/api/AdminFeignClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/api/AdminFeignClient.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/api/DeptFeignClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/api/DeptFeignClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/MallAdminApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/MallAdminApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/api/PermissionFeignClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/api/PermissionFeignClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/vo/DistrictInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/vo/DistrictInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/vo/RoleInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/vo/RoleInfo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/AdminController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/DeptController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/DeptController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/DistrictController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/DistrictController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/PermissionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/PermissionController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/RoleController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/RoleController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/dto/RoleFormDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/dto/AddRole.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/dto/RoleResourceFormDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/dto/RoleResourceFormDTO.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysAdmin.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysAdmin.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysAdminRole.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysAdminRole.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysDept.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysDept.java" afterDir="false" />
@@ -329,54 +37,43 @@
       <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysRole.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysRole.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysRoleMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysRoleMenu.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysRolePermission.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysRolePermission.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysAdminRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysAdminRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysAdminRoleRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysAdminRoleRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/AdminService.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/AdminService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/DeptService.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/DeptService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysRoleMenuRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysRoleMenuRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysRolePermissionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysRolePermissionRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysRoleRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysRoleRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/RoleService.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/RoleService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/AdminServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/AdminServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/DeptServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/DeptServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/DistrictServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/DistrictServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/PermissionServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/PermissionServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/RoleServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/RoleServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/vo/AdminInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/vo/AdminInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/vo/MenuInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/vo/MenuInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/vo/RoleInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/vo/RoleInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/resources/bootstrap.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-common-web/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/mall-common-web/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/config/FeignConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/config/FeignConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-common-redis/src/main/java/com/jymj/mall/common/redis/BusinessNoGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-common-redis/src/main/java/com/jymj/mall/common/redis/BusinessNoGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/config/AuditorAwareConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/config/AuditorAwareConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/dto/BasePageQueryDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/dto/BasePageQueryDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/pojo/BaseEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/pojo/BaseEntity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/security/advice/PermissionAdvice.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/security/advice/PermissionAdvice.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-common/src/main/java/com/jymj/mall/common/exception/BusinessException.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-common/src/main/java/com/jymj/mall/common/exception/BusinessException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-gateway/src/main/java/com/jymj/mall/gateway/MallGatewayApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-gateway/src/main/java/com/jymj/mall/gateway/MallGatewayApplication.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-gateway/src/main/java/com/jymj/mall/gateway/filter/GatewayLogFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-gateway/src/main/java/com/jymj/mall/gateway/filter/GatewayLogFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-gateway/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/mall-gateway/src/main/resources/bootstrap.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-gateway/src/main/java/com/jymj/mall/gateway/filter/GatewaySecurityFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-gateway/src/main/java/com/jymj/mall/gateway/filter/GatewaySecurityFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-gateway/src/main/java/com/jymj/mall/gateway/security/ResourceServerConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-gateway/src/main/java/com/jymj/mall/gateway/security/ResourceServerConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-gateway/src/main/java/com/jymj/mall/gateway/security/ResourceServerManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-gateway/src/main/java/com/jymj/mall/gateway/security/ResourceServerManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-gateway/src/main/java/com/jymj/mall/gateway/swagger/router/SwaggerRouter.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-gateway/src/main/java/com/jymj/mall/gateway/swagger/router/SwaggerRouter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/MallOauthApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/MallOauthApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/config/AuthExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/config/AuthExceptionHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/config/SwaggerConfiguration.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/config/SwaggerConfiguration.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/controller/AuthController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/config/AuthorizationServerConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/config/AuthorizationServerConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/config/WebSecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/config/WebSecurityConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/core/clientdetails/ClientDetailsServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/core/clientdetails/ClientDetailsServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/core/userdetails/admin/SysAdminDetailsServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/core/userdetails/admin/SysAdminDetailsServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/core/userdetails/user/SysUserDetailsServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/core/userdetails/user/SysUserDetailsServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-oauth/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/mall-oauth/src/main/resources/bootstrap.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/extension/mobile/SmsCodeAuthenticationProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/extension/mobile/SmsCodeAuthenticationProvider.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/extension/refresh/PreAuthenticatedUserDetailsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/extension/refresh/PreAuthenticatedUserDetailsService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/extension/wechat/WechatAuthenticationProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/security/extension/wechat/WechatAuthenticationProvider.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-shop-api/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-api/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/enums/MallType.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/enums/MallType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/vo/MallTypeInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/vo/MallTypeInfo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/MallShopApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/MallShopApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/controller/MallController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/controller/MallController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/dto/AddMallDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/dto/AddMallDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/entity/DetailsMallTag.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/entity/MallDetails.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/entity/MallDetails.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/entity/MallTag.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/entity/MallTag.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/enums/MallType.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/repository/MallDetailsRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/repository/MallDetailsRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/MallService.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/MallService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/MallTagService.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/MallTagService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/impl/MallServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/impl/MallServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/impl/MallTagServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/impl/MallTagServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/vo/MallVO.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/vo/MallInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/resources/bootstrap.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-user-boot/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/mall-user-boot/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-user-api/src/main/java/com/jymj/mall/user/api/UserFeignClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-user-api/src/main/java/com/jymj/mall/user/api/UserFeignClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-user-api/src/main/java/com/jymj/mall/user/api/fallback/UserFeignFallbackClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-user-api/src/main/java/com/jymj/mall/user/api/fallback/UserFeignFallbackClient.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-user-boot/src/main/java/com/jymj/mall/user/MallUserApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-user-boot/src/main/java/com/jymj/mall/user/MallUserApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-user-boot/src/main/java/com/jymj/mall/user/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-user-boot/src/main/java/com/jymj/mall/user/controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-user-boot/src/main/java/com/jymj/mall/user/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-user-boot/src/main/java/com/jymj/mall/user/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-user-boot/src/main/java/com/jymj/mall/user/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-user-boot/src/main/java/com/jymj/mall/user/service/impl/UserServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-user-boot/src/main/resources/bootstrap.yml" beforeDir="false" afterPath="$PROJECT_DIR$/mall-user-boot/src/main/resources/bootstrap.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-user-boot/src/main/java/com/jymj/mall/user/entity/User.java" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -490,7 +187,7 @@
       </set>
     </option>
   </component>
-  <component name="RunManager" selected="Spring Boot.MallUserApplication">
+  <component name="RunManager" selected="Spring Boot.MallGatewayApplication">
     <configuration name="jymj-mall [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -635,7 +332,8 @@
       <workItem from="1661301227237" duration="71000" />
       <workItem from="1661301454191" duration="26162000" />
       <workItem from="1661387375506" duration="21609000" />
-      <workItem from="1661473502055" duration="28910000" />
+      <workItem from="1661473502055" duration="29749000" />
+      <workItem from="1661731957034" duration="24581000" />
     </task>
     <task id="LOCAL-00001" summary="商场模块">
       <created>1660898960629</created>
@@ -644,7 +342,14 @@
       <option name="project" value="LOCAL" />
       <updated>1660898960629</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="商场模块">
+      <created>1661510854261</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1661510854261</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -686,7 +391,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/mall-oauth/src/main/java/com/jymj/mall/oauth/controller/AuthController.java</url>
-          <line>70</line>
+          <line>68</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">

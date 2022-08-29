@@ -1,9 +1,9 @@
 package com.jymj.mall.oauth.security.extension.refresh;
 
 
+import com.jymj.mall.common.constants.SecurityConstants;
 import com.jymj.mall.common.enums.AuthenticationIdentityEnum;
 import com.jymj.mall.common.enums.BaseEnum;
-import com.jymj.mall.common.constants.SecurityConstants;
 import com.jymj.mall.oauth.security.core.userdetails.user.SysUserDetailsServiceImpl;
 import com.jymj.mall.oauth.utils.RequestUtils;
 import lombok.NoArgsConstructor;

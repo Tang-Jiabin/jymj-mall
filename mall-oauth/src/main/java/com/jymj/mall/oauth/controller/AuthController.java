@@ -3,7 +3,6 @@ package com.jymj.mall.oauth.controller;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.jymj.mall.common.constants.SecurityConstants;
-
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.oauth.utils.JwtUtils;
 import com.jymj.mall.oauth.utils.RequestUtils;
@@ -15,7 +14,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.endpoint.TokenEndpoint;

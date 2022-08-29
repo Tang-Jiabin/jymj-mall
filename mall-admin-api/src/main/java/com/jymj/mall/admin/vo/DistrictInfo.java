@@ -2,7 +2,6 @@ package com.jymj.mall.admin.vo;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import nonapi.io.github.classgraph.json.Id;
 
 /**
  * 行政区

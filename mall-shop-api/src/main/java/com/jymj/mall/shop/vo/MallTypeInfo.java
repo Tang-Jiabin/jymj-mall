@@ -2,7 +2,6 @@ package com.jymj.mall.shop.vo;
 
 import com.jymj.mall.shop.enums.MallType;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,9 +17,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MallTypeInfo {
-    private  Integer value;
+    private  MallType value;
 
     private  String label;
 
-    private MallType typeName;
 }

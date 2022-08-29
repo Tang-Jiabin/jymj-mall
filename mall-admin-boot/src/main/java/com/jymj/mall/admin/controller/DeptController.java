@@ -1,16 +1,12 @@
 package com.jymj.mall.admin.controller;
 
 import com.jymj.mall.admin.dto.AddDeptDTO;
-import com.jymj.mall.admin.dto.UpdateAdminDTO;
 import com.jymj.mall.admin.dto.UpdateDeptDTO;
-import com.jymj.mall.admin.entity.SysAdmin;
 import com.jymj.mall.admin.entity.SysDept;
 import com.jymj.mall.admin.service.DeptService;
-import com.jymj.mall.admin.vo.AdminInfo;
 import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.Result;
-import com.jymj.mall.common.result.ResultCode;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

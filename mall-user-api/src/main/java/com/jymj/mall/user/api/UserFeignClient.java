@@ -2,9 +2,9 @@ package com.jymj.mall.user.api;
 
 
 import com.jymj.mall.common.result.Result;
+import com.jymj.mall.user.api.fallback.UserFeignFallbackClient;
 import com.jymj.mall.user.dto.UserAuthDTO;
 import com.jymj.mall.user.dto.UserDTO;
-import com.jymj.mall.user.api.fallback.UserFeignFallbackClient;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

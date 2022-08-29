@@ -1,9 +1,9 @@
 package com.jymj.mall.admin.controller;
 
 import com.jymj.mall.admin.entity.SysDistrict;
+import com.jymj.mall.admin.service.DistrictService;
 import com.jymj.mall.admin.vo.DistrictInfo;
 import com.jymj.mall.common.result.Result;
-import com.jymj.mall.admin.service.DistrictService;
 import com.jymj.mall.common.web.vo.OptionVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

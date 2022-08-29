@@ -1,9 +1,9 @@
 package com.jymj.mall.gateway.swagger.router;
 
 
-import com.jymj.mall.gateway.swagger.handler.SwaggerUiHandler;
 import com.jymj.mall.gateway.swagger.handler.SwaggerResourceHandler;
 import com.jymj.mall.gateway.swagger.handler.SwaggerSecurityHandler;
+import com.jymj.mall.gateway.swagger.handler.SwaggerUiHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

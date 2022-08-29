@@ -6,11 +6,11 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLDeleteAll;
 import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import com.jymj.mall.common.web.pojo.BaseEntity;
 /**
  * 角色
  *
@@ -24,6 +24,7 @@ import com.jymj.mall.common.web.pojo.BaseEntity;
 @Table(name = "sys_role")
 @Where(clause = "deleted = 0")
 @SQLDelete(sql = "UPDATE sys_role SET deleted = 1 where role_id = ?")
+@SQLDeleteAll(sql = "UPDATE sys_role SET deleted = 1 where role_id in (?)")
 @EqualsAndHashCode(callSuper=false)
 @EntityListeners({AuditingEntityListener.class})
 public class SysRole extends BaseEntity {
@@ -45,6 +46,8 @@ public class SysRole extends BaseEntity {
     @ApiModelProperty("状态")
     private Integer status;
 
+    @ApiModelProperty("部门id")
+    private Long deptId;
 
 
 

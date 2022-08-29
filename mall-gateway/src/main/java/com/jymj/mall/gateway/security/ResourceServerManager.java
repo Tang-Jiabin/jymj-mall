@@ -4,9 +4,9 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
-import com.jymj.mall.common.redis.utils.RedisUtils;
 import com.jymj.mall.common.constants.GlobalConstants;
 import com.jymj.mall.common.constants.SecurityConstants;
+import com.jymj.mall.common.redis.utils.RedisUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
@@ -41,7 +41,7 @@ public class ResourceServerManager implements ReactiveAuthorizationManager<Autho
 
     @Override
     public Mono<AuthorizationDecision> check(Mono<Authentication> mono, AuthorizationContext authorizationContext) {
-        log.info("鉴权开始");
+
         ServerHttpRequest request = authorizationContext.getExchange().getRequest();
         if (request.getMethod() == HttpMethod.OPTIONS) { // 预检请求放行
             return Mono.just(new AuthorizationDecision(true));
@@ -69,8 +69,6 @@ public class ResourceServerManager implements ReactiveAuthorizationManager<Autho
          * urlPermRolesRules = [{'key':'GET:/api/v1/users/*','value':['ADMIN','TEST']},...]
          */
         Map<Object, Object> urlPermRolesRules = redisUtils.hmget(GlobalConstants.URL_PERM_ROLES_KEY);
-        log.info("拦截规则列表 : {}",urlPermRolesRules);
-        log.info("访问路径方式 : {}",restfulPath);
         // 根据请求路径获取有访问权限的角色列表
         List<String> authorizedRoles = Lists.newArrayList(); // 拥有访问权限的角色
         boolean requireCheck = false; // 是否需要鉴权，默认未设置拦截规则不需鉴权
@@ -88,6 +86,7 @@ public class ResourceServerManager implements ReactiveAuthorizationManager<Autho
         // 没有设置拦截规则拒绝
         if (!requireCheck) {
             log.info("没有设置拦截规则允许");
+            log.info("访问路径方式 : {}",restfulPath);
             return Mono.just(new AuthorizationDecision(true));
         }
 

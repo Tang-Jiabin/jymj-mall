@@ -1,12 +1,16 @@
 package com.jymj.mall.admin.service;
 
+import com.jymj.mall.admin.dto.AddRole;
+import com.jymj.mall.admin.dto.RolePageQuery;
 import com.jymj.mall.admin.dto.RoleResourceFormDTO;
-import com.jymj.mall.admin.dto.RoleFormDTO;
+import com.jymj.mall.admin.dto.UpdateRole;
 import com.jymj.mall.admin.entity.SysRole;
 import com.jymj.mall.admin.vo.RoleInfo;
 import com.jymj.mall.common.web.vo.OptionVO;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 角色
@@ -17,19 +21,19 @@ import java.util.List;
  * @date 2022-08-15
  */
 public interface RoleService {
-    List<OptionVO> listRoleOptions();
+    List<OptionVO<Long>> listRoleOptions();
 
-    boolean saveRole(RoleFormDTO roleForm);
+    SysRole addRole(AddRole roleForm);
 
-    SysRole getById(Long roleId);
+    Optional<SysRole> getById(Long roleId);
 
-    boolean deleteRoles(String ids);
+    void deleteRoles(String ids);
 
     boolean updateRoleStatus(Long roleId, Integer status);
 
     RoleResourceFormDTO getRoleResources(Long roleId);
 
-    boolean updateRoleResource(Long roleId, RoleResourceFormDTO roleResourceForm);
+    void updateRoleResource(Long roleId, RoleResourceFormDTO roleResourceForm);
 
     List<SysRole> findAllById(List<Long> ids);
 
@@ -40,4 +44,8 @@ public interface RoleService {
     void deleteAdminRole(Long adminId, List<SysRole> deleteRoleList);
 
     void addAdminRole(Long adminId, List<SysRole> addRoleList);
+
+    SysRole updateRole(UpdateRole updateRole);
+
+    Page<SysRole> findPage(RolePageQuery rolePageQuery);
 }

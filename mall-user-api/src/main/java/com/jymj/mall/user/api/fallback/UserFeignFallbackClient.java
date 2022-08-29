@@ -2,10 +2,10 @@ package com.jymj.mall.user.api.fallback;
 
 
 import com.jymj.mall.common.result.Result;
+import com.jymj.mall.common.result.ResultCode;
 import com.jymj.mall.user.api.UserFeignClient;
 import com.jymj.mall.user.dto.UserAuthDTO;
 import com.jymj.mall.user.dto.UserDTO;
-import com.jymj.mall.common.result.ResultCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

@@ -2,9 +2,9 @@ package com.jymj.mall.oauth.security.core.clientdetails;
 
 
 import com.jymj.mall.common.enums.PasswordEncoderTypeEnum;
-import com.jymj.mall.oauth.repository.OauthClientDetailsRepository;
 import com.jymj.mall.oauth.dto.ClientAuthDTO;
 import com.jymj.mall.oauth.entity.OauthClientDetails;
+import com.jymj.mall.oauth.repository.OauthClientDetailsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;

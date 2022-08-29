@@ -28,4 +28,7 @@ public class RoleInfo {
 
     @ApiModelProperty("状态")
     private Integer status;
+
+    @ApiModelProperty("员工数量")
+    private Long workforce;
 }

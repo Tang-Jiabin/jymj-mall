@@ -2,8 +2,8 @@ package com.jymj.mall.oauth.security.extension.mobile;
 
 import cn.hutool.core.util.StrUtil;
 import com.jymj.mall.common.constants.SecurityConstants;
-import com.jymj.mall.oauth.security.core.userdetails.user.SysUserDetailsServiceImpl;
 import com.jymj.mall.common.exception.BusinessException;
+import com.jymj.mall.oauth.security.core.userdetails.user.SysUserDetailsServiceImpl;
 import com.jymj.mall.user.api.UserFeignClient;
 import lombok.Data;
 import org.springframework.data.redis.core.StringRedisTemplate;

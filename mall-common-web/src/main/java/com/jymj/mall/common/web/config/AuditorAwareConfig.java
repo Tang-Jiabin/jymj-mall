@@ -6,7 +6,6 @@ import com.jymj.mall.common.web.util.UserUtils;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Component;
 
-import javax.validation.constraints.NotNull;
 import java.util.Optional;
 
 /**

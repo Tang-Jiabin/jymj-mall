@@ -9,7 +9,6 @@ import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import com.jymj.mall.common.web.pojo.BaseEntity;
 /**
  * 系统管理员
  *

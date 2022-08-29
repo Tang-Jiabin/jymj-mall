@@ -9,7 +9,6 @@ import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import com.jymj.mall.common.web.pojo.BaseEntity;
 /**
  * 角色权限关联表
  *
@@ -21,7 +20,8 @@ import com.jymj.mall.common.web.pojo.BaseEntity;
 
 @Data
 @Entity
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper=true)
+
 @Table(name = "sys_role_permission")
 @Where(clause = "deleted = 0")
 @SQLDelete(sql = "UPDATE sys_role_permission SET deleted = 1 where rp_id = ?")
@@ -37,4 +37,7 @@ public class SysRolePermission extends BaseEntity {
 
     @ApiModelProperty("权限Id")
     private Long permId;
+
+
+
 }

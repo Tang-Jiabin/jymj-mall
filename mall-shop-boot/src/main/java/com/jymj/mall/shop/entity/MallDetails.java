@@ -24,7 +24,7 @@ import javax.persistence.*;
 @Data
 @Entity
 @Table(name = "mall_details")
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper=true)
 @Where(clause = "deleted = 0")
 @SQLDelete(sql = "UPDATE mall_details SET deleted = 1 where mall_id = ?")
 @EntityListeners({AuditingEntityListener.class})
