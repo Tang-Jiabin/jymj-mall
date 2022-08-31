@@ -2,6 +2,7 @@ package com.jymj.mall.admin.repository;
 
 import com.jymj.mall.admin.entity.SysAdmin;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.Optional;
  * @date 2022-08-12
  */
 @Repository
-public interface SysAdminRepository extends JpaRepository<SysAdmin,Long> {
+public interface SysAdminRepository extends JpaRepository<SysAdmin,Long>, JpaSpecificationExecutor<SysAdmin> {
 
     Optional<SysAdmin> findByUsernameAndDeleted(String username, int isDelete);
 

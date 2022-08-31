@@ -1,5 +1,6 @@
 package com.jymj.mall.shop.vo;
 
+import com.jymj.mall.admin.vo.DistrictInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -40,7 +41,7 @@ public class MallInfo {
     private String type;
 
     @ApiModelProperty("行政区")
-    private String district;
+    private DistrictInfo districtInfo;
 
     @ApiModelProperty("标签列表")
     private List<TagInfo> tagList;

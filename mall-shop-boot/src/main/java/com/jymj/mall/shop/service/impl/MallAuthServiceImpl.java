@@ -1,5 +1,6 @@
 package com.jymj.mall.shop.service.impl;
 
+import cn.hutool.core.util.IdcardUtil;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.shop.dto.AddMallAuth;
@@ -44,6 +45,10 @@ public class MallAuthServiceImpl implements MallAuthService {
 
         if (mallAuthOptional.isPresent()) {
             throw new BusinessException("该商场已认证");
+        }
+
+        if (!IdcardUtil.isValidCard(addMallAuth.getIdentity())) {
+            throw new BusinessException("身份证号不正确");
         }
 
         MallAuth mallAuth = add2auth(addMallAuth);

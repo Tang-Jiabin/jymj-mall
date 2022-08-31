@@ -47,4 +47,6 @@ public interface SystemConstants {
 
     Integer STATUS_CLOSE = 2;
 
+    String SQL_LIKE = "%";
+
 }

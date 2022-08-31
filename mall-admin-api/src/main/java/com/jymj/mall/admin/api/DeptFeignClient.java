@@ -7,6 +7,8 @@ import com.jymj.mall.common.result.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * 部门
  *
@@ -27,4 +29,9 @@ public interface DeptFeignClient {
 
     @GetMapping("/api/v1/dept/{deptId}/info")
     Result<DeptInfo> getDeptById(@PathVariable Long deptId);
+
+    @GetMapping("/api/v1/dept/{deptId}/children")
+    public Result<List<DeptInfo>> children(@PathVariable Long deptId);
+
+
 }

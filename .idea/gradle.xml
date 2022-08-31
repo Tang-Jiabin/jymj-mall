@@ -17,6 +17,8 @@
             <option value="$PROJECT_DIR$/mall-common-redis" />
             <option value="$PROJECT_DIR$/mall-common-web" />
             <option value="$PROJECT_DIR$/mall-gateway" />
+            <option value="$PROJECT_DIR$/mall-mdse-api" />
+            <option value="$PROJECT_DIR$/mall-mdse-boot" />
             <option value="$PROJECT_DIR$/mall-oauth" />
             <option value="$PROJECT_DIR$/mall-shop-api" />
             <option value="$PROJECT_DIR$/mall-shop-boot" />

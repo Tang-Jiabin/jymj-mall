@@ -1,16 +1,16 @@
 package com.jymj.mall.admin.service.impl;
 
-import com.jymj.mall.admin.dto.AddDeptDTO;
 import com.jymj.mall.admin.dto.UpdateDeptDTO;
 import com.jymj.mall.admin.entity.SysDept;
 import com.jymj.mall.admin.repository.SysDeptRepository;
 import com.jymj.mall.admin.service.DeptService;
 import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.constants.SystemConstants;
-import com.jymj.mall.common.exception.BusinessException;
 import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
+import org.assertj.core.util.Lists;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class DeptServiceImpl implements DeptService {
     private final SysDeptRepository deptRepository;
 
     @Override
-    public SysDept add(AddDeptDTO deptDTO) {
+    public SysDept add(UpdateDeptDTO deptDTO) {
         SysDept sysDept = new SysDept();
         sysDept.setName(deptDTO.getName());
         sysDept.setParentId(deptDTO.getParentId());
@@ -55,7 +55,7 @@ public class DeptServiceImpl implements DeptService {
     }
 
     @Override
-    public DeptInfo dept2vo(SysDept dept) {
+    public DeptInfo entity2vo(SysDept dept) {
         DeptInfo deptInfo = new DeptInfo();
         deptInfo.setDeptId(dept.getDeptId());
         deptInfo.setName(dept.getName());
@@ -66,23 +66,46 @@ public class DeptServiceImpl implements DeptService {
     }
 
     @Override
-    public void updateDept(UpdateDeptDTO updateDeptDTO) {
-        Optional<SysDept> deptOptional = deptRepository.findById(updateDeptDTO.getDeptId());
-        SysDept sysDept = deptOptional.orElseThrow(() -> new BusinessException("部门不存在"));
-        sysDept.setName(StringUtils.hasText(updateDeptDTO.getName()) ? updateDeptDTO.getName() : sysDept.getName());
-        sysDept.setParentId(updateDeptDTO.getParentId() != null ? updateDeptDTO.getParentId() : sysDept.getParentId());
-        sysDept.setSort(updateDeptDTO.getSort() != null ? updateDeptDTO.getSort() : sysDept.getSort());
-        sysDept.setStatus(updateDeptDTO.getStatus() != null ? updateDeptDTO.getStatus() : sysDept.getStatus());
-        deptRepository.save(sysDept);
-
+    public List<DeptInfo> list2vo(List<SysDept> entityList) {
+        return Optional.of(entityList)
+                .orElse(Lists.newArrayList())
+                .stream().filter(entity -> !ObjectUtils.isEmpty(entity))
+                .map(this::entity2vo).collect(Collectors.toList());
     }
 
     @Override
-    public void deleteDept(String ids) {
+    public Optional<SysDept> update(UpdateDeptDTO updateDeptDTO) {
+        if (updateDeptDTO.getDeptId() != null) {
+            Optional<SysDept> deptOptional = deptRepository.findById(updateDeptDTO.getDeptId());
+            if (deptOptional.isPresent()) {
+                SysDept sysDept = deptOptional.get();
+                sysDept.setName(StringUtils.hasText(updateDeptDTO.getName()) ? updateDeptDTO.getName() : sysDept.getName());
+                sysDept.setParentId(updateDeptDTO.getParentId() != null ? updateDeptDTO.getParentId() : sysDept.getParentId());
+                sysDept.setSort(updateDeptDTO.getSort() != null ? updateDeptDTO.getSort() : sysDept.getSort());
+                sysDept.setStatus(updateDeptDTO.getStatus() != null ? updateDeptDTO.getStatus() : sysDept.getStatus());
+                return Optional.of(deptRepository.save(sysDept));
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public void delete(String ids) {
         List<Long> deptIds = Arrays.stream(ids.split(",")).map(Long::parseLong).collect(Collectors.toList());
         Optional.of(deptIds)
                 .orElse(new ArrayList<>())
                 .forEach(deptRepository::deleteById);
+    }
+
+    @Override
+    public List<SysDept> findChildren(Long deptId) {
+        Optional<SysDept> deptOptional = findById(deptId);
+        if (deptOptional.isPresent()) {
+            SysDept dept = deptOptional.get();
+            String treePath = dept.getTreePath() + "," + deptId;
+            return deptRepository.findAllByTreePathLike(treePath + "%");
+        }
+        return Lists.newArrayList();
     }
 
 

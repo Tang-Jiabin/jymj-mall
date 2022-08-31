@@ -3,7 +3,7 @@ package com.jymj.mall.admin.service.impl;
 import com.google.common.collect.Lists;
 import com.jymj.mall.admin.dto.AddRole;
 import com.jymj.mall.admin.dto.RolePageQuery;
-import com.jymj.mall.admin.dto.RoleResourceFormDTO;
+import com.jymj.mall.admin.dto.RoleResource;
 import com.jymj.mall.admin.dto.UpdateRole;
 import com.jymj.mall.admin.entity.SysAdminRole;
 import com.jymj.mall.admin.entity.SysRole;
@@ -103,22 +103,22 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleResourceFormDTO getRoleResources(Long roleId) {
-        RoleResourceFormDTO roleResourceFormDTO = new RoleResourceFormDTO();
+    public RoleResource getRoleResources(Long roleId) {
+        RoleResource roleResource = new RoleResource();
         //权限资源列表
         List<SysRolePermission> rolePermissionList = rolePermissionRepository.findAllByRoleId(roleId);
-        roleResourceFormDTO.setPermIds(rolePermissionList.stream().map(SysRolePermission::getPermId).collect(Collectors.toList()));
+        roleResource.setPermIds(rolePermissionList.stream().map(SysRolePermission::getPermId).collect(Collectors.toList()));
 
         //菜单资源列表
         List<SysRoleMenu> roleMenuList = roleMenuRepository.findAllByRoleId(roleId);
-        roleResourceFormDTO.setMenuIds(roleMenuList.stream().map(SysRoleMenu::getMenuId).collect(Collectors.toList()));
+        roleResource.setMenuIds(roleMenuList.stream().map(SysRoleMenu::getMenuId).collect(Collectors.toList()));
 
-        return roleResourceFormDTO;
+        return roleResource;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateRoleResource(Long roleId, RoleResourceFormDTO roleResourceForm) {
+    public void updateRoleResource(Long roleId, RoleResource roleResourceForm) {
 
         //权限资源
         List<Long> permIds = roleResourceForm.getPermIds();
@@ -240,6 +240,12 @@ public class RoleServiceImpl implements RoleService {
             Predicate[] p = new Predicate[list.size()];
             return criteriaBuilder.and((Predicate[]) list.toArray(p));
         }, pageable);
+    }
+
+    @Override
+    public List<SysAdminRole> findAdminRoleAllByRoleId(Long roleId) {
+
+        return adminRoleRepository.findAllByRoleId(roleId);
     }
 
     public RoleInfo role2vo(SysRole role) {

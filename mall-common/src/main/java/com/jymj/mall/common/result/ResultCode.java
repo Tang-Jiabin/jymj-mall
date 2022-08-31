@@ -34,7 +34,9 @@ public enum ResultCode implements IResultCode, Serializable {
 
     PARAM_ERROR("400", "用户请求参数错误"),
     RESOURCE_NOT_FOUND("404", "请求资源不存在"),
-    PARAM_IS_NULL("410", "请求必填参数为空");
+    PARAM_IS_NULL("410", "请求必填参数为空"),
+
+    BUSINESS_FAIL("600", "业务执行失败");
 
     private String code;
 

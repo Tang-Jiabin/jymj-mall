@@ -3,6 +3,8 @@ package com.jymj.mall.common.web.util;
 import com.jymj.mall.common.web.dto.BasePageQueryDTO;
 import com.jymj.mall.common.web.vo.PageVO;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.StringUtils;
 
@@ -17,6 +19,10 @@ import java.util.List;
  * @date 2022-08-17
  */
 public class PageUtils {
+
+    public static Pageable getPageable(BasePageQueryDTO pageQuery) {
+        return PageRequest.of(pageQuery.getPage(), pageQuery.getSize(), getPageDirection(pageQuery), getPageProperties(pageQuery));
+    }
 
     public static String getPageProperties(BasePageQueryDTO pageQuery) {
         String properties = "updateTime";

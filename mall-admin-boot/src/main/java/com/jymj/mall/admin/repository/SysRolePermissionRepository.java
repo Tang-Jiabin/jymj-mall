@@ -21,4 +21,6 @@ public interface SysRolePermissionRepository extends JpaRepository<SysRolePermis
     List<SysRolePermission> findAllByPermIdIn(List<Long> permIdList);
 
     List<SysRolePermission> findAllByRoleId(Long roleId);
+
+    List<SysRolePermission> findAllByRoleIdIn(List<Long> roleIdList);
 }

@@ -2,14 +2,18 @@ package com.jymj.mall.common.web.util;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONObject;
+import com.google.common.collect.Lists;
 import com.jymj.mall.common.constants.SecurityConstants;
+import com.jymj.mall.common.exception.BusinessException;
+import com.jymj.mall.common.result.ResultCode;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.ObjectUtils;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
  * JWT工具类
+ *
  * @author J.Tang
  * @version 1.0
  * @email seven_tjb@163.com
@@ -24,21 +28,17 @@ public class UserUtils {
      * @return
      */
     public static Long getUserId() {
-        Long userId = null;
-        JSONObject jwtPayload = JwtUtils.getJwtPayload();
-        if (jwtPayload != null) {
-            userId = jwtPayload.getLong("userId");
+        if (ObjectUtils.isEmpty(JwtUtils.getJwtPayload())) {
+            throw new BusinessException(ResultCode.AUTHORIZED_ERROR);
         }
-        return userId;
+        return JwtUtils.getJwtPayload().getLong("userId");
     }
 
     public static Long getAdminId() {
-        Long adminId = null;
-        JSONObject jwtPayload =  JwtUtils.getJwtPayload();
-        if (jwtPayload != null) {
-            adminId = jwtPayload.getLong("adminId");
+        if (ObjectUtils.isEmpty(JwtUtils.getJwtPayload())) {
+            throw new BusinessException(ResultCode.AUTHORIZED_ERROR);
         }
-        return adminId;
+        return JwtUtils.getJwtPayload().getLong("adminId");
     }
 
     /**
@@ -47,8 +47,10 @@ public class UserUtils {
      * @return
      */
     public static Long getDeptId() {
-        Long id =  JwtUtils.getJwtPayload().getLong("deptId");
-        return id;
+        if (ObjectUtils.isEmpty(JwtUtils.getJwtPayload())) {
+            throw new BusinessException(ResultCode.AUTHORIZED_ERROR);
+        }
+        return JwtUtils.getJwtPayload().getLong("deptId");
     }
 
     /**
@@ -57,8 +59,10 @@ public class UserUtils {
      * @return
      */
     public static String getUsername() {
-        String username =  JwtUtils.getJwtPayload().getStr(SecurityConstants.USER_NAME_KEY);
-        return username;
+        if (ObjectUtils.isEmpty(JwtUtils.getJwtPayload())) {
+            throw new BusinessException(ResultCode.AUTHORIZED_ERROR);
+        }
+        return JwtUtils.getJwtPayload().getStr(SecurityConstants.USER_NAME_KEY);
     }
 
 
@@ -68,12 +72,14 @@ public class UserUtils {
      * @return 角色列表
      */
     public static List<String> getRoles() {
-        List<String> roles;
-        JSONObject payload =  JwtUtils.getJwtPayload();
+
+        if (ObjectUtils.isEmpty(JwtUtils.getJwtPayload())) {
+            throw new BusinessException(ResultCode.AUTHORIZED_ERROR);
+        }
+        List<String> roles = Lists.newArrayList();
+        JSONObject payload = JwtUtils.getJwtPayload();
         if (payload.containsKey(SecurityConstants.JWT_AUTHORITIES_KEY)) {
             roles = payload.getJSONArray(SecurityConstants.JWT_AUTHORITIES_KEY).toList(String.class);
-        } else {
-            roles = Collections.emptyList();
         }
         return roles;
     }

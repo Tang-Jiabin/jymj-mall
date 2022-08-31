@@ -23,4 +23,6 @@ public interface SysAdminRoleRepository extends JpaRepository<SysAdminRole,Long>
     void deleteAllByAdminIdAndRoleIdIn(Long adminId, List<Long> deleteRoleList);
 
     long countByRoleId(Long roleId);
+
+    List<SysAdminRole> findAllByRoleId(Long roleId);
 }

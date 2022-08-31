@@ -17,7 +17,7 @@ import java.util.List;
 
 @Data
 @ApiModel("角色资源")
-public class RoleResourceFormDTO {
+public class RoleResource {
 
     @ApiModelProperty("菜单ID集合")
     private List<Long> menuIds;

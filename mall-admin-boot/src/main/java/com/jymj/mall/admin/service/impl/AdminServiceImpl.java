@@ -1,8 +1,8 @@
 package com.jymj.mall.admin.service.impl;
 
 import com.google.common.collect.Lists;
-import com.jymj.mall.admin.dto.AddAdminDTO;
 import com.jymj.mall.admin.dto.AdminAuthDTO;
+import com.jymj.mall.admin.dto.AdminPageQuery;
 import com.jymj.mall.admin.dto.UpdateAdminDTO;
 import com.jymj.mall.admin.entity.*;
 import com.jymj.mall.admin.repository.SysAdminRepository;
@@ -19,15 +19,27 @@ import com.jymj.mall.common.constants.SecurityConstants;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.ResultCode;
+import com.jymj.mall.common.web.util.PageUtils;
+import com.jymj.mall.common.web.util.UserUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Predicate;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -51,11 +63,17 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void add(AddAdminDTO adminDTO) {
+    public SysAdmin add(UpdateAdminDTO adminDTO) {
 
         List<SysAdmin> adminList = adminRepository.findAllByUsernameOrMobile(adminDTO.getUsername(), adminDTO.getMobile());
         if (adminList != null && adminList.size() > 0) {
             throw new BusinessException("用户名或手机号已存在");
+        }
+        Long deptId = UserUtils.getDeptId();
+        List<SysDept> deptList = deptService.findChildren(deptId);
+        List<Long> deptIdList = deptList.stream().map(SysDept::getDeptId).collect(Collectors.toList());
+        if (!Objects.equals(adminDTO.getDeptId(), deptId) && !deptIdList.contains(adminDTO.getDeptId())) {
+            throw new BusinessException("只能添加本部门或下级部门成员");
         }
 
         SysAdmin admin = new SysAdmin();
@@ -65,11 +83,14 @@ public class AdminServiceImpl implements AdminService {
         admin = adminRepository.save(admin);
         Long addAdminId = admin.getAdminId();
 
+        Long adminId = UserUtils.getAdminId();
         List<SysAdminRole> adminRoleList = Lists.newArrayList();
-
+        List<SysRole> roleList = roleService.findAllByAdminId(adminId);
+        List<Long> roleIdList = roleList.stream().map(SysRole::getRoleId).collect(Collectors.toList());
         Optional.ofNullable(adminDTO.getRoleIdList())
                 .orElse(Lists.newArrayList())
                 .stream()
+                .filter(roleIdList::contains)
                 .forEach(roleId -> {
                     SysAdminRole adminRole = new SysAdminRole();
                     adminRole.setAdminId(addAdminId);
@@ -78,70 +99,23 @@ public class AdminServiceImpl implements AdminService {
                     adminRoleList.add(adminRole);
                 });
 
-        adminRoleRepository.saveAll(adminRoleList);
-    }
-
-    @Override
-    public AdminAuthDTO getAuthInfoByUsername(String username) {
-        Optional<SysAdmin> adminOptional = adminRepository.findByUsernameAndDeleted(username, SystemConstants.DELETED_NO);
-        AdminAuthDTO adminAuthDTO = null;
-        if (adminOptional.isPresent()) {
-            SysAdmin admin = adminOptional.get();
-            adminAuthDTO = new AdminAuthDTO();
-            adminAuthDTO.setUserId(admin.getAdminId());
-            adminAuthDTO.setUsername(admin.getUsername());
-            adminAuthDTO.setPassword(SecurityConstants.PASSWORD_ENCODE + admin.getPassword());
-            adminAuthDTO.setStatus(admin.getStatus());
-            adminAuthDTO.setDeptId(admin.getDeptId());
-            List<SysAdminRole> adminRoleList = adminRoleRepository.findAllByAdminId(admin.getAdminId());
-            List<Long> roleIdList = adminRoleList.stream().map(SysAdminRole::getRoleId).collect(Collectors.toList());
-            List<SysRole> roleList = roleService.findAllById(roleIdList);
-            List<String> roleStrList = Lists.newArrayList();
-            roleList.forEach(sysRole -> roleStrList.add(sysRole.getCode()));
-            adminAuthDTO.setRoles(roleStrList);
+        if (!CollectionUtils.isEmpty(adminRoleList)) {
+            adminRoleRepository.saveAll(adminRoleList);
         }
-
-        return adminAuthDTO;
+        return admin;
     }
 
     @Override
-    public Optional<SysAdmin> findById(Long adminId) {
-        return adminRepository.findById(adminId);
+    public void delete(String ids) {
+        List<Long> adminIdList = Arrays.stream(ids.split(",")).map(Long::parseLong).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(adminIdList)) {
+            List<SysAdmin> adminList = adminRepository.findAllById(adminIdList);
+            adminRepository.deleteAll(adminList);
+        }
     }
 
     @Override
-    public AdminInfo admin2vo(SysAdmin admin) {
-        AdminInfo adminInfo = new AdminInfo();
-        adminInfo.setAdminId(admin.getAdminId());
-        adminInfo.setUsername(admin.getUsername());
-        adminInfo.setNickname(admin.getNickname());
-        adminInfo.setMobile(admin.getMobile());
-        adminInfo.setGender(admin.getGender());
-        adminInfo.setAvatar(admin.getAvatar());
-        adminInfo.setEmail(admin.getEmail());
-        adminInfo.setStatus(admin.getStatus());
-
-        List<SysRole> roleList = roleService.findAllByAdminId(admin.getAdminId());
-        List<RoleInfo> roleInfoList = roleService.list2vo(roleList);
-        adminInfo.setRoleInfoList(roleInfoList);
-
-        Optional<SysDept> deptOptional = deptService.findById(admin.getDeptId());
-        deptOptional.ifPresent(dept -> adminInfo.setDeptInfo(deptService.dept2vo(dept)));
-
-        List<SysMenu> menuList = menuService.findAllByRoleIdIn(roleList.stream().map(SysRole::getRoleId).collect(Collectors.toList()));
-        List<MenuInfo> menuInfoList = menuService.list2tree(menuList, SystemConstants.ROOT_MENU_ID);
-        adminInfo.setMenuInfoList(menuInfoList);
-
-        return adminInfo;
-    }
-
-    @Override
-    public void deleteAdmin(String ids) {
-
-    }
-
-    @Override
-    public void updateAdmin(UpdateAdminDTO updateAdminDTO) {
+    public Optional<SysAdmin> update(UpdateAdminDTO updateAdminDTO) {
         Optional<SysAdmin> adminOptional = adminRepository.findById(updateAdminDTO.getAdminId());
         SysAdmin admin = adminOptional.orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_EXIST));
 
@@ -170,8 +144,12 @@ public class AdminServiceImpl implements AdminService {
         admin.setGender(updateAdminDTO.getGender() != null ? updateAdminDTO.getGender() : admin.getGender());
         admin.setStatus(updateAdminDTO.getStatus() != null ? updateAdminDTO.getStatus() : admin.getStatus());
         if (updateAdminDTO.getDeptId() != null) {
-            Optional<SysDept> deptOptional = deptService.findById(updateAdminDTO.getDeptId());
-            SysDept sysDept = deptOptional.orElseThrow(() -> new BusinessException("部门不存在"));
+            Long deptId = UserUtils.getDeptId();
+            List<SysDept> deptList = deptService.findChildren(deptId);
+            List<Long> deptIdList = deptList.stream().map(SysDept::getDeptId).collect(Collectors.toList());
+            if (!Objects.equals(updateAdminDTO.getDeptId(), deptId) && !deptIdList.contains(updateAdminDTO.getDeptId())) {
+                throw new BusinessException("只能添加本部门或下级部门成员");
+            }
             admin.setDeptId(updateAdminDTO.getDeptId());
         }
         if (!ObjectUtils.isEmpty(updateAdminDTO.getRoleIdList())) {
@@ -179,15 +157,137 @@ public class AdminServiceImpl implements AdminService {
             List<SysRole> oldRoleList = roleService.findAllByAdminId(admin.getAdminId());
             List<SysRole> deleteRoleList = oldRoleList.stream().filter(role -> !newRoleList.contains(role)).collect(Collectors.toList());
             List<SysRole> addRoleList = newRoleList.stream().filter(role -> !oldRoleList.contains(role)).collect(Collectors.toList());
+
+            Long adminId = UserUtils.getAdminId();
+            List<SysRole> roleList = roleService.findAllByAdminId(adminId);
+            List<Long> roleIdList = roleList.stream().map(SysRole::getRoleId).collect(Collectors.toList());
+            addRoleList = addRoleList.stream().filter(role -> roleIdList.contains(role.getRoleId())).collect(Collectors.toList());
             roleService.deleteAdminRole(admin.getAdminId(), deleteRoleList);
             roleService.addAdminRole(admin.getAdminId(), addRoleList);
         }
-        adminRepository.save(admin);
+        return Optional.of(adminRepository.save(admin));
     }
 
     @Override
-    public Optional<SysAdmin> findByMobile(String mobile) {
+    public Optional<SysAdmin> findById(Long adminId) {
+        return adminRepository.findById(adminId);
+    }
 
+    @Override
+    public AdminAuthDTO getAuthInfoByUsername(String username) {
+        Optional<SysAdmin> adminOptional = adminRepository.findByUsernameAndDeleted(username, SystemConstants.DELETED_NO);
+        AdminAuthDTO adminAuthDTO = null;
+        if (adminOptional.isPresent()) {
+            SysAdmin admin = adminOptional.get();
+            adminAuthDTO = new AdminAuthDTO();
+            adminAuthDTO.setUserId(admin.getAdminId());
+            adminAuthDTO.setUsername(admin.getUsername());
+            adminAuthDTO.setPassword(SecurityConstants.PASSWORD_ENCODE + admin.getPassword());
+            adminAuthDTO.setStatus(admin.getStatus());
+            adminAuthDTO.setDeptId(admin.getDeptId());
+            List<SysAdminRole> adminRoleList = adminRoleRepository.findAllByAdminId(admin.getAdminId());
+            List<Long> roleIdList = adminRoleList.stream().map(SysAdminRole::getRoleId).collect(Collectors.toList());
+            List<SysRole> roleList = roleService.findAllById(roleIdList);
+            List<String> roleStrList = Lists.newArrayList();
+            roleList.forEach(sysRole -> roleStrList.add(sysRole.getCode()));
+            adminAuthDTO.setRoles(roleStrList);
+        }
+
+        return adminAuthDTO;
+    }
+
+
+    @Override
+    public AdminInfo entity2vo(SysAdmin admin) {
+        if (!ObjectUtils.isEmpty(admin)) {
+            AdminInfo adminInfo = new AdminInfo();
+            adminInfo.setAdminId(admin.getAdminId());
+            adminInfo.setUsername(admin.getUsername());
+            adminInfo.setNickname(admin.getNickname());
+            adminInfo.setMobile(admin.getMobile());
+            adminInfo.setGender(admin.getGender());
+            adminInfo.setAvatar(admin.getAvatar());
+            adminInfo.setEmail(admin.getEmail());
+            adminInfo.setStatus(admin.getStatus());
+            adminInfo.setNumber(admin.getNumber());
+            adminInfo.setOperationTime(admin.getUpdateTime());
+
+            Optional<SysAdmin> adminOptional = findById(admin.getUpdateUserId());
+            adminOptional.ifPresent(operator -> adminInfo.setOperator(operator.getNickname()));
+
+            List<SysRole> roleList = roleService.findAllByAdminId(admin.getAdminId());
+            List<RoleInfo> roleInfoList = roleService.list2vo(roleList);
+            adminInfo.setRoleInfoList(roleInfoList);
+
+            Optional<SysDept> deptOptional = deptService.findById(admin.getDeptId());
+            deptOptional.ifPresent(dept -> adminInfo.setDeptInfo(deptService.entity2vo(dept)));
+
+            List<SysMenu> menuList = menuService.findAllByRoleIdIn(roleList.stream().map(SysRole::getRoleId).collect(Collectors.toList()));
+            List<MenuInfo> menuInfoList = menuService.list2tree(menuList, SystemConstants.ROOT_MENU_ID);
+            adminInfo.setMenuInfoList(menuInfoList);
+
+            return adminInfo;
+        }
+        return null;
+    }
+
+    @Override
+    public List<AdminInfo> list2vo(List<SysAdmin> entityList) {
+        return Optional.of(entityList)
+                .orElse(org.assertj.core.util.Lists.newArrayList())
+                .stream().filter(entity -> !ObjectUtils.isEmpty(entity))
+                .map(this::entity2vo).collect(Collectors.toList());
+    }
+
+
+    @Override
+    public Optional<SysAdmin> findByMobile(String mobile) {
         return adminRepository.findByMobile(mobile);
+    }
+
+    @Override
+    public Page<SysAdmin> findPage(AdminPageQuery adminPageQuery) {
+        Sort.Direction direction = PageUtils.getPageDirection(adminPageQuery);
+        String properties = PageUtils.getPageProperties(adminPageQuery);
+        Pageable pageable = PageRequest.of(adminPageQuery.getPage(), adminPageQuery.getSize(), direction, properties);
+
+        Long deptId = UserUtils.getDeptId();
+        List<SysDept> deptList = deptService.findChildren(deptId);
+        List<Long> deptIdList = deptList.stream().map(SysDept::getDeptId).collect(Collectors.toList());
+        deptIdList.add(deptId);
+
+        Specification<SysAdmin> spec = (root, query, criteriaBuilder) -> {
+            List<Predicate> list = Lists.newArrayList();
+
+            if (StringUtils.hasText(adminPageQuery.getNumber())) {
+                list.add(criteriaBuilder.like(root.get("number").as(String.class), adminPageQuery.getNumber() + SystemConstants.SQL_LIKE));
+            }
+
+            if (StringUtils.hasText(adminPageQuery.getNickname())) {
+                list.add(criteriaBuilder.like(root.get("nickname").as(String.class), adminPageQuery.getNickname() + SystemConstants.SQL_LIKE));
+            }
+
+            if (StringUtils.hasText(adminPageQuery.getMobile())) {
+                list.add(criteriaBuilder.like(root.get("mobile").as(String.class), adminPageQuery.getMobile() + SystemConstants.SQL_LIKE));
+            }
+
+            if (!ObjectUtils.isEmpty(adminPageQuery.getRoleId())) {
+                List<SysAdminRole> adminRoleList = roleService.findAdminRoleAllByRoleId(adminPageQuery.getRoleId());
+                List<Long> adminIdList = adminRoleList.stream().map(SysAdminRole::getAdminId).collect(Collectors.toList());
+                CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("adminId").as(Long.class));
+                adminIdList.forEach(in::value);
+                list.add(in);
+            }
+
+            CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("deptId").as(Long.class));
+            deptIdList.forEach(in::value);
+            list.add(in);
+
+            list.add(criteriaBuilder.equal(root.get("deleted").as(Integer.class), SystemConstants.DELETED_NO));
+            Predicate[] p = new Predicate[list.size()];
+            return criteriaBuilder.and((Predicate[]) list.toArray(p));
+        };
+
+        return adminRepository.findAll(spec, pageable);
     }
 }

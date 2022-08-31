@@ -33,4 +33,6 @@ public interface MallService {
     Optional<MallDetails> findById(Long mallId);
 
     MallInfo mall2vo(MallDetails mallDetails);
+
+    Optional<MallDetails> findByDeptId(Long deptId);
 }

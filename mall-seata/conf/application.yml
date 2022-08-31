@@ -9,12 +9,6 @@ logging:
   config: classpath:logback-spring.xml
   file:
     path: ${user.home}/logs/seata
-  # extend:
-  #   logstash-appender:
-  #     destination: 127.0.0.1:4560
-  #   kafka-appender:
-  #     bootstrap-servers: 127.0.0.1:9092
-  #     topic: logback_to_logstash
 
 console:
   user:
@@ -23,42 +17,22 @@ console:
 
 seata:
   config:
-    # support: nacos, consul, apollo, zk, etcd3
     type: nacos
     nacos:
-      # nacos ip��ַ
       server-addr: localhost:20200
       group: DEFAULT_GROUP
       namespace: 
       username: jymj-nacos
       password: jymj-nacos
-      ##if use MSE Nacos with auth, mutex with username/password attribute
-      #access-key: ""
-      #secret-key: ""
-      # ��ȡnacos�ϵ������ļ�
       data-id: mall-seata-server.properties
   registry:
-    # support: nacos, eureka, redis, zk, consul, etcd3, sofa
     type: nacos
     nacos:
       application: mall-seata
-      # nacos ip��ַ
       server-addr: localhost:20200
       group: MALL-MANAGE
       username: jymj-nacos
       password: jymj-nacos
-      ##if use MSE Nacos with auth, mutex with username/password attribute
-      #access-key: ""
-      #secret-key: ""
-#  store:
-#    mode: db
-#    db:
-#      datasource: druid
-#      dbType: mysql
-#      driverClassName: com.mysql.jdbc.Driver
-#      url: jdbc:mysql://localhost:3306/jymj-mall-seata?useUnicode=true&rewriteBatchedStatements=true
-#      user: root
-#      password: root
   security:
     secretKey: SeataSecretKey0c382ef121d778043159209298fd40bf3850a017
     tokenValidityInMilliseconds: 1800000

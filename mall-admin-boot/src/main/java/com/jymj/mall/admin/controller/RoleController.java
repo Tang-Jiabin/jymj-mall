@@ -2,7 +2,7 @@ package com.jymj.mall.admin.controller;
 
 import com.jymj.mall.admin.dto.AddRole;
 import com.jymj.mall.admin.dto.RolePageQuery;
-import com.jymj.mall.admin.dto.RoleResourceFormDTO;
+import com.jymj.mall.admin.dto.RoleResource;
 import com.jymj.mall.admin.dto.UpdateRole;
 import com.jymj.mall.admin.entity.SysRole;
 import com.jymj.mall.admin.service.RoleService;
@@ -87,14 +87,14 @@ public class RoleController {
 
     @ApiOperation(value = "获取角色的资源ID集合", notes = "资源包括菜单和权限ID")
     @GetMapping("/{roleId}/resources")
-    public Result<RoleResourceFormDTO> getRoleResources(@ApiParam("角色ID") @PathVariable Long roleId) {
-        RoleResourceFormDTO resourceIds = sysRoleService.getRoleResources(roleId);
+    public Result<RoleResource> getRoleResources(@ApiParam("角色ID") @PathVariable Long roleId) {
+        RoleResource resourceIds = sysRoleService.getRoleResources(roleId);
         return Result.success(resourceIds);
     }
 
     @ApiOperation(value = "分配角色的资源权限")
     @PutMapping("/{roleId}/resources")
-    public Result updateRoleResource(@PathVariable Long roleId, @RequestBody RoleResourceFormDTO roleResourceForm) {
+    public Result updateRoleResource(@PathVariable Long roleId, @RequestBody RoleResource roleResourceForm) {
         sysRoleService.updateRoleResource(roleId, roleResourceForm);
         return Result.success();
     }

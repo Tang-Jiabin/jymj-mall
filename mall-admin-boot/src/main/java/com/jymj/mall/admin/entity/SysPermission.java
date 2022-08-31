@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLDeleteAll;
 import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -23,6 +24,7 @@ import javax.persistence.*;
 @Table(name = "sys_permission")
 @Where(clause = "deleted = 0")
 @SQLDelete(sql = "UPDATE sys_permission SET deleted = 1 where perm_id = ?")
+@SQLDeleteAll(sql = "UPDATE sys_permission SET deleted = 1 where perm_id in (?)")
 @EqualsAndHashCode(callSuper=false)
 @EntityListeners({AuditingEntityListener.class})
 public class SysPermission extends BaseEntity {

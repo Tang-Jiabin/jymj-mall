@@ -2,8 +2,9 @@ package com.jymj.mall.admin.service;
 
 import com.jymj.mall.admin.dto.AddRole;
 import com.jymj.mall.admin.dto.RolePageQuery;
-import com.jymj.mall.admin.dto.RoleResourceFormDTO;
+import com.jymj.mall.admin.dto.RoleResource;
 import com.jymj.mall.admin.dto.UpdateRole;
+import com.jymj.mall.admin.entity.SysAdminRole;
 import com.jymj.mall.admin.entity.SysRole;
 import com.jymj.mall.admin.vo.RoleInfo;
 import com.jymj.mall.common.web.vo.OptionVO;
@@ -31,9 +32,9 @@ public interface RoleService {
 
     boolean updateRoleStatus(Long roleId, Integer status);
 
-    RoleResourceFormDTO getRoleResources(Long roleId);
+    RoleResource getRoleResources(Long roleId);
 
-    void updateRoleResource(Long roleId, RoleResourceFormDTO roleResourceForm);
+    void updateRoleResource(Long roleId, RoleResource roleResourceForm);
 
     List<SysRole> findAllById(List<Long> ids);
 
@@ -48,4 +49,6 @@ public interface RoleService {
     SysRole updateRole(UpdateRole updateRole);
 
     Page<SysRole> findPage(RolePageQuery rolePageQuery);
+
+    List<SysAdminRole> findAdminRoleAllByRoleId(Long roleId);
 }

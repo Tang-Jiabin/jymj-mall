@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLDeleteAll;
 import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -22,6 +23,7 @@ import javax.persistence.*;
 @Table(name = "sys_admin")
 @Where(clause = "deleted = 0")
 @SQLDelete(sql = "UPDATE sys_admin SET deleted = 1 where admin_id = ?")
+@SQLDeleteAll(sql = "UPDATE sys_admin SET deleted = 1 where admin_id in (?)")
 @EqualsAndHashCode(callSuper=false)
 @EntityListeners({AuditingEntityListener.class})
 public class SysAdmin extends BaseEntity {
@@ -30,6 +32,9 @@ public class SysAdmin extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "sys_admin_admin_id_seq")
     @SequenceGenerator(name = "sys_admin_admin_id_seq",sequenceName = "sys_admin_admin_id_seq",allocationSize = 1)
     private Long adminId;
+
+    @ApiModelProperty("编号")
+    private String number;
 
     @ApiModelProperty("用户名")
     private String username;

@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLDeleteAll;
 import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -27,6 +28,7 @@ import javax.persistence.*;
 @EqualsAndHashCode(callSuper=true)
 @Where(clause = "deleted = 0")
 @SQLDelete(sql = "UPDATE mall_details SET deleted = 1 where mall_id = ?")
+@SQLDeleteAll(sql = "UPDATE mall_details SET deleted = 1 where mall_id in (?)")
 @EntityListeners({AuditingEntityListener.class})
 public class MallDetails extends BaseEntity {
 

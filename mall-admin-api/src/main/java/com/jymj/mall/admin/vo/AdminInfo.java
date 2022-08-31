@@ -3,6 +3,7 @@ package com.jymj.mall.admin.vo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -18,6 +19,9 @@ public class AdminInfo {
 
     @ApiModelProperty("管理员id")
     private Long adminId;
+
+    @ApiModelProperty("编号")
+    private String number;
 
     @ApiModelProperty("用户名")
     private String username;
@@ -48,4 +52,10 @@ public class AdminInfo {
 
     @ApiModelProperty("部门信息")
     private DeptInfo deptInfo;
+
+    @ApiModelProperty("操作人")
+    private String operator;
+
+    @ApiModelProperty("操作时间")
+    private Date operationTime;
 }

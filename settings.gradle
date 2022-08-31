@@ -10,4 +10,6 @@ include 'mall-admin-api'
 include 'mall-admin-boot'
 include 'mall-shop-boot'
 include 'mall-shop-api'
+include 'mall-mdse-boot'
+include 'mall-mdse-api'
 

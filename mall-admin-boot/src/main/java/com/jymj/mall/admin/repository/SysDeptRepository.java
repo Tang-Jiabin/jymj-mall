@@ -23,4 +23,6 @@ public interface SysDeptRepository extends JpaRepository<SysDept, Long> {
     List<SysDept> findAllByParentId(Long districtId);
 
     Optional<SysDept> findByDeptIdAndDeleted(Long deptId, Integer deleted);
+
+    List<SysDept> findAllByTreePathLike(String treePath);
 }

@@ -1,6 +1,5 @@
 package com.jymj.mall.admin.api;
 
-import com.jymj.mall.admin.dto.AddAdminDTO;
 import com.jymj.mall.admin.dto.AdminAuthDTO;
 import com.jymj.mall.admin.dto.UpdateAdminDTO;
 import com.jymj.mall.admin.vo.AdminInfo;
@@ -24,7 +23,7 @@ public interface AdminFeignClient {
     Result<AdminAuthDTO> loadAdminByUsername(@PathVariable String username);
 
     @PostMapping("/api/v1/admin")
-    Result add(AddAdminDTO adminDTO);
+    Result add(UpdateAdminDTO adminDTO);
 
     @PutMapping("/api/v1/admin")
     Result updateAdmin(UpdateAdminDTO updateAdminDTO);

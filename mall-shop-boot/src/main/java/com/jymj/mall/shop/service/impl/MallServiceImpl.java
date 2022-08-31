@@ -7,7 +7,6 @@ import com.jymj.mall.admin.api.AdminFeignClient;
 import com.jymj.mall.admin.api.DeptFeignClient;
 import com.jymj.mall.admin.api.DistrictFeignClient;
 import com.jymj.mall.admin.api.PermissionFeignClient;
-import com.jymj.mall.admin.dto.AddAdminDTO;
 import com.jymj.mall.admin.dto.AddDeptDTO;
 import com.jymj.mall.admin.dto.UpdateAdminDTO;
 import com.jymj.mall.admin.dto.UpdateDeptDTO;
@@ -92,7 +91,7 @@ public class MallServiceImpl implements MallService {
                 mallTagService.addMallTag(mallDetails.getMallId(), mallDTO.getTagId());
             }
 
-            AddAdminDTO adminDTO = new AddAdminDTO();
+            UpdateAdminDTO adminDTO = new UpdateAdminDTO();
             adminDTO.setUsername(mallDTO.getMobile());
             adminDTO.setPassword(SystemConstants.DEFAULT_USER_PASSWORD);
             adminDTO.setNickname(mallDTO.getNickname());
@@ -219,8 +218,12 @@ public class MallServiceImpl implements MallService {
             Result<List<DistrictInfo>> districtListResult = districtFeignClient.parent(mall.getDistrictId());
             if (Result.isSuccess(districtListResult)) {
                 List<DistrictInfo> districtInfoList = districtListResult.getData();
-                String districtInfo = districtInfo2String(districtInfoList, SystemConstants.ROOT_DISTRICT_ID);
-                mallVO.setDistrict(districtInfo);
+                String districtName = districtInfo2String(districtInfoList, SystemConstants.ROOT_DISTRICT_ID);
+                Optional<DistrictInfo> districtInfoOptional = districtInfoList.stream().filter(districtInfo -> districtInfo.getDistrictId().equals(mall.getDistrictId())).findFirst();
+                districtInfoOptional.ifPresent(districtInfo -> {
+                    districtInfo.setName(districtName);
+                    mallVO.setDistrictInfo(districtInfo);
+                });
             }
         }
         if (mall.getType() != null) {
@@ -234,6 +237,13 @@ public class MallServiceImpl implements MallService {
         mallVO.setTagList(tagInfoList);
 
         return mallVO;
+    }
+
+    @Override
+    public Optional<MallDetails> findByDeptId(Long deptId) {
+
+        return mallDetailsRepository.findByDeptId(deptId);
+
     }
 
     private String districtInfo2String(List<DistrictInfo> districtInfoList, Long pid) {
