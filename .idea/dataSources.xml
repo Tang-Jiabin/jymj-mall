@@ -15,5 +15,12 @@
       <jdbc-url>jdbc:postgresql://localhost:5432/jymj-mall-shop</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="jymj-mall-mdse@localhost" uuid="5776a6a8-8b19-4695-a2a2-25bc65640b59">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5432/jymj-mall-mdse</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

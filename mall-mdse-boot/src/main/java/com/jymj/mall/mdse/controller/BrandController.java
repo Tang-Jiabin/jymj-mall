@@ -2,14 +2,20 @@ package com.jymj.mall.mdse.controller;
 
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.mdse.dto.BrandDTO;
+import com.jymj.mall.mdse.entity.MdseBrand;
+import com.jymj.mall.mdse.service.BrandService;
 import com.jymj.mall.mdse.vo.BrandInfo;
 import com.jymj.mall.mdse.vo.MfgInfo;
+import io.seata.core.context.RootContext;
+import io.seata.spring.annotation.GlobalTransactional;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * 品牌
@@ -24,40 +30,43 @@ import javax.validation.Valid;
 @RequestMapping("/api/v1/brand")
 @RequiredArgsConstructor
 public class BrandController {
-    
-    
+
+    private final BrandService brandService;
+
     @ApiOperation(value = "添加品牌")
     @PostMapping
     private Result<BrandInfo> addBrand(@Valid @RequestBody BrandDTO brandDTO) {
-
-        return Result.success();
+        MdseBrand brand = brandService.add(brandDTO);
+        BrandInfo brandInfo = brandService.entity2vo(brand);
+        return Result.success(brandInfo);
     }
 
     @ApiOperation(value = "删除品牌")
     @DeleteMapping("/{ids}")
     private Result deleteBrand(@Valid @PathVariable String ids) {
-
+        brandService.delete(ids);
         return Result.success();
     }
 
     @ApiOperation(value = "修改品牌")
     @PutMapping
     private Result<BrandInfo> updateBrand(@RequestBody BrandDTO brandDTO) {
-
-        return Result.success();
+        Optional<MdseBrand> mdseBrandOptional = brandService.update(brandDTO);
+        return mdseBrandOptional.map(entity -> Result.success(brandService.entity2vo(entity))).orElse(Result.failed("更新失败"));
     }
 
     @ApiOperation(value = "品牌信息")
     @GetMapping("/{brandId}/info")
     public Result<BrandInfo> getBrandById(@Valid @PathVariable Long brandId) {
-
-        return Result.success();
+        Optional<MdseBrand> mdseBrandOptional = brandService.findById(brandId);
+        return mdseBrandOptional.map(entity -> Result.success(brandService.entity2vo(entity))).orElse(Result.failed("该品牌不存在"));
     }
 
     @ApiOperation(value = "品牌列表")
     @GetMapping("/lists")
-    public Result<MfgInfo> lists() {
-
-        return Result.success();
+    public Result<List<BrandInfo>> lists() {
+        List<MdseBrand> brandList = brandService.findAll();
+        List<BrandInfo> brandInfoList = brandService.list2vo(brandList);
+        return Result.success(brandInfoList);
     }
 }

@@ -1,5 +1,6 @@
 package com.jymj.mall.shop.service.impl;
 
+import cn.hutool.core.util.CreditCodeUtil;
 import cn.hutool.core.util.IdcardUtil;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
@@ -49,6 +50,11 @@ public class MallAuthServiceImpl implements MallAuthService {
 
         if (!IdcardUtil.isValidCard(addMallAuth.getIdentity())) {
             throw new BusinessException("身份证号不正确");
+        }
+
+        //测试数据       91310110666007217T
+        if (!CreditCodeUtil.isCreditCode(addMallAuth.getUnifiedSocialCreditCode())){
+            throw new BusinessException("统一社会信用代码不正确");
         }
 
         MallAuth mallAuth = add2auth(addMallAuth);

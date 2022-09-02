@@ -1,5 +1,6 @@
 package com.jymj.mall.shop.vo;
 
+import cn.hutool.core.util.DesensitizedUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -38,7 +39,7 @@ public class MallAuthInfo {
     private String legalPerson;
 
     @ApiModelProperty("身份证")
-    private String  identity;
+    private String identity;
 
     @ApiModelProperty("统一社会信用代码")
     private String unifiedSocialCreditCode;
@@ -54,4 +55,12 @@ public class MallAuthInfo {
 
     @ApiModelProperty("身份证（反面）")
     private String idBack;
+
+    public String getMobile() {
+        return DesensitizedUtil.mobilePhone(this.mobile);
+    }
+
+    public String getIdentity() {
+        return DesensitizedUtil.idCardNum(this.identity,1,2);
+    }
 }

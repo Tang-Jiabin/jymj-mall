@@ -2,6 +2,8 @@ package com.jymj.mall.mdse.controller;
 
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.mdse.dto.MfgDTO;
+import com.jymj.mall.mdse.entity.MdseMfg;
+import com.jymj.mall.mdse.service.MfgService;
 import com.jymj.mall.mdse.vo.MfgInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -9,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * 厂家
@@ -24,40 +28,42 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 public class MFGController {
 
-
+    private final MfgService mfgService;
 
     @ApiOperation(value = "添加厂家")
     @PostMapping
     private Result<MfgInfo> addMfg(@Valid @RequestBody MfgDTO mfgDTO) {
-
-        return Result.success();
+        MdseMfg mdseMfg = mfgService.add(mfgDTO);
+        MfgInfo mfgInfo = mfgService.entity2vo(mdseMfg);
+        return Result.success(mfgInfo);
     }
 
     @ApiOperation(value = "删除厂家")
     @DeleteMapping("/{ids}")
     private Result deleteMfg(@Valid @PathVariable String ids) {
-
+        mfgService.delete(ids);
         return Result.success();
     }
 
     @ApiOperation(value = "修改厂家")
     @PutMapping
     private Result<MfgInfo> updateMfg(@RequestBody MfgDTO mfgDTO) {
-
-        return Result.success();
+        Optional<MdseMfg> mfgOptional = mfgService.update(mfgDTO);
+        return mfgOptional.map(entity -> Result.success(mfgService.entity2vo(entity))).orElse(Result.failed("更新失败"));
     }
 
     @ApiOperation(value = "厂家信息")
     @GetMapping("/{mfgId}/info")
     public Result<MfgInfo> getMfgById(@Valid @PathVariable Long mfgId) {
-
-        return Result.success();
+        Optional<MdseMfg> mfgOptional = mfgService.findById(mfgId);
+        return mfgOptional.map(entity -> Result.success(mfgService.entity2vo(entity))).orElse(Result.failed("厂家不存在"));
     }
 
     @ApiOperation(value = "厂家列表")
     @GetMapping("/lists")
-    public Result<MfgInfo> lists() {
-
-        return Result.success();
+    public Result< List<MfgInfo> > lists() {
+        List<MdseMfg> mfgList =  mfgService.findAll();
+        List<MfgInfo> mfgInfoList = mfgService.list2vo(mfgList);
+        return Result.success(mfgInfoList);
     }
 }

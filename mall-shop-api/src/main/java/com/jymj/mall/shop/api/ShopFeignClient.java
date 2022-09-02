@@ -18,6 +18,6 @@ import java.util.List;
 @FeignClient(value = "mall-shop", contextId = "mall-shop")
 public interface ShopFeignClient {
 
-    @GetMapping("/lists")
+    @GetMapping("/api/v1/shop/lists")
     Result<List<ShopInfo>> lists();
 }

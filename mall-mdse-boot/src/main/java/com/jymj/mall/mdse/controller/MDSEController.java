@@ -60,7 +60,7 @@ public class MDSEController {
     @GetMapping("/{mdseId}/info")
     public Result<MdseInfo> getMdseById(@Valid @PathVariable Long mdseId) {
         Optional<MallMdse> mdseOptional = mdseService.findById(mdseId);
-        return mdseOptional.map(entity -> Result.success(mdseService.entity2vo(entity))).orElse(Result.failed("店铺不存在"));
+        return mdseOptional.map(entity -> Result.success(mdseService.entity2vo(entity))).orElse(Result.failed("商品不存在"));
     }
 
     @ApiOperation(value = "商品分页")

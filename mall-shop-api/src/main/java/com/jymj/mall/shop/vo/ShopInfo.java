@@ -1,5 +1,6 @@
 package com.jymj.mall.shop.vo;
 
+import cn.hutool.core.util.DesensitizedUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -51,4 +52,7 @@ public class ShopInfo {
     @ApiModelProperty("纬度")
     private String latitude;
 
+    public String getMobile() {
+        return DesensitizedUtil.mobilePhone(this.mobile);
+    }
 }

@@ -4,96 +4,68 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c37fce6f-e3d8-4f7f-b535-c9d68bda8397" name="变更" comment="角色模块">
-      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules/mall-merchandise-api/jymj-mall.mall-merchandise-api.test.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules/mall-merchandise-boot/jymj-mall.mall-merchandise-boot.test.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/dto/AdminPageQuery.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/dto/UpdatePerm.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/vo/PermInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/config/LocalDateTimeSerializerConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/service/BaseService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-api/build.gradle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/build.gradle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/MallMdseApplication.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/config/SwaggerConfiguration.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/BrandController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/GroupController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/MDSEController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/MFGController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/BrandDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/GroupDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/MdseDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/MdsePageQuery.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/MfgDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/SpecDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/StockDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/entity/MallMdse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/enums/InventoryReductionMethod.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/repository/MdseRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/service/MdseService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/service/impl/MdseServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/vo/BrandInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/vo/GroupInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/vo/MdseInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/vo/MfgInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/resources/bootstrap.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/api/ShopFeignClient.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/vo/ShopInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/controller/ShopController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/dto/ShopDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/dto/ShopPageQuery.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/entity/MallShop.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/repository/MallShopRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/ShopService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/impl/ShopServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+    <list default="true" id="c37fce6f-e3d8-4f7f-b535-c9d68bda8397" name="变更" comment="商品模块">
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/GroupPageQuery.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/entity/MallMdseGroupConnect.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/entity/MallPicture.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/entity/MdseBrand.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/entity/MdseGroup.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/entity/MdseMfg.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/entity/MdseSpec.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/entity/MdseStock.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/enums/PictureType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/repository/BrandRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/repository/GroupRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/repository/MallMdseGroupConnectRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/repository/MallPictureRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/repository/MdseStockRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/repository/MfgRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/service/BrandService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/service/GroupService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/service/MfgService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/service/StockService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/service/impl/BrandServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/service/impl/GroupServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/service/impl/MfgServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/service/impl/StockServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/vo/StockInfo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/1fe3f280-adef-47d4-b0ca-fd2378dafe97.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/1fe3f280-adef-47d4-b0ca-fd2378dafe97.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/ea582202-f41b-4be5-b340-f7dfe97d5404.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/ea582202-f41b-4be5-b340-f7dfe97d5404.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/api/AdminFeignClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/api/AdminFeignClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/api/DeptFeignClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/api/DeptFeignClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/dto/AddAdminDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/dto/AddAdminDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/dto/UpdateAdminDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/dto/UpdateAdminDTO.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/vo/AdminInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-api/src/main/java/com/jymj/mall/admin/vo/AdminInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/AdminController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/DeptController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/DeptController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/PermissionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/PermissionController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/RoleController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/controller/RoleController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/dto/RoleResourceFormDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/dto/RoleResource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysAdmin.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysAdmin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysPermission.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/entity/SysPermission.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/enums/MallType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysAdminRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysAdminRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysAdminRoleRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysAdminRoleRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysDeptRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysDeptRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysPermissionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysPermissionRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysRolePermissionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/repository/SysRolePermissionRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/AdminService.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/AdminService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/DeptService.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/DeptService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/PermissionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/PermissionService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/RoleService.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/RoleService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/AdminServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/AdminServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/DeptServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/DeptServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/PermissionServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/PermissionServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/RoleServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-admin-boot/src/main/java/com/jymj/mall/admin/service/impl/RoleServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/util/PageUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/util/PageUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/util/UserUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-common-web/src/main/java/com/jymj/mall/common/web/util/UserUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-common/src/main/java/com/jymj/mall/common/constants/SystemConstants.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-common/src/main/java/com/jymj/mall/common/constants/SystemConstants.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-common/src/main/java/com/jymj/mall/common/exception/BusinessException.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-common/src/main/java/com/jymj/mall/common/exception/BusinessException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-common/src/main/java/com/jymj/mall/common/result/ResultCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-common/src/main/java/com/jymj/mall/common/result/ResultCode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-seata/conf/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/mall-seata/conf/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-api/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-api/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/vo/MallInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/vo/MallInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/entity/MallDetails.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/entity/MallDetails.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/repository/MallDetailsRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/repository/MallDetailsRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/MallService.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/MallService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/group/controller/GroupController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/MallMdseApplication.class" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/MallMdseApplication.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/controller/BrandController.class" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/controller/BrandController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/controller/MDSEController.class" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/controller/MDSEController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/controller/MFGController.class" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/controller/MFGController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/dto/BrandDTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/dto/BrandDTO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/dto/GroupDTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/dto/GroupDTO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/dto/MfgDTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/dto/MfgDTO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/dto/StockDTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/dto/StockDTO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/entity/MallMdse.class" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/entity/MallMdse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/service/impl/MdseServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/service/impl/MdseServiceImpl.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/vo/BrandInfo.class" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/vo/BrandInfo.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/vo/GroupInfo.class" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/vo/GroupInfo.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/vo/MfgInfo.class" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/build/classes/java/main/com/jymj/mall/mdse/vo/MfgInfo.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/build/tmp/compileJava/previous-compilation-data.bin" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/build/tmp/compileJava/previous-compilation-data.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/MallMdseApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/MallMdseApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/BrandController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/BrandController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/GroupController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/GroupController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/MDSEController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/MDSEController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/MFGController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/MFGController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/BrandDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/BrandDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/GroupDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/GroupDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/MfgDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/MfgDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/StockDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/StockDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/entity/MallMdse.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/entity/MallMdse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/service/impl/MdseServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/service/impl/MdseServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/vo/BrandInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/vo/BrandInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/vo/GroupInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/vo/GroupInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/vo/MfgInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/vo/MfgInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/api/ShopFeignClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/api/ShopFeignClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/vo/MallAuthInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/vo/MallAuthInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/vo/ShopInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-api/src/main/java/com/jymj/mall/shop/vo/ShopInfo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/impl/MallAuthServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/impl/MallAuthServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/impl/MallServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/mall-shop-boot/src/main/java/com/jymj/mall/shop/service/impl/MallServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/settings.gradle" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -131,11 +103,23 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Interface" />
         <option value="Enum" />
         <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/BrandController.java" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/GroupController.java" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/MDSEController.java" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/controller/MFGController.java" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/BrandDTO.java" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/GroupDTO.java" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/dto/MfgDTO.java" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/vo/BrandInfo.java" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/vo/GroupInfo.java" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/mall-mdse-boot/src/main/java/com/jymj/mall/mdse/vo/MfgInfo.java" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -152,37 +136,37 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelOrder2": "2",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RequestMappingsPanelWidth2": "75",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "StatusDashboardGroupingRule": "false",
-    "WebServerToolWindowFactoryState": "false",
-    "jdk.selected.JAVA_MODULE": "1.8",
-    "last_opened_file_path": "D:/workspace/jymj-mall/mall-merchandise-boot/src/main/resources",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "模块",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.33103448",
-    "settings.editor.selected.configurable": "File.Encoding",
-    "spring.configuration.checksum": "49f4f4e88f1e8cd81f364732691b3f37"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelOrder2&quot;: &quot;2&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth2&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;StatusDashboardGroupingRule&quot;: &quot;false&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;jdk.selected.JAVA_MODULE&quot;: &quot;1.8&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/workspace/jymj-mall/mall-merchandise-boot/src/main/resources&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;模块&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.33103448&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;File.Encoding&quot;,
+    &quot;spring.configuration.checksum&quot;: &quot;af1085f6ee86c492f0b93fdbe7233344&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "postgresql"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;postgresql&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="ReactorSettings">
     <option name="debugInitializationType" value="AGENT" />
     <option name="notificationShown" value="true" />
@@ -196,11 +180,11 @@
       <recent name="D:\workspace\jymj-mall\mall-shop\src\main\resources" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.jymj.mall.mdse.service" />
+      <recent name="com.jymj.mall.mdse.entity" />
       <recent name="com.jymj.mall.mdse.config" />
       <recent name="com.jymj.mall.admin.config" />
       <recent name="com.jymj.mall.common.web.config" />
-      <recent name="com.jymj.mall.admin.dto" />
-      <recent name="com.jymj.mall.admin.vo" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -394,7 +378,8 @@
       <workItem from="1661927748044" duration="590000" />
       <workItem from="1661928353533" duration="88000" />
       <workItem from="1661928455815" duration="172000" />
-      <workItem from="1661928688572" duration="8603000" />
+      <workItem from="1661928688572" duration="9140000" />
+      <workItem from="1661996993282" duration="22923000" />
     </task>
     <task id="LOCAL-00001" summary="商场模块">
       <created>1660898960629</created>
@@ -417,7 +402,14 @@
       <option name="project" value="LOCAL" />
       <updated>1661765550414</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="商品模块">
+      <created>1661937560485</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1661937560485</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -440,7 +432,8 @@
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="商场模块" />
     <MESSAGE value="角色模块" />
-    <option name="LAST_COMMIT_MESSAGE" value="角色模块" />
+    <MESSAGE value="商品模块" />
+    <option name="LAST_COMMIT_MESSAGE" value="商品模块" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

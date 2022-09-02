@@ -1,5 +1,6 @@
 package com.jymj.mall.admin.vo;
 
+import cn.hutool.core.util.DesensitizedUtil;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -58,4 +59,8 @@ public class AdminInfo {
 
     @ApiModelProperty("操作时间")
     private Date operationTime;
+
+    public String getMobile() {
+        return DesensitizedUtil.mobilePhone(this.mobile);
+    }
 }

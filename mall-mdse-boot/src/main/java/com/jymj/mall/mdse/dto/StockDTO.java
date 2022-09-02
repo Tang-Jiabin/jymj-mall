@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class StockDTO {
     @ApiModelProperty("库存ID")
     private Long stockId;
 
+    @NotNull(message = "规格不能为空")
     @ApiModelProperty("规格A")
     private SpecDTO specA;
 
