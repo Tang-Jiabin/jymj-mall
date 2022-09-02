@@ -16,7 +16,7 @@ import java.util.Optional;
  * @date 2022-09-01
  */
 @Repository
-public interface MfgRepository extends JpaRepository<MdseMfg,Long> {
+public interface MdseMfgRepository extends JpaRepository<MdseMfg,Long> {
     Optional<MdseMfg> findByName(String name);
 
     List<MdseMfg> findAllByShopIdIn(List<Long> shopIdList);

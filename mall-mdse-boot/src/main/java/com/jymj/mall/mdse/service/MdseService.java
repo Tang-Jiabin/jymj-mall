@@ -17,4 +17,18 @@ import org.springframework.data.domain.Page;
  */
 public interface MdseService extends BaseService<MallMdse, MdseInfo, MdseDTO> {
     Page<MallMdse> findPage(MdsePageQuery mdsePageQuery);
+
+    MdseInfo voAddPictureList(MdseInfo mdseInfo);
+
+    MdseInfo voAddGroupList(MdseInfo mdseInfo);
+
+    MdseInfo voAddBrand(MdseInfo mdseInfo, Long brandId);
+
+    MdseInfo voAddMfg(MdseInfo mdseInfo, Long mfgId);
+
+    MdseInfo voAddStockList(MdseInfo mdseInfo);
+
+    MdseInfo voAddType(MdseInfo mdseInfo, Long typeId);
+
+    MdseInfo voAddLabelList(MdseInfo mdseInfo);
 }

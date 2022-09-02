@@ -1,20 +1,21 @@
 package com.jymj.mall.mdse.repository;
 
-import com.jymj.mall.mdse.entity.MdseStock;
+import com.jymj.mall.mdse.entity.MdseLabel;
+import lombok.Data;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 /**
- * 商品库存
+ * 商品标签
  *
  * @author J.Tang
  * @version 1.0
  * @email seven_tjb@163.com
- * @date 2022-09-01
+ * @date 2022-09-02
  */
 @Repository
-public interface MdseStockRepository extends JpaRepository<MdseStock,Long> {
-    List<MdseStock> findAllByMdseId(Long mdseId);
+public interface MdseLabelRepository  extends JpaRepository<MdseLabel,Long> {
+    List<MdseLabel> findAllByShopIdIn(List<Long> shopIdList);
 }

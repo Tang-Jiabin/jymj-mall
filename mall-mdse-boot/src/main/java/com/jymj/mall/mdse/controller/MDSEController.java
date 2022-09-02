@@ -60,7 +60,21 @@ public class MDSEController {
     @GetMapping("/{mdseId}/info")
     public Result<MdseInfo> getMdseById(@Valid @PathVariable Long mdseId) {
         Optional<MallMdse> mdseOptional = mdseService.findById(mdseId);
-        return mdseOptional.map(entity -> Result.success(mdseService.entity2vo(entity))).orElse(Result.failed("商品不存在"));
+        if (mdseOptional.isPresent()) {
+            MallMdse mallMdse = mdseOptional.get();
+            MdseInfo mdseInfo = mdseService.entity2vo(mallMdse);
+            mdseInfo = mdseService.voAddGroupList(mdseInfo);
+            mdseInfo = mdseService.voAddStockList(mdseInfo);
+            mdseInfo = mdseService.voAddLabelList(mdseInfo);
+            mdseInfo = mdseService.voAddPictureList(mdseInfo);
+            mdseInfo = mdseService.voAddMfg(mdseInfo,mallMdse.getMfgId());
+            mdseInfo = mdseService.voAddType(mdseInfo,mallMdse.getTypeId());
+            mdseInfo = mdseService.voAddBrand(mdseInfo,mallMdse.getBrandId());
+
+            return Result.success(mdseInfo);
+        }
+
+        return Result.failed("商品不存在");
     }
 
     @ApiOperation(value = "商品分页")

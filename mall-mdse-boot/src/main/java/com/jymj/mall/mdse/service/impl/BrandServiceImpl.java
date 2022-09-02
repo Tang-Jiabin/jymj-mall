@@ -1,19 +1,16 @@
 package com.jymj.mall.mdse.service.impl;
 
 import com.google.common.collect.Lists;
-import com.jymj.mall.admin.api.AdminFeignClient;
-import com.jymj.mall.admin.dto.UpdateAdminDTO;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.mdse.dto.BrandDTO;
 import com.jymj.mall.mdse.entity.MdseBrand;
-import com.jymj.mall.mdse.repository.BrandRepository;
+import com.jymj.mall.mdse.repository.MdseBrandRepository;
 import com.jymj.mall.mdse.service.BrandService;
 import com.jymj.mall.mdse.vo.BrandInfo;
 import com.jymj.mall.shop.api.ShopFeignClient;
 import com.jymj.mall.shop.vo.ShopInfo;
-import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -37,13 +34,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BrandServiceImpl implements BrandService {
 
-    private final BrandRepository brandRepository;
+    private final MdseBrandRepository mdseBrandRepository;
     private final ShopFeignClient shopFeignClient;
 
     @Override
     public MdseBrand add(BrandDTO dto) {
-
-        verifyBrandName(dto.getName());
 
         verifyShopId(dto.getShopId());
 
@@ -55,11 +50,11 @@ public class BrandServiceImpl implements BrandService {
         brand.setShopId(dto.getShopId());
         brand.setDeleted(SystemConstants.DELETED_NO);
 
-        return brandRepository.save(brand);
+        return mdseBrandRepository.save(brand);
     }
 
     private void verifyBrandName(String name) {
-        Optional<MdseBrand> brandOptional = brandRepository.findByName(name);
+        Optional<MdseBrand> brandOptional = mdseBrandRepository.findByName(name);
 
         if (brandOptional.isPresent()) {
             throw new BusinessException("品牌 【" + name + "】 已存在");
@@ -69,13 +64,12 @@ public class BrandServiceImpl implements BrandService {
     @Override
     public Optional<MdseBrand> update(BrandDTO dto) {
         if (!ObjectUtils.isEmpty(dto.getBrandId())) {
-            Optional<MdseBrand> brandOptional = brandRepository.findById(dto.getBrandId());
+            Optional<MdseBrand> brandOptional = mdseBrandRepository.findById(dto.getBrandId());
             if (brandOptional.isPresent()) {
                 MdseBrand brand = brandOptional.get();
                 boolean update = false;
 
                 if (StringUtils.hasText(dto.getName()) && !brand.getName().equals(dto.getName())) {
-                    verifyBrandName(dto.getName());
                     brand.setName(dto.getName());
                     update = true;
                 }
@@ -98,7 +92,7 @@ public class BrandServiceImpl implements BrandService {
                 }
 
                 if (update) {
-                    return Optional.of(brandRepository.save(brand));
+                    return Optional.of(mdseBrandRepository.save(brand));
                 }
             }
         }
@@ -111,14 +105,14 @@ public class BrandServiceImpl implements BrandService {
     public void delete(String ids) {
         List<Long> idList = Arrays.stream(ids.split(",")).filter(id -> !ObjectUtils.isEmpty(id)).map(Long::parseLong).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(idList)) {
-            List<MdseBrand> brandList = brandRepository.findAllById(idList);
-            brandRepository.deleteAll(brandList);
+            List<MdseBrand> brandList = mdseBrandRepository.findAllById(idList);
+            mdseBrandRepository.deleteAll(brandList);
         }
     }
 
     @Override
     public Optional<MdseBrand> findById(Long id) {
-        return brandRepository.findById(id);
+        return mdseBrandRepository.findById(id);
     }
 
     @Override
@@ -151,7 +145,7 @@ public class BrandServiceImpl implements BrandService {
         if (Result.isSuccess(shopListResult)){
             List<ShopInfo> shopInfoList = shopListResult.getData();
             List<Long> shopIdList = shopInfoList.stream().map(ShopInfo::getShopId).collect(Collectors.toList());
-            return brandRepository.findAllByShopIdIn(shopIdList);
+            return mdseBrandRepository.findAllByShopIdIn(shopIdList);
         }
         return Lists.newArrayList();
     }

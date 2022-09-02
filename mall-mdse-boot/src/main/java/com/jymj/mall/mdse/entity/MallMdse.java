@@ -1,5 +1,6 @@
 package com.jymj.mall.mdse.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.jymj.mall.common.web.pojo.BaseEntity;
 import com.jymj.mall.mdse.dto.StockDTO;
 import com.jymj.mall.mdse.enums.InventoryReductionMethod;
@@ -14,6 +15,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 商品
@@ -38,11 +40,6 @@ public class MallMdse extends BaseEntity {
     @SequenceGenerator(name = "mall_mdse_mdse_id_seq",sequenceName = "mall_mdse_mdse_id_seq",allocationSize = 1)
     private Long mdseId;
 
-    @ApiModelProperty("商品图片")
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "mdse_id")
-    private List<MallPicture> pictureList;
-
     @ApiModelProperty("商品名称")
     private String name;
 
@@ -54,6 +51,12 @@ public class MallMdse extends BaseEntity {
 
     @ApiModelProperty("库存数量")
     private Integer inventoryQuantity;
+
+    @ApiModelProperty("剩余数量")
+    private Integer remainingQuantity;
+
+    @ApiModelProperty("销售数量")
+    private Integer salesVolume;
 
     @ApiModelProperty("起售数量")
     private Integer startingQuantity;
@@ -73,28 +76,18 @@ public class MallMdse extends BaseEntity {
     @ApiModelProperty("商品详情")
     private String details;
 
-    @ApiModelProperty("分组集合")
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "mall_mdse_group_connect",
-    joinColumns = {@JoinColumn(name = "mdse_id",referencedColumnName = "mdseId")},
-    inverseJoinColumns = {@JoinColumn(name = "group_id",referencedColumnName = "groupId")})
-    private List<MdseGroup> groupList;
-
     @ApiModelProperty("品牌id")
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "brand_id")
-    private MdseBrand brand;
+    private Long brandId;
 
     @ApiModelProperty("厂家id")
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "mfg_id")
-    private MdseMfg mfg;
+    private Long mfgId;
 
-    @ApiModelProperty("库存规格集合")
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "mdse_id")
-    private List<MdseStock> stockList;
+    @ApiModelProperty("类型id")
+    private Long typeId;
 
+    @ApiModelProperty("店铺id")
+    private Long shopId;
 
-
+    @ApiModelProperty("商品状态 1-上架 2-下架")
+    private Integer status;
 }

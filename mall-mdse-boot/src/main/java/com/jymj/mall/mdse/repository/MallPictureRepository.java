@@ -4,6 +4,8 @@ import com.jymj.mall.mdse.entity.MallPicture;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * 商品图片
  *
@@ -14,4 +16,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface MallPictureRepository extends JpaRepository<MallPicture,Long> {
+    List<MallPicture> findAllByMdseId(Long mdseId);
 }

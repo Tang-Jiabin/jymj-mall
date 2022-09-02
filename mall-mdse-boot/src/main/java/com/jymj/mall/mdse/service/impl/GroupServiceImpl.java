@@ -7,8 +7,10 @@ import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.mdse.dto.GroupDTO;
 import com.jymj.mall.mdse.dto.GroupPageQuery;
+import com.jymj.mall.mdse.entity.MallMdseGroupMap;
 import com.jymj.mall.mdse.entity.MdseGroup;
-import com.jymj.mall.mdse.repository.GroupRepository;
+import com.jymj.mall.mdse.repository.MdseGroupRepository;
+import com.jymj.mall.mdse.repository.MdseGroupMapRepository;
 import com.jymj.mall.mdse.service.GroupService;
 import com.jymj.mall.mdse.vo.GroupInfo;
 import com.jymj.mall.shop.api.ShopFeignClient;
@@ -41,12 +43,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GroupServiceImpl implements GroupService {
 
-    private final GroupRepository groupRepository;
+    private final MdseGroupRepository mdseGroupRepository;
+    private final MdseGroupMapRepository mdseGroupMapRepository;
     private final ShopFeignClient shopFeignClient;
 
     @Override
     public MdseGroup add(GroupDTO dto) {
-        verifyGroupName(dto.getName());
+
 
         verifyShopId(dto.getShopId());
 
@@ -58,7 +61,7 @@ public class GroupServiceImpl implements GroupService {
         group.setRemarks(dto.getRemarks());
         group.setDeleted(SystemConstants.DELETED_NO);
 
-        return groupRepository.save(group);
+        return mdseGroupRepository.save(group);
     }
 
     private void verifyShopId(Long shopId) {
@@ -73,7 +76,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     private void verifyGroupName(String name) {
-        Optional<MdseGroup> groupOptional = groupRepository.findByName(name);
+        Optional<MdseGroup> groupOptional = mdseGroupRepository.findByName(name);
 
         if (groupOptional.isPresent()) {
             throw new BusinessException("分组 【" + name + "】 已存在");
@@ -84,7 +87,7 @@ public class GroupServiceImpl implements GroupService {
     public Optional<MdseGroup> update(GroupDTO dto) {
 
         if (!ObjectUtils.isEmpty(dto.getGroupId())) {
-            Optional<MdseGroup> groupOptional = groupRepository.findById(dto.getGroupId());
+            Optional<MdseGroup> groupOptional = mdseGroupRepository.findById(dto.getGroupId());
             if (groupOptional.isPresent()) {
                 MdseGroup group = groupOptional.get();
                 boolean update = false;
@@ -94,7 +97,6 @@ public class GroupServiceImpl implements GroupService {
                     update = true;
                 }
                 if (StringUtils.hasText(dto.getName()) && !group.getName().equals(dto.getName())) {
-                    verifyGroupName(dto.getName());
                     group.setName(dto.getName());
                     update = true;
                 }
@@ -112,7 +114,7 @@ public class GroupServiceImpl implements GroupService {
                     update = true;
                 }
                 if (update) {
-                    return Optional.of(groupRepository.save(group));
+                    return Optional.of(mdseGroupRepository.save(group));
                 }
             }
         }
@@ -124,14 +126,14 @@ public class GroupServiceImpl implements GroupService {
     public void delete(String ids) {
         List<Long> idList = Arrays.stream(ids.split(",")).filter(id -> !ObjectUtils.isEmpty(id)).map(Long::parseLong).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(idList)) {
-            List<MdseGroup> groupList = groupRepository.findAllById(idList);
-            groupRepository.deleteAll(groupList);
+            List<MdseGroup> groupList = mdseGroupRepository.findAllById(idList);
+            mdseGroupRepository.deleteAll(groupList);
         }
     }
 
     @Override
     public Optional<MdseGroup> findById(Long id) {
-        return groupRepository.findById(id);
+        return mdseGroupRepository.findById(id);
     }
 
     @Override
@@ -160,12 +162,12 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public List<MdseGroup> findAll() {
+    public List<MdseGroup> findAllByAuth() {
         Result<List<ShopInfo>> shopListResult = shopFeignClient.lists();
         if (Result.isSuccess(shopListResult)) {
             List<ShopInfo> shopInfoList = shopListResult.getData();
             List<Long> shopIdList = shopInfoList.stream().map(ShopInfo::getShopId).collect(Collectors.toList());
-            return groupRepository.findAllByShopIdIn(shopIdList);
+            return mdseGroupRepository.findAllByShopIdIn(shopIdList);
         }
         return Lists.newArrayList();
     }
@@ -208,12 +210,38 @@ public class GroupServiceImpl implements GroupService {
             return criteriaBuilder.and((Predicate[]) list.toArray(p));
         };
 
-        return groupRepository.findAll(spec, pageable);
+        return mdseGroupRepository.findAll(spec, pageable);
 
     }
 
     @Override
     public List<MdseGroup> findAllById(List<Long> groupIdList) {
-        return groupRepository.findAllById(groupIdList);
+        return mdseGroupRepository.findAllById(groupIdList);
+    }
+
+    @Override
+    public void addMdseGroupMap(Long mdseId, List<MdseGroup> groupList) {
+        List<MallMdseGroupMap> mdseGroupMaps = Optional.of(groupList)
+                .orElse(Lists.newArrayList())
+                .stream().filter(group -> !ObjectUtils.isEmpty(group))
+                .map(group -> {
+                    MallMdseGroupMap mdseGroupMap = new MallMdseGroupMap();
+                    mdseGroupMap.setMdseId(mdseId);
+                    mdseGroupMap.setGroupId(group.getGroupId());
+                    mdseGroupMap.setDeleted(SystemConstants.DELETED_NO);
+                    return mdseGroupMap;
+                }).collect(Collectors.toList());
+
+        mdseGroupMapRepository.saveAll(mdseGroupMaps);
+    }
+
+    @Override
+    public List<MdseGroup> findAllByMdseId(Long mdseId) {
+        List<MallMdseGroupMap> mdseGroupMapList = mdseGroupMapRepository.findAllByMdseId(mdseId);
+        return mdseGroupRepository.findAllById(
+                mdseGroupMapList
+                        .stream()
+                        .map(MallMdseGroupMap::getGroupId)
+                        .collect(Collectors.toList()));
     }
 }

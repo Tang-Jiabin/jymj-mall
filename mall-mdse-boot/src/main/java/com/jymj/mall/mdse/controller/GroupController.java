@@ -2,16 +2,12 @@ package com.jymj.mall.mdse.controller;
 
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
-import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.common.web.vo.PageVO;
 import com.jymj.mall.mdse.dto.GroupDTO;
 import com.jymj.mall.mdse.dto.GroupPageQuery;
 import com.jymj.mall.mdse.entity.MdseGroup;
-import com.jymj.mall.mdse.service.BrandService;
 import com.jymj.mall.mdse.service.GroupService;
 import com.jymj.mall.mdse.vo.GroupInfo;
-import com.jymj.mall.mdse.vo.MfgInfo;
-import com.jymj.mall.shop.vo.ShopInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -79,7 +75,7 @@ public class GroupController {
     @ApiOperation(value = "分组列表")
     @GetMapping("/lists")
     public Result<List<GroupInfo>> lists() {
-        List<MdseGroup> groupList = groupService.findAll();
+        List<MdseGroup> groupList = groupService.findAllByAuth();
         List<GroupInfo> groupInfoList = groupService.list2vo(groupList);
         return Result.success(groupInfoList);
     }

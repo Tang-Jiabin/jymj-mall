@@ -6,7 +6,7 @@ import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.mdse.dto.MfgDTO;
 import com.jymj.mall.mdse.entity.MdseMfg;
-import com.jymj.mall.mdse.repository.MfgRepository;
+import com.jymj.mall.mdse.repository.MdseMfgRepository;
 import com.jymj.mall.mdse.service.MfgService;
 import com.jymj.mall.mdse.vo.MfgInfo;
 import com.jymj.mall.shop.api.ShopFeignClient;
@@ -34,13 +34,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MfgServiceImpl implements MfgService {
 
-    private final MfgRepository mfgRepository;
+    private final MdseMfgRepository mdseMfgRepository;
     private final ShopFeignClient shopFeignClient;
 
     @Override
     public MdseMfg add(MfgDTO dto) {
 
-        verifyMFGName(dto.getName());
+
 
         verifyShopId(dto.getShopId());
 
@@ -52,11 +52,11 @@ public class MfgServiceImpl implements MfgService {
         mdseMfg.setRemarks(dto.getRemarks());
         mdseMfg.setDeleted(SystemConstants.DELETED_NO);
 
-        return mfgRepository.save(mdseMfg);
+        return mdseMfgRepository.save(mdseMfg);
     }
 
     private void verifyMFGName(String name) {
-        Optional<MdseMfg> mfgOptional = mfgRepository.findByName(name);
+        Optional<MdseMfg> mfgOptional = mdseMfgRepository.findByName(name);
 
         if (mfgOptional.isPresent()) {
             throw new BusinessException("厂家 【" + name + "】 已存在");
@@ -66,13 +66,13 @@ public class MfgServiceImpl implements MfgService {
     @Override
     public Optional<MdseMfg> update(MfgDTO dto) {
         if (!ObjectUtils.isEmpty(dto.getMfgId())) {
-            Optional<MdseMfg> mfgOptional = mfgRepository.findById(dto.getMfgId());
+            Optional<MdseMfg> mfgOptional = mdseMfgRepository.findById(dto.getMfgId());
             if (mfgOptional.isPresent()) {
                 MdseMfg mdseMfg = mfgOptional.get();
                 boolean update = false;
 
                 if (StringUtils.hasText(dto.getName()) && !mdseMfg.getName().equals(dto.getName())) {
-                    verifyMFGName(dto.getName());
+
                     mdseMfg.setName(dto.getName());
                     update = true;
                 }
@@ -96,7 +96,7 @@ public class MfgServiceImpl implements MfgService {
                 }
 
                 if (update) {
-                    return Optional.of(mfgRepository.save(mdseMfg));
+                    return Optional.of(mdseMfgRepository.save(mdseMfg));
                 }
             }
         }
@@ -108,14 +108,14 @@ public class MfgServiceImpl implements MfgService {
     public void delete(String ids) {
         List<Long> idList = Arrays.stream(ids.split(",")).filter(id -> !ObjectUtils.isEmpty(id)).map(Long::parseLong).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(idList)) {
-            List<MdseMfg> mdseMfgList = mfgRepository.findAllById(idList);
-            mfgRepository.deleteAll(mdseMfgList);
+            List<MdseMfg> mdseMfgList = mdseMfgRepository.findAllById(idList);
+            mdseMfgRepository.deleteAll(mdseMfgList);
         }
     }
 
     @Override
     public Optional<MdseMfg> findById(Long id) {
-        return mfgRepository.findById(id);
+        return mdseMfgRepository.findById(id);
     }
 
     @Override
@@ -149,7 +149,7 @@ public class MfgServiceImpl implements MfgService {
         if (Result.isSuccess(shopListResult)){
             List<ShopInfo> shopInfoList = shopListResult.getData();
             List<Long> shopIdList = shopInfoList.stream().map(ShopInfo::getShopId).collect(Collectors.toList());
-            return mfgRepository.findAllByShopIdIn(shopIdList);
+            return mdseMfgRepository.findAllByShopIdIn(shopIdList);
         }
         return Lists.newArrayList();
     }

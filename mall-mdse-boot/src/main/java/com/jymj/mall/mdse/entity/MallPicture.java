@@ -2,6 +2,7 @@ package com.jymj.mall.mdse.entity;
 
 import com.jymj.mall.common.web.pojo.BaseEntity;
 import com.jymj.mall.mdse.enums.PictureType;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.SQLDelete;
@@ -34,7 +35,15 @@ public class MallPicture extends BaseEntity {
     @SequenceGenerator(name = "mall_picture_picture_id_seq",sequenceName = "mall_picture_picture_id_seq",allocationSize = 1)
     private Long pictureId;
 
-    private String link;
+    @ApiModelProperty("图片地址")
+    private String url;
 
+    @ApiModelProperty("图片类型")
     private PictureType type;
+
+    @ApiModelProperty("商品id")
+    private Long mdseId;
+
+    @ApiModelProperty("规格id")
+    private Long stockId;
 }

@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 库存
@@ -38,20 +39,14 @@ public class MdseStock extends BaseEntity {
     @SequenceGenerator(name = "mdse_stock_stock_id_seq",sequenceName = "mdse_stock_stock_id_seq",allocationSize = 1)
     private Long stockId;
 
-    @ApiModelProperty("规格A")
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "spec_a")
-    private MdseSpec specA;
+    @ApiModelProperty("规格AId")
+    private Long specA;
 
     @ApiModelProperty("规格B")
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "spec_b")
-    private MdseSpec specB;
+    private Long specB;
 
     @ApiModelProperty("规格C")
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "spec_c")
-    private MdseSpec specC;
+    private Long specC;
 
     @ApiModelProperty("价格")
     private BigDecimal price;
@@ -65,11 +60,7 @@ public class MdseStock extends BaseEntity {
     @ApiModelProperty("库存编号")
     private String number;
 
-    @ApiModelProperty("规格图片")
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "stock_id")
-    private List<MallPicture> specPictureList;
-
-
+    @ApiModelProperty("商品id")
+    private Long mdseId;
 
 }

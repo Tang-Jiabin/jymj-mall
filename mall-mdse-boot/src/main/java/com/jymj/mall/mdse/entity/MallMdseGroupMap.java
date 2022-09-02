@@ -21,17 +21,21 @@ import javax.persistence.*;
 //mall_mdse_group_connect
 @Data
 @Entity
-@Table(name = "mall_mdse_group_connect")
+@Table(name = "mall_mdse_group_map")
 @Where(clause = "deleted = 0")
 @EqualsAndHashCode(callSuper = true)
 @EntityListeners({AuditingEntityListener.class})
-@SQLDelete(sql = "update mall_mdse_group_connect set deleted = 1 where mg_id = ?")
-@SQLDeleteAll(sql = "update mall_mdse_group_connect set deleted = 1 where mg_id in (?)")
-public class MallMdseGroupConnect extends BaseEntity {
+@SQLDelete(sql = "update mall_mdse_group_map set deleted = 1 where mg_id = ?")
+@SQLDeleteAll(sql = "update mall_mdse_group_map set deleted = 1 where mg_id in (?)")
+public class MallMdseGroupMap extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "mall_mdse_group_mg_id_seq")
     @SequenceGenerator(name = "mall_mdse_group_mg_id_seq",sequenceName = "mall_mdse_group_mg_id_seq",allocationSize = 1)
     private Long mgId;
+
+    private Long mdseId;
+
+    private Long groupId;
 
 }

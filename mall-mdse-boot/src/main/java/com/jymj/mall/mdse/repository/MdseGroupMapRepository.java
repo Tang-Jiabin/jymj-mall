@@ -1,20 +1,20 @@
 package com.jymj.mall.mdse.repository;
 
-import com.jymj.mall.mdse.entity.MdseStock;
+import com.jymj.mall.mdse.entity.MallMdseGroupMap;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 /**
- * 商品库存
+ * 商品分组关联表
  *
  * @author J.Tang
  * @version 1.0
  * @email seven_tjb@163.com
- * @date 2022-09-01
+ * @date 2022-09-02
  */
 @Repository
-public interface MdseStockRepository extends JpaRepository<MdseStock,Long> {
-    List<MdseStock> findAllByMdseId(Long mdseId);
+public interface MdseGroupMapRepository extends JpaRepository<MallMdseGroupMap,Long> {
+    List<MallMdseGroupMap> findAllByMdseId(Long mdseId);
 }

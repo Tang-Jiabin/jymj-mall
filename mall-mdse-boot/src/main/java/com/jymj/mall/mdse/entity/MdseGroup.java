@@ -52,6 +52,4 @@ public class MdseGroup extends BaseEntity {
     @ApiModelProperty("网点id")
     private Long shopId;
 
-    @ManyToMany(mappedBy = "groupList")
-    private List<MallMdse> mdseList;
 }

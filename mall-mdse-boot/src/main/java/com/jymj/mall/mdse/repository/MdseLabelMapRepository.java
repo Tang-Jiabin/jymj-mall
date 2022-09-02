@@ -1,14 +1,14 @@
 package com.jymj.mall.mdse.repository;
 
-import com.jymj.mall.mdse.entity.MdseBrand;
+import com.jymj.mall.mdse.entity.MallMdseGroupMap;
+import com.jymj.mall.mdse.entity.MallMdseLabelMap;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
- * 品牌
+ * 商品分组中间表
  *
  * @author J.Tang
  * @version 1.0
@@ -16,9 +16,6 @@ import java.util.Optional;
  * @date 2022-09-01
  */
 @Repository
-public interface BrandRepository extends JpaRepository<MdseBrand,Long> {
-    Optional<MdseBrand> findByName(String name);
-
-
-    List<MdseBrand> findAllByShopIdIn(List<Long> shopIdList);
+public interface MdseLabelMapRepository extends JpaRepository<MallMdseLabelMap,Long> {
+    List<MallMdseLabelMap> findAllByMdseId(Long mdseId);
 }

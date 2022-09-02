@@ -17,7 +17,7 @@ import java.util.Optional;
  * @date 2022-09-01
  */
 @Repository
-public interface GroupRepository extends JpaRepository<MdseGroup,Long> , JpaSpecificationExecutor<MdseGroup> {
+public interface MdseGroupRepository extends JpaRepository<MdseGroup,Long> , JpaSpecificationExecutor<MdseGroup> {
     Optional<MdseGroup> findByName(String name);
 
     List<MdseGroup> findAllByShopIdIn(List<Long> shopIdList);

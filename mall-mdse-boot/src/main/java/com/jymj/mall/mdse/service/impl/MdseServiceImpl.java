@@ -1,27 +1,38 @@
 package com.jymj.mall.mdse.service.impl;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.jymj.mall.common.constants.SystemConstants;
+import com.jymj.mall.common.exception.BusinessException;
+import com.jymj.mall.common.result.Result;
+import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.mdse.dto.MdseDTO;
 import com.jymj.mall.mdse.dto.MdsePageQuery;
-import com.jymj.mall.mdse.dto.SpecDTO;
+import com.jymj.mall.mdse.dto.PictureDTO;
 import com.jymj.mall.mdse.dto.StockDTO;
 import com.jymj.mall.mdse.entity.*;
 import com.jymj.mall.mdse.enums.PictureType;
 import com.jymj.mall.mdse.repository.MdseRepository;
 import com.jymj.mall.mdse.service.*;
-import com.jymj.mall.mdse.vo.MdseInfo;
-import io.seata.spring.annotation.GlobalTransactional;
+import com.jymj.mall.mdse.vo.*;
+import com.jymj.mall.shop.api.ShopFeignClient;
+import com.jymj.mall.shop.vo.ShopInfo;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Predicate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -41,12 +52,19 @@ public class MdseServiceImpl implements MdseService {
     private final BrandService brandService;
     private final MfgService mfgService;
     private final StockService stockService;
+    private final PictureService pictureService;
+    private final TypeService typeService;
+    private final LabelService labelService;
+
+    private final ShopFeignClient shopFeignClient;
 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-//    @GlobalTransactional(name = "mall_mdse_mdse_add", rollbackFor = Exception.class)
     public MallMdse add(MdseDTO dto) {
+
+        verifyShopId(dto.getShopId());
+
         MallMdse mdse = new MallMdse();
 
         mdse.setName(dto.getName());
@@ -54,94 +72,81 @@ public class MdseServiceImpl implements MdseService {
         mdse.setPrice(dto.getPrice());
         mdse.setInventoryQuantity(dto.getInventoryQuantity());
         mdse.setStartingQuantity(dto.getStartingQuantity());
+        mdse.setRemainingQuantity(dto.getInventoryQuantity());
         mdse.setShowRemainingQuantity(dto.isShowRemainingQuantity());
         mdse.setRefund(dto.isRefund());
         mdse.setInventoryReductionMethod(dto.getInventoryReductionMethod());
         mdse.setButtonName(dto.getButtonName());
         mdse.setDetails(dto.getDetails());
+        mdse.setSalesVolume(0);
+        mdse.setShopId(dto.getShopId());
         mdse.setDeleted(SystemConstants.DELETED_NO);
-
-        //商品图片
-        List<String> pictureList = dto.getPictureList();
-        List<MallPicture> mallPictures = Lists.newArrayList();
-        for (String link : pictureList) {
-            MallPicture picture = new MallPicture();
-            picture.setLink(link);
-            picture.setType(PictureType.MDSE_PIC);
-            picture.setDeleted(SystemConstants.DELETED_NO);
-            mallPictures.add(picture);
-        }
-        mdse.setPictureList(mallPictures);
-
-        //商品分组
-        List<Long> groupIdList = dto.getGroupIdList();
-        List<MdseGroup> groupList = groupService.findAllById(groupIdList);
-        mdse.setGroupList(groupList);
+        mdse.setStatus(dto.getStatus() == null ? 2 : dto.getStatus());
 
         //商品品牌
         Long brandId = dto.getBrandId();
-        Optional<MdseBrand> brandOptional = brandService.findById(brandId);
-        brandOptional.ifPresent(mdse::setBrand);
-        System.out.println(brandOptional.get());
+        if (!ObjectUtils.isEmpty(brandId)) {
+            Optional<MdseBrand> brandOptional = brandService.findById(brandId);
+            MdseBrand brand = brandOptional.orElseThrow(() -> new BusinessException("品牌不存在"));
+            mdse.setBrandId(brand.getBrandId());
+        }
 
         //商品厂家
         Long mfgId = dto.getMfgId();
-        Optional<MdseMfg> mfgOptional = mfgService.findById(mfgId);
-        mfgOptional.ifPresent(mdse::setMfg);
+        if (!ObjectUtils.isEmpty(mfgId)) {
+            Optional<MdseMfg> mfgOptional = mfgService.findById(mfgId);
+            MdseMfg mfg = mfgOptional.orElseThrow(() -> new BusinessException("厂家不存在"));
+            mdse.setMfgId(mfg.getMfgId());
+        }
+
+        //商品类型
+        Long typeId = dto.getTypeId();
+        if (!ObjectUtils.isEmpty(typeId)) {
+            Optional<MdseType> typeOptional = typeService.findById(typeId);
+            MdseType mdseType = typeOptional.orElseThrow(() -> new BusinessException("类型不存在"));
+            mdse.setTypeId(mdseType.getTypeId());
+        }
+
+
+        mdse = mdseRepository.save(mdse);
+
+        //商品图片
+        Set<String> pictureList = dto.getPictureList();
+        for (String url : pictureList) {
+            PictureDTO picture = new PictureDTO();
+            picture.setUrl(url);
+            picture.setType(PictureType.MDSE_PIC);
+            picture.setMdseId(mdse.getMdseId());
+            pictureService.add(picture);
+        }
+
+        //商品标签
+        Set<Long> labelIdList = dto.getLabelIdList();
+        if (!CollectionUtils.isEmpty(labelIdList)) {
+            List<MdseLabel> labelList = labelService.findAllById(Lists.newArrayList(labelIdList));
+            labelService.addMdseLabelMap(mdse.getMdseId(), labelList);
+        }
+        //商品分组
+        Set<Long> groupIdList = dto.getGroupIdList();
+        if (!CollectionUtils.isEmpty(groupIdList)) {
+            List<MdseGroup> groupList = groupService.findAllById(Lists.newArrayList(groupIdList));
+            groupService.addMdseGroupMap(mdse.getMdseId(), groupList);
+        }
 
         //商品库存
-        List<StockDTO> stockList = dto.getStockList();
-        List<MdseStock> mdseStockList = Lists.newArrayList();
-        for (StockDTO stockDTO : stockList) {
-            MdseStock stock = new MdseStock();
-
-            SpecDTO specA = stockDTO.getSpecA();
-            if (!ObjectUtils.isEmpty(specA)) {
-                MdseSpec mdseSpecA = new MdseSpec();
-                mdseSpecA.setKey(specA.getKey());
-                mdseSpecA.setValue(specA.getValue());
-                mdseSpecA.setDeleted(SystemConstants.DELETED_NO);
-            }
+        Long mdseId = mdse.getMdseId();
+        Set<StockDTO> stockList = dto.getStockList();
+        Optional.of(stockList)
+                .orElse(Sets.newHashSet())
+                .stream()
+                .filter(stock -> !ObjectUtils.isEmpty(stock))
+                .forEach(stockDTO -> {
+                    stockDTO.setMdseId(mdseId);
+                    stockService.add(stockDTO);
+                });
 
 
-            SpecDTO specB = stockDTO.getSpecB();
-            if (!ObjectUtils.isEmpty(specB)) {
-                MdseSpec mdseSpecB = new MdseSpec();
-                mdseSpecB.setKey(specB.getKey());
-                mdseSpecB.setValue(specB.getValue());
-                mdseSpecB.setDeleted(SystemConstants.DELETED_NO);
-            }
-
-            SpecDTO specC = stockDTO.getSpecC();
-            if (!ObjectUtils.isEmpty(specC)) {
-                MdseSpec mdseSpecC = new MdseSpec();
-                mdseSpecC.setKey(specC.getKey());
-                mdseSpecC.setValue(specC.getValue());
-                mdseSpecC.setDeleted(SystemConstants.DELETED_NO);
-            }
-
-            stock.setPrice(stockDTO.getPrice());
-            stock.setTotalInventory(stockDTO.getTotalInventory());
-            stock.setRemainingStock(stockDTO.getRemainingStock());
-            stock.setNumber(stockDTO.getNumber());
-            stock.setDeleted(SystemConstants.DELETED_NO);
-
-            List<String> specPictureList = stockDTO.getSpecPictureList();
-            List<MallPicture> mallPictureList = Lists.newArrayList();
-            for (String link : specPictureList) {
-                MallPicture picture = new MallPicture();
-                picture.setLink(link);
-                picture.setType(PictureType.SPEC);
-                picture.setDeleted(SystemConstants.DELETED_NO);
-                mallPictureList.add(picture);
-
-            }
-            stock.setSpecPictureList(mallPictureList);
-            mdseStockList.add(stock);
-        }
-        mdse.setStockList(mdseStockList);
-
-        return mdseRepository.save(mdse);
+        return mdse;
     }
 
     @Override
@@ -159,16 +164,29 @@ public class MdseServiceImpl implements MdseService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Optional<MallMdse> findById(Long id) {
-        Optional<MallMdse> mdseOptional = mdseRepository.findById(id);
-        mdseOptional.ifPresent(System.out::println);
-        return mdseOptional;
+        return mdseRepository.findById(id);
     }
 
     @Override
     public MdseInfo entity2vo(MallMdse entity) {
-        return null;
+        MdseInfo mdseInfo = new MdseInfo();
+        mdseInfo.setMdseId(entity.getMdseId());
+        mdseInfo.setName(entity.getName());
+        mdseInfo.setNumber(entity.getNumber());
+        mdseInfo.setPrice(entity.getPrice());
+        mdseInfo.setInventoryQuantity(entity.getInventoryQuantity());
+        mdseInfo.setRemainingQuantity(entity.getRemainingQuantity());
+        mdseInfo.setStartingQuantity(entity.getStartingQuantity());
+        mdseInfo.setShowRemainingQuantity(entity.isShowRemainingQuantity());
+        mdseInfo.setRefund(entity.isRefund());
+        mdseInfo.setInventoryReductionMethod(entity.getInventoryReductionMethod());
+        mdseInfo.setButtonName(entity.getButtonName());
+        mdseInfo.setDetails(entity.getDetails());
+        mdseInfo.setSalesVolume(entity.getSalesVolume());
+        mdseInfo.setCreateTime(entity.getCreateTime());
+        mdseInfo.setStatus(entity.getStatus());
+        return mdseInfo;
     }
 
     @Override
@@ -183,6 +201,128 @@ public class MdseServiceImpl implements MdseService {
 
     @Override
     public Page<MallMdse> findPage(MdsePageQuery mdsePageQuery) {
-        return null;
+
+        Pageable pageable = PageUtils.getPageable(mdsePageQuery);
+
+        List<Long> shopIdList = findAllShopIdByAuth();
+
+        Specification<MallMdse> spec = (root, query, criteriaBuilder) -> {
+            List<Predicate> list = Lists.newArrayList();
+
+            if (mdsePageQuery.getStartCreateDate() != null && mdsePageQuery.getEndCreateDate() != null) {
+
+            }
+
+            if (mdsePageQuery.getStartPrice() != null && mdsePageQuery.getEndPrice() != null) {
+
+            }
+
+
+            CriteriaBuilder.In<Long> shopIdIn = criteriaBuilder.in(root.get("shopId").as(Long.class));
+            shopIdList.forEach(shopIdIn::value);
+            list.add(shopIdIn);
+
+            list.add(criteriaBuilder.equal(root.get("deleted").as(Integer.class), SystemConstants.DELETED_NO));
+            Predicate[] p = new Predicate[list.size()];
+            return criteriaBuilder.and((Predicate[]) list.toArray(p));
+        };
+        return mdseRepository.findAll(spec, pageable);
+    }
+
+    @NotNull
+    private List<Long> findAllShopIdByAuth() {
+        Result<List<ShopInfo>> shopListResult = shopFeignClient.lists();
+        if (!Result.isSuccess(shopListResult)) {
+            throw new BusinessException("店铺权限信息获取失败");
+        }
+        List<Long> shopIdList = shopListResult.getData().stream().map(ShopInfo::getShopId).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(shopIdList)) {
+            throw new BusinessException("权限不足");
+        }
+        return shopIdList;
+    }
+
+    @Override
+    public MdseInfo voAddPictureList(MdseInfo mdseInfo) {
+        if (!ObjectUtils.isEmpty(mdseInfo) && !ObjectUtils.isEmpty(mdseInfo.getMdseId())) {
+            List<MallPicture> pictureList = pictureService.findAllByMdseId(mdseInfo.getMdseId());
+            List<PictureInfo> pictureInfoList = pictureService.list2vo(pictureList);
+            mdseInfo.setPictureList(pictureInfoList);
+        }
+        return mdseInfo;
+    }
+
+    @Override
+    public MdseInfo voAddGroupList(MdseInfo mdseInfo) {
+        if (!ObjectUtils.isEmpty(mdseInfo) && !ObjectUtils.isEmpty(mdseInfo.getMdseId())) {
+            List<MdseGroup> groupList = groupService.findAllByMdseId(mdseInfo.getMdseId());
+            List<GroupInfo> groupInfoList = groupService.list2vo(groupList);
+            mdseInfo.setGroupList(groupInfoList);
+        }
+        return mdseInfo;
+    }
+
+    @Override
+    public MdseInfo voAddBrand(MdseInfo mdseInfo, Long brandId) {
+        if (!ObjectUtils.isEmpty(mdseInfo) && !ObjectUtils.isEmpty(mdseInfo.getMdseId()) && !ObjectUtils.isEmpty(brandId)) {
+            Optional<MdseBrand> brandOptional = brandService.findById(brandId);
+            brandOptional.ifPresent(brand -> {
+                mdseInfo.setBrand(brandService.entity2vo(brand));
+            });
+        }
+        return mdseInfo;
+    }
+
+    @Override
+    public MdseInfo voAddMfg(MdseInfo mdseInfo, Long mfgId) {
+        if (!ObjectUtils.isEmpty(mdseInfo) && !ObjectUtils.isEmpty(mdseInfo.getMdseId()) && !ObjectUtils.isEmpty(mfgId)) {
+            Optional<MdseMfg> mfgOptional = mfgService.findById(mfgId);
+            mfgOptional.ifPresent(mfg -> {
+                mdseInfo.setMfg(mfgService.entity2vo(mfg));
+            });
+        }
+        return mdseInfo;
+    }
+
+    @Override
+    public MdseInfo voAddStockList(MdseInfo mdseInfo) {
+        if (!ObjectUtils.isEmpty(mdseInfo) && !ObjectUtils.isEmpty(mdseInfo.getMdseId())) {
+            List<MdseStock> stockList = stockService.findAllByMdseId(mdseInfo.getMdseId());
+            List<StockInfo> stockInfos = stockService.list2vo(stockList);
+            mdseInfo.setStockList(stockInfos);
+        }
+        return mdseInfo;
+    }
+
+    @Override
+    public MdseInfo voAddType(MdseInfo mdseInfo, Long typeId) {
+        if (!ObjectUtils.isEmpty(mdseInfo) && !ObjectUtils.isEmpty(mdseInfo.getMdseId()) && !ObjectUtils.isEmpty(typeId)) {
+            Optional<MdseType> typeOptional = typeService.findById(typeId);
+            typeOptional.ifPresent(type -> {
+                mdseInfo.setTypeInfo(typeService.entity2vo(type));
+            });
+        }
+        return mdseInfo;
+    }
+
+    @Override
+    public MdseInfo voAddLabelList(MdseInfo mdseInfo) {
+        if (!ObjectUtils.isEmpty(mdseInfo) && !ObjectUtils.isEmpty(mdseInfo.getMdseId())) {
+            List<MdseLabel> labelList = labelService.findAllByMdseId(mdseInfo.getMdseId());
+            List<LabelInfo> labelInfoList = labelService.list2vo(labelList);
+            mdseInfo.setLabelInfoList(labelInfoList);
+        }
+
+        return mdseInfo;
+    }
+
+    private void verifyShopId(Long shopId) {
+        if (ObjectUtils.isEmpty(shopId)) {
+            throw new BusinessException("店铺信息获取失败");
+        }
+        List<Long> shopIdList = findAllShopIdByAuth();
+        if (!shopIdList.contains(shopId)) {
+            throw new BusinessException("没有店铺【 " + shopId + " 】的操作权限");
+        }
     }
 }

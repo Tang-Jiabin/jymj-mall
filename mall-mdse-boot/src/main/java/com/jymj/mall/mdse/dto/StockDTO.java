@@ -23,6 +23,9 @@ public class StockDTO {
     @ApiModelProperty("库存ID")
     private Long stockId;
 
+    @ApiModelProperty("商品id")
+    private Long mdseId;
+
     @NotNull(message = "规格不能为空")
     @ApiModelProperty("规格A")
     private SpecDTO specA;

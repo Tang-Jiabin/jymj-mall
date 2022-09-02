@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 商品dto
@@ -24,7 +25,7 @@ public class MdseDTO {
     private Long mdseId;
 
     @ApiModelProperty("商品图片")
-    private List<String> pictureList;
+    private Set<String> pictureList;
 
     @ApiModelProperty("商品视频")
     private List<String> videoList;
@@ -60,10 +61,13 @@ public class MdseDTO {
     private String details;
 
     @ApiModelProperty("分组id集合")
-    private List<Long> groupIdList;
+    private Set<Long> groupIdList;
 
     @ApiModelProperty("店铺（网点）id集合")
-    private List<Long> shopIdList;
+    private Set<Long> shopIdList;
+
+    @ApiModelProperty("标签id集合")
+    private Set<Long> labelIdList;
 
     @ApiModelProperty("品牌id")
     private Long brandId;
@@ -71,7 +75,16 @@ public class MdseDTO {
     @ApiModelProperty("厂家id")
     private Long mfgId;
 
+    @ApiModelProperty("类型id")
+    private Long typeId;
+
+    @ApiModelProperty("店铺id")
+    private Long shopId;
+
     @ApiModelProperty("库存规格集合")
-    private List<StockDTO> stockList;
+    private Set<StockDTO> stockList;
+
+    @ApiModelProperty("商品状态 1-上架 2-下架")
+    private Integer status;
 
 }

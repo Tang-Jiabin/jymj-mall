@@ -18,7 +18,7 @@ public enum PictureType {
 
     MDSE_PIC(0, "商品图片"),
     MDSE_VIDEO(1, "商品视频"),
-    SPEC(2, "规格图片");
+    STOCK_SPEC(2, "规格图片");
 
 
     public Integer getValue() {
