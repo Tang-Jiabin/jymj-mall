@@ -17,4 +17,6 @@ import java.util.List;
 @Repository
 public interface MdseGroupMapRepository extends JpaRepository<MallMdseGroupMap,Long> {
     List<MallMdseGroupMap> findAllByMdseId(Long mdseId);
+
+    List<MallMdseGroupMap> findAllByGroupId(Long groupId);
 }

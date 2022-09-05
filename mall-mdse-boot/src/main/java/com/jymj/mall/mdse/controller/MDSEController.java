@@ -63,14 +63,6 @@ public class MDSEController {
         if (mdseOptional.isPresent()) {
             MallMdse mallMdse = mdseOptional.get();
             MdseInfo mdseInfo = mdseService.entity2vo(mallMdse);
-            mdseInfo = mdseService.voAddGroupList(mdseInfo);
-            mdseInfo = mdseService.voAddStockList(mdseInfo);
-            mdseInfo = mdseService.voAddLabelList(mdseInfo);
-            mdseInfo = mdseService.voAddPictureList(mdseInfo);
-            mdseInfo = mdseService.voAddMfg(mdseInfo,mallMdse.getMfgId());
-            mdseInfo = mdseService.voAddType(mdseInfo,mallMdse.getTypeId());
-            mdseInfo = mdseService.voAddBrand(mdseInfo,mallMdse.getBrandId());
-
             return Result.success(mdseInfo);
         }
 

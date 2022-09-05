@@ -106,6 +106,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 endpoints.getOAuth2RequestFactory(), authenticationManager
         ));
 
+
         // 添加微信授权模式的授权者
         granterList.add(new WechatTokenGranter(endpoints.getTokenServices(), endpoints.getClientDetailsService(),
                 endpoints.getOAuth2RequestFactory(), authenticationManager

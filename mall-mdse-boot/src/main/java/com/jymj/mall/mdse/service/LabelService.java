@@ -2,6 +2,7 @@ package com.jymj.mall.mdse.service;
 
 import com.jymj.mall.common.web.service.BaseService;
 import com.jymj.mall.mdse.dto.LabelDTO;
+import com.jymj.mall.mdse.entity.MallMdseLabelMap;
 import com.jymj.mall.mdse.entity.MdseLabel;
 import com.jymj.mall.mdse.vo.LabelInfo;
 
@@ -25,4 +26,5 @@ public interface LabelService extends BaseService<MdseLabel, LabelInfo, LabelDTO
 
     List<MdseLabel> findAllByAuth();
 
+    List<MallMdseLabelMap> findAllMdseLabelByLabelId(Long labelId);
 }

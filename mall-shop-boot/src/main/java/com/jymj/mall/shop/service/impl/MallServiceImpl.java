@@ -219,9 +219,12 @@ public class MallServiceImpl implements MallService {
             if (Result.isSuccess(districtListResult)) {
                 List<DistrictInfo> districtInfoList = districtListResult.getData();
                 String districtName = districtInfo2String(districtInfoList, SystemConstants.ROOT_DISTRICT_ID);
+                String districtIdStr = districtInfo2idStr(districtInfoList, SystemConstants.ROOT_DISTRICT_ID);
+                String[] ids = districtIdStr.split("-");
                 Optional<DistrictInfo> districtInfoOptional = districtInfoList.stream().filter(districtInfo -> districtInfo.getDistrictId().equals(mall.getDistrictId())).findFirst();
                 districtInfoOptional.ifPresent(districtInfo -> {
                     districtInfo.setName(districtName);
+                    districtInfo.setIds(ids);
                     mallVO.setDistrictInfo(districtInfo);
                 });
             }
@@ -237,6 +240,20 @@ public class MallServiceImpl implements MallService {
         mallVO.setTagList(tagInfoList);
 
         return mallVO;
+    }
+
+    private String districtInfo2idStr(List<DistrictInfo> districtInfoList, Long pid) {
+        StringBuilder sb = new StringBuilder();
+        Optional.ofNullable(districtInfoList).orElse(Lists.newArrayList()).stream().filter(districtInfo -> districtInfo.getPid().equals(pid)).forEach(districtInfo -> {
+            sb.append(districtInfo.getDistrictId());
+            String districtId = districtInfo2idStr(districtInfoList, districtInfo.getDistrictId());
+            if (StringUtils.hasText(districtId)) {
+                sb.append("-");
+                sb.append(districtId);
+            }
+        });
+
+        return sb.toString();
     }
 
     @Override
@@ -301,21 +318,23 @@ public class MallServiceImpl implements MallService {
     }
 
     private void updateMallAdminInfo(UpdateMallDTO updateMallDTO, MallDetails mallDetails) {
+
         if (!mallDetails.getManagerName().equals(updateMallDTO.getNickname()) || !mallDetails.getManagerMobile().equals(updateMallDTO.getMobile())) {
             Result<AdminInfo> oldAdmin = adminFeignClient.getAdminByMobile(mallDetails.getManagerMobile());
             if (Result.isSuccess(oldAdmin)) {
                 AdminInfo adminInfo = oldAdmin.getData();
                 UpdateAdminDTO updateAdminDTO = new UpdateAdminDTO();
                 updateAdminDTO.setAdminId(adminInfo.getAdminId());
-                updateAdminDTO.setMobile(updateMallDTO.getMobile());
-                updateAdminDTO.setNickname(updateMallDTO.getNickname());
+                if (!mallDetails.getManagerName().equals(updateMallDTO.getNickname())){
+                    updateAdminDTO.setNickname(updateMallDTO.getNickname());
+                }
+                if (!mallDetails.getManagerMobile().equals(updateMallDTO.getMobile())){
+                    updateAdminDTO.setMobile(updateMallDTO.getMobile());
+                }
                 if (adminInfo.getUsername().equals(adminInfo.getMobile())) {
                     updateAdminDTO.setUsername(updateMallDTO.getMobile());
                 }
                 adminFeignClient.updateAdmin(updateAdminDTO);
-
-            } else {
-                throw new BusinessException(ResultCode.USER_NOT_EXIST);
             }
         }
     }

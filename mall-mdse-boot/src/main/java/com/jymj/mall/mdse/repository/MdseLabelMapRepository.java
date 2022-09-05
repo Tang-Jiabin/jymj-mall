@@ -18,4 +18,6 @@ import java.util.List;
 @Repository
 public interface MdseLabelMapRepository extends JpaRepository<MallMdseLabelMap,Long> {
     List<MallMdseLabelMap> findAllByMdseId(Long mdseId);
+
+    List<MallMdseLabelMap> findAllByLabelId(Long labelId);
 }

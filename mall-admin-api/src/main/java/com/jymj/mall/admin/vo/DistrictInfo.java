@@ -29,4 +29,7 @@ public class DistrictInfo {
     @ApiModelProperty("中心点")
     private String center;
 
+    @ApiModelProperty("ids")
+    private String[] ids;
+
 }

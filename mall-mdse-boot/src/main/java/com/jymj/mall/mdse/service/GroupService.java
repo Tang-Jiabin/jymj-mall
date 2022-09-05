@@ -3,6 +3,7 @@ package com.jymj.mall.mdse.service;
 import com.jymj.mall.common.web.service.BaseService;
 import com.jymj.mall.mdse.dto.GroupDTO;
 import com.jymj.mall.mdse.dto.GroupPageQuery;
+import com.jymj.mall.mdse.entity.MallMdseGroupMap;
 import com.jymj.mall.mdse.entity.MdseGroup;
 import com.jymj.mall.mdse.vo.GroupInfo;
 import org.springframework.data.domain.Page;
@@ -27,4 +28,6 @@ public interface GroupService extends BaseService<MdseGroup, GroupInfo, GroupDTO
     void addMdseGroupMap(Long mdseId, List<MdseGroup> groupList);
 
     List<MdseGroup> findAllByMdseId(Long mdseId);
+
+    List<MallMdseGroupMap> findAllMdseGroupById(Long groupId);
 }

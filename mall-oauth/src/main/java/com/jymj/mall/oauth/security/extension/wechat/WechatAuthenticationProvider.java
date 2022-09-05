@@ -12,6 +12,7 @@ import com.jymj.mall.user.dto.UserAuthDTO;
 import com.jymj.mall.user.dto.UserDTO;
 import lombok.Data;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -20,7 +21,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.HashSet;
 
-
+@Slf4j
 @Data
 public class WechatAuthenticationProvider implements AuthenticationProvider {
 
@@ -43,6 +44,7 @@ public class WechatAuthenticationProvider implements AuthenticationProvider {
 
         WxMaJscode2SessionResult sessionInfo =  wxMaService.getUserService().getSessionInfo(code);
         String openid = sessionInfo.getOpenid();
+
         Result<UserAuthDTO> memberAuthResult = userFeignClient.loadUserByOpenId(openid);
         // 微信用户不存在，注册成为新会员
         if (memberAuthResult != null && ResultCode.USER_NOT_EXIST.getCode().equals(memberAuthResult.getCode())) {

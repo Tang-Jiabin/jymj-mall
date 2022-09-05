@@ -171,4 +171,10 @@ public class LabelServiceImpl implements LabelService {
         }
         return Lists.newArrayList();
     }
+
+    @Override
+    public List<MallMdseLabelMap> findAllMdseLabelByLabelId(Long labelId) {
+
+        return labelMapRepository.findAllByLabelId(labelId);
+    }
 }

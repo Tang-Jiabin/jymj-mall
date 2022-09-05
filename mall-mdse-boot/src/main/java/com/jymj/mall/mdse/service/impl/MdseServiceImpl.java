@@ -11,6 +11,7 @@ import com.jymj.mall.mdse.dto.MdsePageQuery;
 import com.jymj.mall.mdse.dto.PictureDTO;
 import com.jymj.mall.mdse.dto.StockDTO;
 import com.jymj.mall.mdse.entity.*;
+import com.jymj.mall.mdse.enums.InventoryReductionMethod;
 import com.jymj.mall.mdse.enums.PictureType;
 import com.jymj.mall.mdse.repository.MdseRepository;
 import com.jymj.mall.mdse.service.*;
@@ -26,13 +27,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -170,6 +170,21 @@ public class MdseServiceImpl implements MdseService {
 
     @Override
     public MdseInfo entity2vo(MallMdse entity) {
+        return entity2vo(entity, true, true, true, true, true, true, true);
+    }
+
+    @Override
+    public List<MdseInfo> list2vo(List<MallMdse> entityList) {
+        return Optional.of(entityList)
+                .orElse(Lists.newArrayList())
+                .stream()
+                .filter(entity -> !ObjectUtils.isEmpty(entity))
+                .map(this::entity2vo)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public MdseInfo entity2vo(MallMdse entity, boolean group, boolean stock, boolean label, boolean picture, boolean mfg, boolean type, boolean brand) {
         MdseInfo mdseInfo = new MdseInfo();
         mdseInfo.setMdseId(entity.getMdseId());
         mdseInfo.setName(entity.getName());
@@ -186,16 +201,40 @@ public class MdseServiceImpl implements MdseService {
         mdseInfo.setSalesVolume(entity.getSalesVolume());
         mdseInfo.setCreateTime(entity.getCreateTime());
         mdseInfo.setStatus(entity.getStatus());
+
+
+        if (group) {
+            mdseInfo = voAddGroupList(mdseInfo);
+        }
+        if (stock) {
+            mdseInfo = voAddStockList(mdseInfo);
+        }
+        if (label) {
+            mdseInfo = voAddLabelList(mdseInfo);
+        }
+        if (picture) {
+            mdseInfo = voAddPictureList(mdseInfo);
+        }
+        if (mfg) {
+            mdseInfo = voAddMfg(mdseInfo, entity.getMfgId());
+        }
+        if (type) {
+            mdseInfo = voAddType(mdseInfo, entity.getTypeId());
+        }
+        if (brand) {
+            mdseInfo = voAddBrand(mdseInfo, entity.getBrandId());
+        }
+
         return mdseInfo;
     }
 
     @Override
-    public List<MdseInfo> list2vo(List<MallMdse> entityList) {
+    public List<MdseInfo> list2vo(List<MallMdse> entityList, boolean group, boolean stock, boolean label, boolean picture, boolean mfg, boolean type, boolean brand) {
         return Optional.of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream()
                 .filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo)
+                .map(entity -> entity2vo(entity, group, stock, label, picture, mfg, type, brand))
                 .collect(Collectors.toList());
     }
 
@@ -206,20 +245,62 @@ public class MdseServiceImpl implements MdseService {
 
         List<Long> shopIdList = findAllShopIdByAuth();
 
+
         Specification<MallMdse> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> list = Lists.newArrayList();
 
+            //创建时间
             if (mdsePageQuery.getStartCreateDate() != null && mdsePageQuery.getEndCreateDate() != null) {
-
+                list.add(criteriaBuilder.between(root.get("createTime").as(Date.class), mdsePageQuery.getStartCreateDate(), mdsePageQuery.getEndCreateDate()));
             }
 
+            //价格
             if (mdsePageQuery.getStartPrice() != null && mdsePageQuery.getEndPrice() != null) {
+                list.add(criteriaBuilder.between(root.get("price").as(BigDecimal.class), mdsePageQuery.getStartPrice(), mdsePageQuery.getEndPrice()));
+            }
 
+            //编号
+            if (StringUtils.hasText(mdsePageQuery.getNumber())) {
+                list.add(criteriaBuilder.like(root.get("number").as(String.class), mdsePageQuery.getNumber() + SystemConstants.SQL_LIKE));
+            }
+
+            //名称
+            if (StringUtils.hasText(mdsePageQuery.getName())) {
+                list.add(criteriaBuilder.like(root.get("name").as(String.class), mdsePageQuery.getName() + SystemConstants.SQL_LIKE));
+            }
+
+            //分组
+            if (!ObjectUtils.isEmpty(mdsePageQuery.getGroupId())) {
+                List<MallMdseGroupMap> mdseGroupMaps = groupService.findAllMdseGroupById(mdsePageQuery.getGroupId());
+                CriteriaBuilder.In<Long> mdseIdIn = criteriaBuilder.in(root.get("mdseId").as(Long.class));
+                mdseGroupMaps.forEach(mdseGroup-> mdseIdIn.value(mdseGroup.getMdseId()));
+                mdseIdIn.value(0L);
+                list.add(mdseIdIn);
+            }
+
+            //标签
+            if (!ObjectUtils.isEmpty(mdsePageQuery.getLabelId())) {
+                List<MallMdseLabelMap> mdseLabelMaps = labelService.findAllMdseLabelByLabelId(mdsePageQuery.getLabelId());
+                CriteriaBuilder.In<Long> mdseIdIn = criteriaBuilder.in(root.get("mdseId").as(Long.class));
+                mdseLabelMaps.forEach(mdseLabel-> mdseIdIn.value(mdseLabel.getMdseId()));
+                mdseIdIn.value(0L);
+                list.add(mdseIdIn);
+            }
+
+            //类型
+            if (!ObjectUtils.isEmpty(mdsePageQuery.getTypeId())) {
+                list.add(criteriaBuilder.equal(root.get("typeId").as(Integer.class), mdsePageQuery.getTypeId()));
+            }
+
+            //库存减少方式
+            if (!ObjectUtils.isEmpty(mdsePageQuery.getInventoryReductionMethod())) {
+                list.add(criteriaBuilder.equal(root.get("inventoryReductionMethod").as(InventoryReductionMethod.class), mdsePageQuery.getInventoryReductionMethod()));
             }
 
 
             CriteriaBuilder.In<Long> shopIdIn = criteriaBuilder.in(root.get("shopId").as(Long.class));
             shopIdList.forEach(shopIdIn::value);
+            shopIdIn.value(0L);
             list.add(shopIdIn);
 
             list.add(criteriaBuilder.equal(root.get("deleted").as(Integer.class), SystemConstants.DELETED_NO));

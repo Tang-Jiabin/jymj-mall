@@ -1,5 +1,6 @@
 package com.jymj.mall.oauth.security.extension.wechat;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -11,6 +12,7 @@ import org.springframework.security.oauth2.provider.token.AuthorizationServerTok
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Slf4j
 /**
  *  微信授权者
  * @author J.Tang
@@ -24,7 +26,6 @@ public class WechatTokenGranter extends AbstractTokenGranter {
      * 声明授权者 WechatTokenGranter 支持授权模式 wechat
      * 根据接口传值 grant_type = wechat 的值匹配到此授权者
      * 匹配逻辑详见下面的两个方法
-
      */
     private static final String GRANT_TYPE = "wechat";
     private final AuthenticationManager authenticationManager;
@@ -47,11 +48,11 @@ public class WechatTokenGranter extends AbstractTokenGranter {
         parameters.remove("encryptedData");
         parameters.remove("iv");
 
-        Authentication userAuth = new WechatAuthenticationToken(code, encryptedData,iv); // 未认证状态
+        Authentication userAuth = new WechatAuthenticationToken(code, encryptedData, iv); // 未认证状态
         ((AbstractAuthenticationToken) userAuth).setDetails(parameters);
 
         try {
-            userAuth = this.authenticationManager.authenticate(userAuth); // 认证中
+            userAuth = authenticationManager.authenticate(userAuth); // 认证中
         } catch (Exception e) {
             throw new InvalidGrantException(e.getMessage());
         }

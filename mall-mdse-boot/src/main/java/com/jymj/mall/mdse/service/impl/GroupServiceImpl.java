@@ -244,4 +244,10 @@ public class GroupServiceImpl implements GroupService {
                         .map(MallMdseGroupMap::getGroupId)
                         .collect(Collectors.toList()));
     }
+
+    @Override
+    public List<MallMdseGroupMap> findAllMdseGroupById(Long groupId) {
+
+        return mdseGroupMapRepository.findAllByGroupId(groupId);
+    }
 }
