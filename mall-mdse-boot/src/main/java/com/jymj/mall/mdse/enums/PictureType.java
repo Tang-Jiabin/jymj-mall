@@ -16,9 +16,13 @@ import java.util.List;
  */
 public enum PictureType {
 
+    /**
+     * 项目图片类型
+     */
     MDSE_PIC(0, "商品图片"),
     MDSE_VIDEO(1, "商品视频"),
-    STOCK_SPEC(2, "规格图片");
+    STOCK_SPEC(2, "规格图片"),
+    CARD_PIC(3, "卡图片");
 
 
     public Integer getValue() {

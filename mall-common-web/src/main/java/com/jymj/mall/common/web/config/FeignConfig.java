@@ -75,7 +75,8 @@ public class FeignConfig {
      */
     @Bean
     Logger.Level feignLoggerLevel() {
-        return Logger.Level.FULL; //设置日志级别为FULL
+        //设置日志级别为FULL
+        return Logger.Level.FULL;
     }
 }
 

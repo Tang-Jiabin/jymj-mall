@@ -37,4 +37,6 @@ public interface MdseService extends BaseService<MallMdse, MdseInfo, MdseDTO> {
     MdseInfo entity2vo(MallMdse mallMdse,boolean group,boolean  stock,boolean  label,boolean  picture,boolean  mfg,boolean  type,boolean  brand);
 
     List<MdseInfo> list2vo(List<MallMdse> entityList, boolean group, boolean stock, boolean label, boolean picture, boolean mfg, boolean type, boolean brand);
+
+    List<MallMdse> findAllById(List<Long> idList);
 }

@@ -19,6 +19,7 @@ import java.util.Optional;
 public interface MdseBrandRepository extends JpaRepository<MdseBrand,Long> {
     Optional<MdseBrand> findByName(String name);
 
+    List<MdseBrand> findAllByMallIdIn(List<Long> mallIdList);
 
-    List<MdseBrand> findAllByShopIdIn(List<Long> shopIdList);
+    List<MdseBrand> findAllByMallId(Long mallId);
 }

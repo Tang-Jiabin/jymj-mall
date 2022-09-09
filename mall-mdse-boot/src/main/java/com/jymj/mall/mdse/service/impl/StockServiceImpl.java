@@ -5,6 +5,7 @@ import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.mdse.dto.PictureDTO;
 import com.jymj.mall.mdse.dto.SpecDTO;
 import com.jymj.mall.mdse.dto.StockDTO;
+import com.jymj.mall.mdse.entity.MallPicture;
 import com.jymj.mall.mdse.entity.MdseSpec;
 import com.jymj.mall.mdse.entity.MdseStock;
 import com.jymj.mall.mdse.enums.PictureType;
@@ -16,9 +17,13 @@ import com.jymj.mall.mdse.vo.SpecInfo;
 import com.jymj.mall.mdse.vo.StockInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -46,49 +51,27 @@ public class StockServiceImpl implements StockService {
         MdseStock stock = new MdseStock();
 
         SpecDTO specA = dto.getSpecA();
-        if (!ObjectUtils.isEmpty(specA)) {
-            MdseSpec mdseSpecA = new MdseSpec();
-            mdseSpecA.setKey(specA.getKey());
-            mdseSpecA.setValue(specA.getValue());
-            mdseSpecA.setDeleted(SystemConstants.DELETED_NO);
-            mdseSpecA = addSpec(mdseSpecA);
-            stock.setSpecA(mdseSpecA.getSpecId());
-        }
-
+        stock.setSpecA(getMdseSpecId(dto, specA));
 
         SpecDTO specB = dto.getSpecB();
-        if (!ObjectUtils.isEmpty(specB)) {
-            MdseSpec mdseSpecB = new MdseSpec();
-            mdseSpecB.setKey(specB.getKey());
-            mdseSpecB.setValue(specB.getValue());
-            mdseSpecB.setDeleted(SystemConstants.DELETED_NO);
-            mdseSpecB = addSpec(mdseSpecB);
-            stock.setSpecB(mdseSpecB.getSpecId());
-        }
+        stock.setSpecB(getMdseSpecId(dto, specB));
 
         SpecDTO specC = dto.getSpecC();
-        if (!ObjectUtils.isEmpty(specC)) {
-            MdseSpec mdseSpecC = new MdseSpec();
-            mdseSpecC.setKey(specC.getKey());
-            mdseSpecC.setValue(specC.getValue());
-            mdseSpecC.setDeleted(SystemConstants.DELETED_NO);
-            mdseSpecC = addSpec(mdseSpecC);
-            stock.setSpecC(mdseSpecC.getSpecId());
-        }
+        stock.setSpecC(getMdseSpecId(dto, specC));
 
         stock.setMdseId(dto.getMdseId());
         stock.setPrice(dto.getPrice());
         stock.setTotalInventory(dto.getTotalInventory());
-        stock.setRemainingStock(dto.getRemainingStock());
+        stock.setRemainingStock(dto.getTotalInventory());
         stock.setNumber(dto.getNumber());
         stock.setDeleted(SystemConstants.DELETED_NO);
 
+        stock = stockRepository.save(stock);
+        List<PictureDTO> specPictureList = dto.getSpecPictureList();
 
-        List<String> specPictureList = dto.getSpecPictureList();
-
-        for (String url : specPictureList) {
+        for (PictureDTO pictureDTO : specPictureList) {
             PictureDTO picture = new PictureDTO();
-            picture.setUrl(url);
+            picture.setUrl(pictureDTO.getUrl());
             picture.setMdseId(dto.getMdseId());
             picture.setStockId(stock.getStockId());
             picture.setType(PictureType.STOCK_SPEC);
@@ -96,17 +79,122 @@ public class StockServiceImpl implements StockService {
 
         }
 
-        return stockRepository.save(stock);
+        return stock;
     }
 
     @Override
     public Optional<MdseStock> update(StockDTO dto) {
+        Optional<MdseStock> stockOptional = stockRepository.findById(dto.getStockId());
+        if (stockOptional.isPresent()) {
+            MdseStock stock = stockOptional.get();
+            boolean update = false;
+
+            if (dto.getMdseId() != null && !Objects.equals(dto.getMdseId(), stock.getMdseId())) {
+                stock.setMdseId(dto.getMdseId());
+                update = true;
+            }
+
+            if (dto.getPrice() != null && !Objects.equals(dto.getPrice(), stock.getPrice())) {
+                stock.setPrice(dto.getPrice());
+                update = true;
+            }
+
+            if (dto.getTotalInventory() != null && !Objects.equals(dto.getTotalInventory(), stock.getRemainingStock())) {
+                int totalInventory = stock.getRemainingStock() - dto.getTotalInventory() + stock.getTotalInventory();
+                stock.setRemainingStock(dto.getTotalInventory());
+                stock.setTotalInventory(totalInventory);
+                update = true;
+
+            }
+
+            if (StringUtils.hasText(dto.getNumber()) && !Objects.equals(dto.getNumber(), stock.getNumber())) {
+                stock.setNumber(dto.getNumber());
+                update = true;
+            }
+
+            MdseSpec mdseSpecA = updateStockSpec(stock.getMdseId(), dto.getSpecA());
+            if (!ObjectUtils.isEmpty(mdseSpecA)){
+                stock.setSpecA(mdseSpecA.getMdseId());
+                update = true;
+            }
+
+            MdseSpec mdseSpecB = updateStockSpec(stock.getMdseId(), dto.getSpecB());
+            if (!ObjectUtils.isEmpty(mdseSpecB)){
+                stock.setSpecB(mdseSpecB.getMdseId());
+                update = true;
+            }
+
+            MdseSpec mdseSpecC = updateStockSpec(stock.getMdseId(), dto.getSpecC());
+            if (!ObjectUtils.isEmpty(mdseSpecC)){
+                stock.setSpecC(mdseSpecC.getMdseId());
+                update = true;
+            }
+
+            List<PictureDTO> specPictureList = dto.getSpecPictureList();
+            pictureService.updateMdsePicture(specPictureList, dto.getMdseId(), PictureType.STOCK_SPEC);
+
+            if (update){
+                Optional.of(save(stock));
+            }
+        }
+
         return Optional.empty();
+    }
+
+    private Long getMdseSpecId(StockDTO dto, SpecDTO specA) {
+        MdseSpec mdseSpec = null;
+        if (!ObjectUtils.isEmpty(specA)) {
+            MdseSpec mdseSpecA = new MdseSpec();
+            mdseSpecA.setMdseId(dto.getMdseId());
+            mdseSpecA.setKey(specA.getKey());
+            mdseSpecA.setValue(specA.getValue());
+            mdseSpecA.setDeleted(SystemConstants.DELETED_NO);
+            if (specA.getSpecId() != null) {
+                Optional<MdseSpec> mdseSpecOptional = mdseSpecRepository.findById(specA.getSpecId());
+                if (mdseSpecOptional.isPresent()) {
+
+                }
+            } else {
+                mdseSpec = addSpec(mdseSpecA);
+            }
+            return mdseSpec.getSpecId();
+        }
+        return null;
+    }
+
+    private MdseSpec updateStockSpec(Long mdseId, SpecDTO specA) {
+        if (!ObjectUtils.isEmpty(specA)) {
+            if (ObjectUtils.isEmpty(specA.getSpecId()) && StringUtils.hasText(specA.getKey()) && StringUtils.hasText(specA.getValue())) {
+                MdseSpec mdseSpec = new MdseSpec();
+                mdseSpec.setKey(specA.getKey());
+                mdseSpec.setValue(specA.getValue());
+                mdseSpec.setMdseId(mdseId);
+                mdseSpec.setDeleted(SystemConstants.DELETED_NO);
+                mdseSpec = addSpec(mdseSpec);
+                return mdseSpec;
+            } else {
+                Optional<MdseSpec> specOptional =findSpecById(specA.getSpecId());
+                if (specOptional.isPresent()) {
+                    MdseSpec mdseSpec = specOptional.get();
+                    if (StringUtils.hasText(specA.getKey()) && StringUtils.hasText(specA.getValue())) {
+                        mdseSpec.setKey(specA.getKey());
+                        mdseSpec.setValue(specA.getValue());
+                        saveSpec(mdseSpec);
+                    }
+                    return mdseSpec;
+                }
+            }
+        }
+        return null;
     }
 
     @Override
     public void delete(String ids) {
-
+        List<Long> idList = Arrays.stream(ids.split(",")).filter(id -> !ObjectUtils.isEmpty(id)).map(Long::parseLong).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(idList)) {
+            List<MdseStock> brandList = stockRepository.findAllById(idList);
+            stockRepository.deleteAll(brandList);
+        }
     }
 
     @Override
@@ -164,5 +252,28 @@ public class StockServiceImpl implements StockService {
     public List<MdseStock> findAllByMdseId(Long mdseId) {
 
         return stockRepository.findAllByMdseId(mdseId);
+    }
+
+    @Override
+    public void deleteMdseStock(List<MdseStock> deleteMdseStockList) {
+        List<Long> stockIdList = deleteMdseStockList.stream().map(MdseStock::getStockId).collect(Collectors.toList());
+        delete(StringUtils.collectionToCommaDelimitedString(stockIdList));
+        List<MallPicture> pictureList = pictureService.findAllByStockIdIn(stockIdList);
+        pictureService.delete(pictureList);
+    }
+
+    @Override
+    public Optional<MdseSpec> findSpecById(Long specId) {
+        return mdseSpecRepository.findById(specId);
+    }
+
+    @Override
+    public MdseSpec saveSpec(MdseSpec mdseSpec) {
+        return mdseSpecRepository.save(mdseSpec);
+    }
+
+    @Override
+    public MdseStock save(MdseStock stock) {
+        return stockRepository.save(stock);
     }
 }

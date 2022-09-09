@@ -16,6 +16,9 @@ import java.util.List;
  */
 public enum InventoryReductionMethod {
 
+    /**
+     * 库存减少方式
+     */
     CREATE_ORDER(0,"下单减库存"),
 
     PAYMENT(1,"付款减库存");

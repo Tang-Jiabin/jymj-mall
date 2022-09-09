@@ -26,8 +26,9 @@ public class RedissonConfig {
     private String password;
     @Setter
     private Integer database;
+    /** 默认最小空闲连接数*/
     @Setter
-    private Integer minIdle;// 默认最小空闲连接数
+    private Integer minIdle;
 
     @Bean
     public RedissonClient redissonClient() {

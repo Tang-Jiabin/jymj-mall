@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GlobalExceptionHandler {
 
+
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BindException.class)
     public <T> Result<T> processException(BindException e) {
@@ -53,9 +54,6 @@ public class GlobalExceptionHandler {
     /**
      * RequestParam参数的校验
      *
-     * @param e
-     * @param <T>
-     * @return
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ConstraintViolationException.class)
@@ -68,9 +66,6 @@ public class GlobalExceptionHandler {
     /**
      * RequestBody参数的校验
      *
-     * @param e
-     * @param <T>
-     * @return
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -158,10 +153,11 @@ public class GlobalExceptionHandler {
 
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler(SQLSyntaxErrorException.class)
-    public <T> Result<T> processSQLSyntaxErrorException(SQLSyntaxErrorException e) {
+    public <T> Result<T> processSqlSyntaxErrorException(SQLSyntaxErrorException e) {
         log.error(e.getMessage(), e);
         String errorMsg = e.getMessage();
-        if (StrUtil.isNotBlank(errorMsg) && errorMsg.contains("denied to user")) {
+        String dtu = "denied to user";
+        if (StrUtil.isNotBlank(errorMsg) && errorMsg.contains(dtu)) {
             return Result.failed("数据库用户无操作权限，建议本地搭建数据库环境");
         } else {
             return Result.failed(e.getMessage());
@@ -171,7 +167,8 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(CompletionException.class)
     public <T> Result<T> processException(CompletionException e) {
-        if (e.getMessage().startsWith("feign.FeignException")) {
+        String feignException = "feign.FeignException";
+        if (e.getMessage().startsWith(feignException)) {
             return Result.failed("微服务调用异常");
         }
         return handleException(e);
@@ -216,7 +213,7 @@ public class GlobalExceptionHandler {
         if (matcher.find()) {
             String matchString = matcher.group();
             matchString = matchString.replace("[", "").replace("]", "");
-            matchString = matchString.replaceAll("\\\"", "") + "字段类型错误";
+            matchString = matchString.replaceAll("\"", "") + "字段类型错误";
             group += matchString;
         }
         return group;

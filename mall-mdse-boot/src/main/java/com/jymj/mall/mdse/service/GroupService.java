@@ -25,9 +25,15 @@ public interface GroupService extends BaseService<MdseGroup, GroupInfo, GroupDTO
 
     List<MdseGroup> findAllById(List<Long> groupIdList);
 
-    void addMdseGroupMap(Long mdseId, List<MdseGroup> groupList);
+    void addMdseGroupMap(Long mdseId, List<Long> groupIdList);
 
     List<MdseGroup> findAllByMdseId(Long mdseId);
 
     List<MallMdseGroupMap> findAllMdseGroupById(Long groupId);
+
+    void deleteMdseGroupAll(List<MallMdseGroupMap> deleteMdseGroupList);
+
+    List<MallMdseGroupMap> findMdseGroupAllByMdseId(Long mdseId);
+
+    List<MdseGroup> findAllByMallId(Long mallId);
 }

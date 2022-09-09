@@ -3,14 +3,17 @@ package com.jymj.mall.mdse.service.impl;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.mdse.dto.PictureDTO;
 import com.jymj.mall.mdse.entity.MallPicture;
+import com.jymj.mall.mdse.enums.PictureType;
 import com.jymj.mall.mdse.repository.MallPictureRepository;
 import com.jymj.mall.mdse.service.PictureService;
 import com.jymj.mall.mdse.vo.PictureInfo;
 import lombok.RequiredArgsConstructor;
 import org.assertj.core.util.Lists;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -49,7 +52,11 @@ public class PictureServiceImpl implements PictureService {
 
     @Override
     public void delete(String ids) {
-
+        List<Long> idList = Arrays.stream(ids.split(",")).map(Long::parseLong).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(idList)) {
+            List<MallPicture> permissionList = pictureRepository.findAllById(idList);
+            pictureRepository.deleteAll(permissionList);
+        }
     }
 
     @Override
@@ -81,4 +88,61 @@ public class PictureServiceImpl implements PictureService {
     public List<MallPicture> findAllByMdseId(Long mdseId) {
         return pictureRepository.findAllByMdseId(mdseId);
     }
+
+    @Override
+    public List<MallPicture> findAllByMdseIdAndType(Long mdseId, PictureType type) {
+        return pictureRepository.findAllByMdseIdAndType(mdseId, type);
+    }
+
+    @Override
+    public void delete(List<MallPicture> deletePicList) {
+        if (!CollectionUtils.isEmpty(deletePicList)) {
+            pictureRepository.deleteAll(deletePicList);
+        }
+    }
+
+    @Override
+    public void addAll(List<PictureDTO> addPicList) {
+        addPicList.forEach(this::add);
+    }
+
+    @Override
+    public List<MallPicture> findAllByStockIdIn(List<Long> stockIdList) {
+
+        return pictureRepository.findAllByStockIdIn(stockIdList);
+    }
+
+    @Override
+    public void updateMdsePicture(List<PictureDTO> dtoDataList, Long mdseId, PictureType type) {
+        List<MallPicture> dbDataList = findAllByMdseIdAndType(mdseId, type);
+        //需要删除的商品图片
+        List<MallPicture> deletePicList = dbDataList.stream().filter(dbPic -> !dtoDataList.stream().map(PictureDTO::getUrl).collect(Collectors.toList()).contains(dbPic.getUrl())).collect(Collectors.toList());
+        delete(deletePicList);
+        //需要添加的商品图片
+        List<PictureDTO> addPicList = dtoDataList.stream().filter(pic -> !dbDataList.stream().map(MallPicture::getUrl).collect(Collectors.toList()).contains(pic.getUrl())).collect(Collectors.toList());
+        addAll(addPicList);
+    }
+
+    @Override
+    public void updateCardPicture(List<PictureDTO> dtoDataList, Long mdseId, PictureType type) {
+        List<MallPicture> dbDataList = findAllByCardIdAndType(mdseId, type);
+        //需要删除的商品图片
+        List<MallPicture> deletePicList = dbDataList.stream().filter(dbPic -> !dtoDataList.stream().map(PictureDTO::getUrl).collect(Collectors.toList()).contains(dbPic.getUrl())).collect(Collectors.toList());
+        delete(deletePicList);
+        //需要添加的商品图片
+        List<PictureDTO> addPicList = dtoDataList.stream().filter(pic -> !dbDataList.stream().map(MallPicture::getUrl).collect(Collectors.toList()).contains(pic.getUrl())).collect(Collectors.toList());
+        addAll(addPicList);
+    }
+
+    private List<MallPicture> findAllByCardIdAndType(Long cardId, PictureType type) {
+        return pictureRepository.findAllByCardIdAndType(cardId, type);
+    }
+
+    @Override
+    public List<MallPicture> findAllByCardId(Long cardId) {
+
+        return pictureRepository.findAllByCardId(cardId);
+    }
+
+
 }

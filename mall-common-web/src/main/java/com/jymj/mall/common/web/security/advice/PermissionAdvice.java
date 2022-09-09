@@ -49,7 +49,8 @@ public class PermissionAdvice {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         RequirePerms annotation = signature.getMethod().getAnnotation(RequirePerms.class);
 
-        String[] requiredPerms = annotation.value(); // 需要的权限标识集合
+        // 需要的权限标识集合
+        String[] requiredPerms = annotation.value();
         log.info("required perms ：{}", (Object) requiredPerms);
 
         // 权限校验
@@ -64,7 +65,8 @@ public class PermissionAdvice {
         Map<Object, Object> permRolesMap = redisUtils.hmget(GlobalConstants.BTN_PERM_ROLES_KEY);
         if (permRolesMap != null) {
             for (String requiredPerm : requiredPerms) {
-                List<String> hasPermRoles = Convert.toList(String.class, permRolesMap.get(requiredPerm)); // 拥有访问权限的角色
+                // 拥有访问权限的角色
+                List<String> hasPermRoles = Convert.toList(String.class, permRolesMap.get(requiredPerm));
                 if (CollectionUtil.isNotEmpty(hasPermRoles)) {
                     for (String hasPermRole : hasPermRoles) {
                         boolean hasPerm = userRoles.stream().anyMatch(userRole -> userRole.equals(hasPermRole));

@@ -26,7 +26,7 @@ import java.util.Map;
  * @date 2022-08-04
  */
 @NoArgsConstructor
-public class PreAuthenticatedUserDetailsService<T extends Authentication> implements AuthenticationUserDetailsService<T>, InitializingBean {
+public class PreAuthenticatedUserDetailsServiceImpl<T extends Authentication> implements AuthenticationUserDetailsService<T>, InitializingBean {
 
     /**
      * 客户端ID和用户服务 UserDetailService 的映射
@@ -34,7 +34,7 @@ public class PreAuthenticatedUserDetailsService<T extends Authentication> implem
      */
     private Map<String, UserDetailsService> userDetailsServiceMap;
 
-    public PreAuthenticatedUserDetailsService(Map<String, UserDetailsService> userDetailsServiceMap) {
+    public PreAuthenticatedUserDetailsServiceImpl(Map<String, UserDetailsService> userDetailsServiceMap) {
         Assert.notNull(userDetailsServiceMap, "userDetailsService cannot be null.");
         this.userDetailsServiceMap = userDetailsServiceMap;
     }

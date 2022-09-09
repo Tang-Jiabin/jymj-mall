@@ -35,10 +35,11 @@ public class WechatTokenGranter extends AbstractTokenGranter {
         this.authenticationManager = authenticationManager;
     }
 
+    @SuppressWarnings("AlibabaLowerCamelCaseVariableNaming")
     @Override
     protected OAuth2Authentication getOAuth2Authentication(ClientDetails client, TokenRequest tokenRequest) {
 
-        Map<String, String> parameters = new LinkedHashMap(tokenRequest.getRequestParameters());
+        Map<String, String> parameters = new LinkedHashMap<>(tokenRequest.getRequestParameters());
         String code = parameters.get("code");
         String encryptedData = parameters.get("encryptedData");
         String iv = parameters.get("iv");
@@ -47,19 +48,20 @@ public class WechatTokenGranter extends AbstractTokenGranter {
         parameters.remove("code");
         parameters.remove("encryptedData");
         parameters.remove("iv");
-
-        Authentication userAuth = new WechatAuthenticationToken(code, encryptedData, iv); // 未认证状态
+        // 未认证状态
+        Authentication userAuth = new WechatAuthenticationToken(code, encryptedData, iv);
         ((AbstractAuthenticationToken) userAuth).setDetails(parameters);
 
         try {
-            userAuth = authenticationManager.authenticate(userAuth); // 认证中
+            // 认证中
+            userAuth = authenticationManager.authenticate(userAuth);
         } catch (Exception e) {
             throw new InvalidGrantException(e.getMessage());
         }
-
-        if (userAuth != null && userAuth.isAuthenticated()) { // 认证成功
-            OAuth2Request storedOAuth2Request = this.getRequestFactory().createOAuth2Request(client, tokenRequest);
-            return new OAuth2Authentication(storedOAuth2Request, userAuth);
+        // 认证成功
+        if (userAuth != null && userAuth.isAuthenticated()) {
+            OAuth2Request storedOauth2Request = this.getRequestFactory().createOAuth2Request(client, tokenRequest);
+            return new OAuth2Authentication(storedOauth2Request, userAuth);
         } else { // 认证失败
             throw new InvalidGrantException("Could not authenticate code: " + code);
         }

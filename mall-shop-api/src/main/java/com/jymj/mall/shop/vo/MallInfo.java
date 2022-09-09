@@ -55,4 +55,7 @@ public class MallInfo {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty("创建时间")
     private Date createTime;
+
+    @ApiModelProperty("认证信息")
+    private MallAuthInfo authInfo;
 }

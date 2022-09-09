@@ -216,6 +216,7 @@ public class ShopServiceImpl implements ShopService {
         if (Result.isSuccess(deptListResult)) {
             deptInfoList = deptListResult.getData();
         }
+        deptInfoList.add(DeptInfo.builder().deptId(0L).build());
         List<Long> deptIdList = deptInfoList.stream().map(DeptInfo::getDeptId).collect(Collectors.toList());
 
         Specification<MallShop> spec = (root, query, criteriaBuilder) -> {
@@ -261,5 +262,13 @@ public class ShopServiceImpl implements ShopService {
             return shopRepository.findAllByDeptIdIn(deptIdList);
         }
         return Lists.newArrayList();
+    }
+
+    @Override
+    public List<MallShop> findAllById(String ids) {
+        List<Long> idList = Arrays.stream(ids.split(",")).map(Long::parseLong).collect(Collectors.toList());
+        return shopRepository.findAllById(idList);
+
+
     }
 }

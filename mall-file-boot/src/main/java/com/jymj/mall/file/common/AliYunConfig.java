@@ -30,7 +30,7 @@ public class AliYunConfig {
     /**
      * 阿里对象存储
      */
-    private AliOSS oss;
+    private AliOss oss;
 
     private AliRole role;
 

@@ -32,4 +32,7 @@ public class PictureDTO {
     @ApiModelProperty("规格id")
     private Long stockId;
 
+    @ApiModelProperty("卡id")
+    private Long cardId;
+
 }

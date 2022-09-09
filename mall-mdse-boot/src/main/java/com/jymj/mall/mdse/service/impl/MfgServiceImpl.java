@@ -1,15 +1,20 @@
 package com.jymj.mall.mdse.service.impl;
 
 import com.google.common.collect.Lists;
+import com.jymj.mall.admin.api.DeptFeignClient;
+import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.Result;
+import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.mdse.dto.MfgDTO;
 import com.jymj.mall.mdse.entity.MdseMfg;
 import com.jymj.mall.mdse.repository.MdseMfgRepository;
 import com.jymj.mall.mdse.service.MfgService;
 import com.jymj.mall.mdse.vo.MfgInfo;
+import com.jymj.mall.shop.api.MallFeignClient;
 import com.jymj.mall.shop.api.ShopFeignClient;
+import com.jymj.mall.shop.vo.MallInfo;
 import com.jymj.mall.shop.vo.ShopInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,19 +40,17 @@ import java.util.stream.Collectors;
 public class MfgServiceImpl implements MfgService {
 
     private final MdseMfgRepository mdseMfgRepository;
-    private final ShopFeignClient shopFeignClient;
+    private final MallFeignClient mallFeignClient;
+    private final DeptFeignClient deptFeignClient;
 
     @Override
     public MdseMfg add(MfgDTO dto) {
 
 
-
-        verifyShopId(dto.getShopId());
-
         MdseMfg mdseMfg = new MdseMfg();
         mdseMfg.setName(dto.getName());
         mdseMfg.setLogo(dto.getLogo());
-        mdseMfg.setShopId(dto.getShopId());
+        mdseMfg.setMallId(dto.getMallId());
         mdseMfg.setAddress(dto.getAddress());
         mdseMfg.setRemarks(dto.getRemarks());
         mdseMfg.setDeleted(SystemConstants.DELETED_NO);
@@ -55,13 +58,7 @@ public class MfgServiceImpl implements MfgService {
         return mdseMfgRepository.save(mdseMfg);
     }
 
-    private void verifyMFGName(String name) {
-        Optional<MdseMfg> mfgOptional = mdseMfgRepository.findByName(name);
 
-        if (mfgOptional.isPresent()) {
-            throw new BusinessException("厂家 【" + name + "】 已存在");
-        }
-    }
 
     @Override
     public Optional<MdseMfg> update(MfgDTO dto) {
@@ -89,9 +86,9 @@ public class MfgServiceImpl implements MfgService {
                     update = true;
                 }
 
-                if (!ObjectUtils.isEmpty(dto.getShopId()) && !mdseMfg.getShopId().equals(dto.getShopId())){
-                    verifyShopId(dto.getShopId());
-                    mdseMfg.setShopId(dto.getShopId());
+                if (!ObjectUtils.isEmpty(dto.getMallId()) && !mdseMfg.getMallId().equals(dto.getMallId())){
+
+                    mdseMfg.setMallId(dto.getMallId());
                     update = true;
                 }
 
@@ -145,23 +142,30 @@ public class MfgServiceImpl implements MfgService {
 
     @Override
     public List<MdseMfg> findAll() {
-        Result<List<ShopInfo>> shopListResult = shopFeignClient.lists();
-        if (Result.isSuccess(shopListResult)){
-            List<ShopInfo> shopInfoList = shopListResult.getData();
-            List<Long> shopIdList = shopInfoList.stream().map(ShopInfo::getShopId).collect(Collectors.toList());
-            return mdseMfgRepository.findAllByShopIdIn(shopIdList);
+        Long deptId = UserUtils.getDeptId();
+        Result<List<DeptInfo>> deptListResult = deptFeignClient.tree(deptId);
+
+        if (Result.isSuccess(deptListResult)) {
+            List<DeptInfo> deptInfoList = deptListResult.getData();
+            List<Long> deptIdList = deptInfoList.stream().map(DeptInfo::getDeptId).collect(Collectors.toList());
+            Result<List<MallInfo>> mallInfoListResult = mallFeignClient.getMallByDeptIdIn(StringUtils.collectionToCommaDelimitedString(deptIdList));
+            if (Result.isSuccess(mallInfoListResult)){
+                List<MallInfo> mallInfoList = mallInfoListResult.getData();
+                List<Long> mallIdList = mallInfoList.stream().map(MallInfo::getMallId).collect(Collectors.toList());
+                return mdseMfgRepository.findAllByMallIdIn(mallIdList);
+            }
         }
         return Lists.newArrayList();
     }
 
-    private void verifyShopId(Long shopId) {
-        Result<List<ShopInfo>> shopListResult = shopFeignClient.lists();
-        if (!Result.isSuccess(shopListResult)){
-            throw new BusinessException("店铺信息获取失败");
+    @Override
+    public List<MdseMfg> findAllByMallId(Long mallId) {
+
+        if (mallId!=null){
+            return mdseMfgRepository.findAllByMallId(mallId);
         }
-        List<Long> shopIdList = shopListResult.getData().stream().map(ShopInfo::getShopId).collect(Collectors.toList());
-        if (!shopIdList.contains(shopId)){
-            throw new BusinessException("没有店铺【 "+ shopId+" 】的操作权限");
-        }
+        return mdseMfgRepository.findAll();
     }
+
+
 }

@@ -52,7 +52,5 @@ public class ShopInfo {
     @ApiModelProperty("纬度")
     private String latitude;
 
-    public String getMobile() {
-        return DesensitizedUtil.mobilePhone(this.mobile);
-    }
+
 }

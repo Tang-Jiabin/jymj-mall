@@ -16,6 +16,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Base64;
+import java.util.Objects;
+
 /**
  * @author J.Tang
  * @version 1.0
@@ -26,9 +28,8 @@ import java.util.Base64;
 public class RequestUtils {
     @SneakyThrows
     public static String getGrantType() {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        String grantType = request.getParameter(SecurityConstants.GRANT_TYPE_KEY);
-        return grantType;
+        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
+        return request.getParameter(SecurityConstants.GRANT_TYPE_KEY);
     }
 
     /**
@@ -40,10 +41,11 @@ public class RequestUtils {
      *
      * @return
      */
+    @SuppressWarnings("AlibabaLowerCamelCaseVariableNaming")
     @SneakyThrows
     public static String getOAuth2ClientId() {
 
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
 
         // 从请求路径中获取
         String clientId = request.getParameter(SecurityConstants.CLIENT_ID_KEY);
@@ -56,7 +58,8 @@ public class RequestUtils {
         if (StrUtil.isNotBlank(basic) && basic.startsWith(SecurityConstants.BASIC_PREFIX)) {
             basic = basic.replace(SecurityConstants.BASIC_PREFIX, Strings.EMPTY);
             String basicPlainText = new String(Base64.getDecoder().decode(basic.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
-            clientId = basicPlainText.split(":")[0]; //client:secret
+            //client:secret
+            clientId = basicPlainText.split(":")[0];
         }
         return clientId;
     }
@@ -68,7 +71,7 @@ public class RequestUtils {
      */
 
     public static String getAuthenticationIdentity() {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
         String refreshToken = request.getParameter(SecurityConstants.REFRESH_TOKEN_KEY);
 
         String payload = null;

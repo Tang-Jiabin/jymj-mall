@@ -26,6 +26,12 @@ public class PictureInfo {
     @ApiModelProperty("图片类型")
     private PictureType type;
 
+    @ApiModelProperty("商品id")
+    private Long mdseId;
+
     @ApiModelProperty("规格id")
     private Long stockId;
+
+    @ApiModelProperty("卡id")
+    private Long cardId;
 }

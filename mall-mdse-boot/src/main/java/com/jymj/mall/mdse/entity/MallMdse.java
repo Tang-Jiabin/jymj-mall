@@ -85,8 +85,8 @@ public class MallMdse extends BaseEntity {
     @ApiModelProperty("类型id")
     private Long typeId;
 
-    @ApiModelProperty("店铺id")
-    private Long shopId;
+    @ApiModelProperty("商场id")
+    private Long mallId;
 
     @ApiModelProperty("商品状态 1-上架 2-下架")
     private Integer status;

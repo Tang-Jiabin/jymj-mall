@@ -36,7 +36,8 @@ public class SmsCodeAuthenticationProvider implements AuthenticationProvider {
         String mobile = (String) authenticationToken.getPrincipal();
         String code = (String) authenticationToken.getCredentials();
 
-        if (!code.equals("666666")) {
+        String testCode = "666666";
+        if (!testCode.equals(code)) {
             String codeKey = SecurityConstants.SMS_CODE_PREFIX + mobile;
             String correctCode = redisTemplate.opsForValue().get(codeKey);
             // 验证码比对

@@ -18,7 +18,7 @@ import javax.persistence.*;
  * @email seven_tjb@163.com
  * @date 2022-09-01
  */
-//mall_mdse_group_connect
+
 @Data
 @Entity
 @Table(name = "mall_mdse_group_map")

@@ -19,3 +19,6 @@ dependencies {
     implementation project(":mall-common-redis")
     implementation project(":mall-common-web")
 }
+test {
+    useJUnitPlatform()
+}

@@ -42,7 +42,7 @@ public class AuthController {
 
 
     private final TokenEndpoint tokenEndpoint;
-    private final RedisTemplate redisTemplate;
+    private final RedisTemplate<String,?> redisTemplate;
     private final KeyPair keyPair;
 
     @ApiOperation(value = "授权")
@@ -55,11 +55,11 @@ public class AuthController {
             @ApiImplicitParam(name = "password", defaultValue = "123456", value = "用户密码")
     })
     @PostMapping("/token")
-    public Result postAccessToken(
+    public Result<OAuth2AccessToken> postAccessToken(
             Principal principal,
             @RequestParam Map<String, String> parameters
     ) throws HttpRequestMethodNotSupportedException {
-        /**
+        /*
          * 获取登录认证的客户端ID
          *
          * 兼容两种方式获取Oauth2客户端信息（client_id、client_secret）
@@ -76,13 +76,17 @@ public class AuthController {
 
     @ApiOperation(value = "注销")
     @GetMapping("/logout")
-    public Result logout() {
+    public Result<String> logout() {
         JSONObject payload = JwtUtils.getJwtPayload();
-        String jti = payload.getStr(SecurityConstants.JWT_JTI); // JWT唯一标识
-        Long expireTime = payload.getLong(SecurityConstants.JWT_EXP); // JWT过期时间戳(单位：秒)
+        // JWT唯一标识
+        String jti = payload.getStr(SecurityConstants.JWT_JTI);
+        // JWT过期时间戳(单位：秒)
+        Long expireTime = payload.getLong(SecurityConstants.JWT_EXP);
         if (expireTime != null) {
-            long currentTime = System.currentTimeMillis() / 1000;// 当前时间（单位：秒）
-            if (expireTime > currentTime) { // token未过期，添加至缓存作为黑名单限制访问，缓存时间为token过期剩余时间
+            // 当前时间（单位：秒）
+            long currentTime = System.currentTimeMillis() / 1000;
+            // token未过期，添加至缓存作为黑名单限制访问，缓存时间为token过期剩余时间
+            if (expireTime > currentTime) {
                 redisTemplate.opsForValue().set(SecurityConstants.TOKEN_BLACKLIST_PREFIX + jti, null, (expireTime - currentTime), TimeUnit.SECONDS);
             }
         } else { // token 永不过期则永久加入黑名单

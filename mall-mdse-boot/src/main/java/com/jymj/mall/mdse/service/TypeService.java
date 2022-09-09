@@ -17,4 +17,6 @@ import java.util.List;
  */
 public interface TypeService extends BaseService<MdseType, TypeInfo, TypeDTO> {
     List<MdseType> findAllByAuth();
+
+    List<MdseType> findAllByMallId(Long mallId);
 }

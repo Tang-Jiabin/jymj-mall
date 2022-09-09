@@ -1,7 +1,10 @@
 package com.jymj.mall.admin.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 部门信息
@@ -12,6 +15,9 @@ import lombok.Data;
  * @date 2022-08-19
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class DeptInfo {
 
     @ApiModelProperty("部门id")

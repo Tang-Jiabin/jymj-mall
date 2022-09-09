@@ -27,7 +27,7 @@ public class AuthExceptionHandler {
      *
      */
     @ExceptionHandler(InvalidGrantException.class)
-    public Result handleInvalidGrantException(InvalidGrantException e) {
+    public Result<Object> handleInvalidGrantException(InvalidGrantException e) {
         e.printStackTrace();
         return Result.failed(ResultCode.USERNAME_OR_PASSWORD_ERROR);
     }
@@ -36,7 +36,7 @@ public class AuthExceptionHandler {
      * 用户不存在
      */
     @ExceptionHandler({UsernameNotFoundException.class})
-    public Result usernameNotFoundException(UsernameNotFoundException e) {
+    public Result<Object> usernameNotFoundException(UsernameNotFoundException e) {
         e.printStackTrace();
         return Result.failed(e.getMessage());
     }
@@ -45,20 +45,20 @@ public class AuthExceptionHandler {
      * 用户被禁用
      */
     @ExceptionHandler({DisabledException.class})
-    public Result disabledException(DisabledException e) {
+    public Result<Object> disabledException(DisabledException e) {
         e.printStackTrace();
         return Result.failed(e.getMessage());
     }
 
 
     @ExceptionHandler(Exception.class)
-    public Result Exception(Exception e)  {
+    public Result<Object> authException(Exception e)  {
         e.printStackTrace();
         return Result.failed(e.getMessage());
     }
 
     @ExceptionHandler(NoSuchClientException.class)
-    public Result noSuchClientException(NoSuchClientException e)  {
+    public Result<Object> noSuchClientException(NoSuchClientException e)  {
         e.printStackTrace();
         return Result.failed(e.getMessage());
     }

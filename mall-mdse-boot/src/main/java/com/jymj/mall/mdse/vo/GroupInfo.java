@@ -3,10 +3,12 @@ package com.jymj.mall.mdse.vo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.SequenceGenerator;
+import java.util.Date;
 
 /**
  * 分组
@@ -34,5 +36,12 @@ public class GroupInfo {
 
     @ApiModelProperty("备注")
     private String remarks;
+
+    @ApiModelProperty("创建时间")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date createTime;
+
+    @ApiModelProperty("商品数量")
+    private Integer mdseCount;
 
 }

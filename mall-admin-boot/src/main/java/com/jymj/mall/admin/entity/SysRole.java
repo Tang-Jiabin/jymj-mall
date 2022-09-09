@@ -49,6 +49,7 @@ public class SysRole extends BaseEntity {
     @ApiModelProperty("部门id")
     private Long deptId;
 
-
+    @ApiModelProperty("描述")
+    private String describe;
 
 }

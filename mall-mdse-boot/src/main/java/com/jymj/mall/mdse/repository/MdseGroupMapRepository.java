@@ -1,6 +1,7 @@
 package com.jymj.mall.mdse.repository;
 
 import com.jymj.mall.mdse.entity.MallMdseGroupMap;
+import io.swagger.models.auth.In;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -19,4 +20,6 @@ public interface MdseGroupMapRepository extends JpaRepository<MallMdseGroupMap,L
     List<MallMdseGroupMap> findAllByMdseId(Long mdseId);
 
     List<MallMdseGroupMap> findAllByGroupId(Long groupId);
+
+    Integer countByGroupId(Long groupId);
 }

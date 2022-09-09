@@ -4,6 +4,7 @@ import com.jymj.mall.admin.api.AdminFeignClient;
 import com.jymj.mall.admin.api.DeptFeignClient;
 import com.jymj.mall.admin.api.DistrictFeignClient;
 import com.jymj.mall.admin.api.PermissionFeignClient;
+import com.jymj.mall.shop.api.MallFeignClient;
 import com.jymj.mall.shop.api.ShopFeignClient;
 import io.seata.spring.annotation.datasource.EnableAutoDataSourceProxy;
 import org.springframework.boot.SpringApplication;
@@ -24,7 +25,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @EnableJpaAuditing
 @EnableDiscoveryClient
 @SpringBootApplication(scanBasePackages = {"com.jymj.mall.*"})
-@EnableFeignClients(clients = {ShopFeignClient.class})
+@EnableFeignClients(clients = {DeptFeignClient.class, MallFeignClient.class,ShopFeignClient.class})
 public class MallMdseApplication {
 
     public static void main(String[] args) {

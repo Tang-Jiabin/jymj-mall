@@ -15,6 +15,9 @@ import java.util.List;
  */
 public enum MallType {
 
+    /**
+     * 商场类型
+     */
     ZI_YING(0,"自营"),
 
     SHOU_QUAN(1,"授权");

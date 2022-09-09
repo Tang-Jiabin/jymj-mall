@@ -9,15 +9,18 @@ import lombok.Getter;
  * @date 2022-08-09
  */
 public enum PasswordEncoderTypeEnum {
+    /**
+     * 加密方式
+     */
 
-    BCRYPT("{bcrypt}","BCRYPT加密"),
-    NOOP("{noop}","无加密明文");
+    BCRYPT("{bcrypt}", "BCRYPT加密"),
+    NOOP("{noop}", "无加密明文");
 
     @Getter
     private String prefix;
 
-    PasswordEncoderTypeEnum(String prefix, String desc){
-        this.prefix=prefix;
+    PasswordEncoderTypeEnum(String prefix, String desc) {
+        this.prefix = prefix;
     }
 
 }

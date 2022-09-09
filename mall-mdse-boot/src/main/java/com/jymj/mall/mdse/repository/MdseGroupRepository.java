@@ -20,5 +20,10 @@ import java.util.Optional;
 public interface MdseGroupRepository extends JpaRepository<MdseGroup,Long> , JpaSpecificationExecutor<MdseGroup> {
     Optional<MdseGroup> findByName(String name);
 
-    List<MdseGroup> findAllByShopIdIn(List<Long> shopIdList);
+
+    List<MdseGroup> findAllByMallIdIn(List<Long> mallIdList);
+
+    List<MdseGroup> findAllByMallIdInAndShow(List<Long> mallIdList, boolean show);
+
+    List<MdseGroup> findAllByMallId(Long mallId);
 }

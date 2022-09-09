@@ -11,6 +11,9 @@ import java.io.Serializable;
 
 public enum ResultCode implements IResultCode, Serializable {
 
+    /**
+     * 项目状态码
+     */
     SUCCESS("200", "OK"),
 
     USER_ERROR("400", "用户端错误"),
@@ -67,6 +70,6 @@ public enum ResultCode implements IResultCode, Serializable {
                 return value;
             }
         }
-        return SYSTEM_EXECUTION_ERROR; // 默认系统执行错误
+        return SYSTEM_EXECUTION_ERROR;
     }
 }

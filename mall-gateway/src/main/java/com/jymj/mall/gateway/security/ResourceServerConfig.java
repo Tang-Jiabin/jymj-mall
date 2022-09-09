@@ -68,7 +68,8 @@ public class ResourceServerConfig {
         http.oauth2ResourceServer()
                 .jwt()
                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
-                .publicKey(rsaPublicKey())   // 本地加载公钥
+                // 本地加载公钥
+                .publicKey(rsaPublicKey())
                 .jwkSetUri(jwtSetUri);
 
         http.oauth2ResourceServer().authenticationEntryPoint(authenticationEntryPoint());
@@ -77,8 +78,10 @@ public class ResourceServerConfig {
                 .anyExchange().access(resourceServerManager)
                 .and()
                 .exceptionHandling()
-                .accessDeniedHandler(accessDeniedHandler()) // 处理未授权
-                .authenticationEntryPoint(authenticationEntryPoint()) //处理未认证
+                // 处理未授权
+                .accessDeniedHandler(accessDeniedHandler())
+                //处理未认证
+                .authenticationEntryPoint(authenticationEntryPoint())
                 .and().csrf().disable();
 
         return http.build();

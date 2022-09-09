@@ -1,37 +1,37 @@
 package com.jymj.mall.shop.service.impl;
+import com.jymj.mall.shop.enums.MallType;
+import java.util.Date;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.RandomUtil;
 import com.google.common.collect.Lists;
-import com.jymj.mall.admin.api.AdminFeignClient;
-import com.jymj.mall.admin.api.DeptFeignClient;
-import com.jymj.mall.admin.api.DistrictFeignClient;
-import com.jymj.mall.admin.api.PermissionFeignClient;
-import com.jymj.mall.admin.dto.AddDeptDTO;
-import com.jymj.mall.admin.dto.UpdateAdminDTO;
-import com.jymj.mall.admin.dto.UpdateDeptDTO;
+import com.jymj.mall.admin.api.*;
+import com.jymj.mall.admin.dto.*;
 import com.jymj.mall.admin.vo.AdminInfo;
 import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.admin.vo.DistrictInfo;
+import com.jymj.mall.admin.vo.RoleInfo;
 import com.jymj.mall.common.constants.SystemConstants;
-import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.Result;
-import com.jymj.mall.common.result.ResultCode;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.shop.dto.AddMallDTO;
 import com.jymj.mall.shop.dto.MallPageQueryDTO;
 import com.jymj.mall.shop.dto.UpdateMallDTO;
+import com.jymj.mall.shop.entity.MallAuth;
 import com.jymj.mall.shop.entity.MallDetails;
 import com.jymj.mall.shop.entity.MallTag;
 import com.jymj.mall.shop.repository.MallDetailsRepository;
+import com.jymj.mall.shop.service.MallAuthService;
 import com.jymj.mall.shop.service.MallService;
 import com.jymj.mall.shop.service.MallTagService;
+import com.jymj.mall.shop.vo.MallAuthInfo;
 import com.jymj.mall.shop.vo.MallInfo;
 import com.jymj.mall.shop.vo.TagInfo;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -64,6 +64,8 @@ public class MallServiceImpl implements MallService {
     private final PermissionFeignClient permissionFeignClient;
     private final MallTagService mallTagService;
     private final MallDetailsRepository mallDetailsRepository;
+    private final MallAuthService authService;
+    private final RoleFeignClient roleFeignClient;
 
     @Override
     @GlobalTransactional(name = "mall-shop-add-mall", rollbackFor = Exception.class)
@@ -78,7 +80,12 @@ public class MallServiceImpl implements MallService {
 
         if (Result.isSuccess(deptInfoResult)) {
             MallDetails mallDetails = new MallDetails();
-            BeanUtils.copyProperties(mallDTO, mallDetails);
+
+            mallDetails.setName(mallDTO.getName());
+            mallDetails.setLogo(mallDTO.getLogo());
+            mallDetails.setIntroduce(mallDTO.getIntroduce());
+            mallDetails.setDistrictId(mallDTO.getDistrictId());
+
             mallDetails.setDeptId(deptInfoResult.getData().getDeptId());
             mallDetails.setManagerName(mallDTO.getNickname());
             mallDetails.setManagerMobile(mallDTO.getMobile());
@@ -91,20 +98,46 @@ public class MallServiceImpl implements MallService {
                 mallTagService.addMallTag(mallDetails.getMallId(), mallDTO.getTagId());
             }
 
-            UpdateAdminDTO adminDTO = new UpdateAdminDTO();
-            adminDTO.setUsername(mallDTO.getMobile());
-            adminDTO.setPassword(SystemConstants.DEFAULT_USER_PASSWORD);
-            adminDTO.setNickname(mallDTO.getNickname());
-            adminDTO.setMobile(mallDTO.getMobile());
-            adminDTO.setGender(0);
-            adminDTO.setStatus(SystemConstants.STATUS_OPEN);
-            adminDTO.setDeptId(deptInfoResult.getData().getDeptId());
-            adminDTO.setRoleIdList(Lists.newArrayList(3L));
-            adminFeignClient.add(adminDTO);
+            AddRole addRole = new AddRole();
+            addRole.setName("高级管理员");
+            addRole.setCode("ADMIN");
+            addRole.setDescribe("具备店铺所有管理的权限。");
+            addRole.setSort(0);
+            addRole.setStatus(1);
+            addRole.setDeptId(deptInfoResult.getData().getDeptId());
+
+            Result<RoleInfo> roleInfoResult = roleFeignClient.addRole(addRole);
+            if (Result.isSuccess(roleInfoResult)) {
+                List<Long> permIdsList = Lists.newArrayList();
+                int permMax = 75;
+                for (int i = 1; i < permMax; i++) {
+                    permIdsList.add((long) i);
+                }
+                RoleInfo roleInfo = roleInfoResult.getData();
+                RoleResource roleResource = new RoleResource();
+                roleResource.setMenuIds(Lists.newArrayList());
+                roleResource.setPermIds(permIdsList);
+                roleFeignClient.updateRoleResource(roleInfo.getRoleId(), roleResource);
+
+                UpdateAdminDTO adminDTO = new UpdateAdminDTO();
+                adminDTO.setUsername(mallDTO.getMobile());
+                adminDTO.setPassword(SystemConstants.DEFAULT_USER_PASSWORD);
+                adminDTO.setNickname(mallDTO.getNickname());
+                adminDTO.setMobile(mallDTO.getMobile());
+                adminDTO.setGender(0);
+                adminDTO.setNumber(mallDetails.getMallNo() + "001");
+                adminDTO.setMallId(mallDetails.getMallId());
+                adminDTO.setStatus(SystemConstants.STATUS_OPEN);
+                adminDTO.setDeptId(deptInfoResult.getData().getDeptId());
+                adminDTO.setRoleIdList(Lists.newArrayList(roleInfo.getRoleId()));
+                adminFeignClient.add(adminDTO);
+            }
+
 
         }
 
     }
+
 
     @Override
     public Page<MallDetails> findPage(MallPageQueryDTO mallPageQuery) {
@@ -197,7 +230,14 @@ public class MallServiceImpl implements MallService {
 
             updateMallAdminInfo(updateMallDTO, mallDetails);
 
-            BeanUtils.copyProperties(updateMallDTO, mallDetails);
+
+            mallDetails.setMallId(updateMallDTO.getMallId());
+            mallDetails.setMallNo(updateMallDTO.getMallNo());
+            mallDetails.setName(updateMallDTO.getName());
+            mallDetails.setLogo(updateMallDTO.getLogo());
+            mallDetails.setIntroduce(updateMallDTO.getIntroduce());
+            mallDetails.setType(updateMallDTO.getType());
+            mallDetails.setDistrictId(updateMallDTO.getDistrictId());
             mallDetails.setManagerName(updateMallDTO.getNickname());
             mallDetails.setManagerMobile(updateMallDTO.getMobile());
             mallDetailsRepository.save(mallDetails);
@@ -213,7 +253,16 @@ public class MallServiceImpl implements MallService {
 
     public MallInfo mall2vo(MallDetails mall) {
         MallInfo mallVO = new MallInfo();
-        BeanUtils.copyProperties(mall, mallVO);
+        mallVO.setMallId(mall.getMallId());
+        mallVO.setDeptId(mall.getDeptId());
+        mallVO.setMallNo(mall.getMallNo());
+        mallVO.setName(mall.getName());
+        mallVO.setLogo(mall.getLogo());
+        mallVO.setIntroduce(mall.getIntroduce());
+        mallVO.setManagerName(mall.getManagerName());
+        mallVO.setManagerMobile(mall.getManagerMobile());
+        mallVO.setCreateTime(mall.getCreateTime());
+
         if (mall.getDistrictId() != null) {
             Result<List<DistrictInfo>> districtListResult = districtFeignClient.parent(mall.getDistrictId());
             if (Result.isSuccess(districtListResult)) {
@@ -239,6 +288,12 @@ public class MallServiceImpl implements MallService {
         List<TagInfo> tagInfoList = mallTagService.list2vo(mallTagList);
         mallVO.setTagList(tagInfoList);
 
+        Optional<MallAuth> authOptional = authService.getAuthByMallId(mall.getMallId());
+        if (authOptional.isPresent()) {
+            MallAuthInfo authInfo = authService.auth2vo(authOptional.get());
+            mallVO.setAuthInfo(authInfo);
+        }
+
         return mallVO;
     }
 
@@ -261,6 +316,12 @@ public class MallServiceImpl implements MallService {
 
         return mallDetailsRepository.findByDeptId(deptId);
 
+    }
+
+    @Override
+    public List<MallDetails> findAllByDeptIdIn(String deptIds) {
+        List<Long> deptIdList = Arrays.stream(deptIds.split(",")).map(Long::parseLong).collect(Collectors.toList());
+        return mallDetailsRepository.findAllByDeptIdIn(deptIdList);
     }
 
     private String districtInfo2String(List<DistrictInfo> districtInfoList, Long pid) {
@@ -325,10 +386,10 @@ public class MallServiceImpl implements MallService {
                 AdminInfo adminInfo = oldAdmin.getData();
                 UpdateAdminDTO updateAdminDTO = new UpdateAdminDTO();
                 updateAdminDTO.setAdminId(adminInfo.getAdminId());
-                if (!mallDetails.getManagerName().equals(updateMallDTO.getNickname())){
+                if (!mallDetails.getManagerName().equals(updateMallDTO.getNickname())) {
                     updateAdminDTO.setNickname(updateMallDTO.getNickname());
                 }
-                if (!mallDetails.getManagerMobile().equals(updateMallDTO.getMobile())){
+                if (!mallDetails.getManagerMobile().equals(updateMallDTO.getMobile())) {
                     updateAdminDTO.setMobile(updateMallDTO.getMobile());
                 }
                 if (adminInfo.getUsername().equals(adminInfo.getMobile())) {

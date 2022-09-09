@@ -31,6 +31,7 @@ public class TypeDTO {
     @ApiModelProperty("备注")
     private String remarks;
 
-    @ApiModelProperty("店铺(网点)id")
-    private Long shopId;
+    @NotNull(message = "商场id不能为空")
+    @ApiModelProperty("商场id")
+    private Long mallId;
 }

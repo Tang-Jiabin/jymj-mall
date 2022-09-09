@@ -18,4 +18,6 @@ import java.util.List;
 public interface DeptService extends BaseService<SysDept,DeptInfo,UpdateDeptDTO> {
 
     List<SysDept> findChildren(Long deptId);
+
+    List<SysDept> tree(Long deptId);
 }

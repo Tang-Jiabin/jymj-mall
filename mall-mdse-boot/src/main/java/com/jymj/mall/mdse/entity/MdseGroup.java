@@ -49,7 +49,7 @@ public class MdseGroup extends BaseEntity {
     @ApiModelProperty("备注")
     private String remarks;
 
-    @ApiModelProperty("网点id")
-    private Long shopId;
+    @ApiModelProperty("商场id")
+    private Long mallId;
 
 }

@@ -42,5 +42,8 @@ public class MdseSpec extends BaseEntity {
     @ApiModelProperty("规格值")
     private String value;
 
+    @ApiModelProperty("商品id")
+    private Long mdseId;
+
 
 }

@@ -12,7 +12,9 @@ import lombok.Getter;
  */
 
 public enum MenuTypeEnum implements BaseEnum<Integer> {
-
+    /**
+     * 菜单类型
+     */
     NULL(0, null),
     MENU(1, "菜单"),
     CATALOG(2, "目录"),

@@ -1,5 +1,6 @@
 package com.jymj.mall.oauth.security.core.userdetails.user;
 
+import com.google.common.collect.Sets;
 import com.jymj.mall.common.constants.GlobalConstants;
 import com.jymj.mall.user.dto.UserAuthDTO;
 import lombok.Data;
@@ -32,7 +33,7 @@ public class SysUserDetails implements org.springframework.security.core.userdet
     /**
      * 小程序会员用户体系
      *
-     * @param member 小程序会员用户认证信息
+     * @param user 小程序会员用户认证信息
      */
     public SysUserDetails(UserAuthDTO user) {
         this.setMemberId(user.getUserId());
@@ -43,8 +44,7 @@ public class SysUserDetails implements org.springframework.security.core.userdet
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        Collection<GrantedAuthority> collection = new HashSet<>();
-        return collection;
+        return Sets.newHashSet();
     }
 
     @Override

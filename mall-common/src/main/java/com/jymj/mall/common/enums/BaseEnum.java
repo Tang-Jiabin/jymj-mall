@@ -1,7 +1,11 @@
 package com.jymj.mall.common.enums;
 
+import org.assertj.core.util.Lists;
+
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author J.Tang
@@ -11,7 +15,9 @@ import java.util.Objects;
  */
 public interface BaseEnum<T> {
 
-
+    /**
+     * 或者枚举值
+     */
     T getValue();
 
     String getLabel();
@@ -20,24 +26,24 @@ public interface BaseEnum<T> {
      * 根据值获取枚举
      *
      */
-    static <E extends Enum<E> & BaseEnum> E getEnumByValue(Object value, Class<E> clazz) {
+    static <E extends Enum<E> & BaseEnum<?>> E getEnumByValue(Object value, Class<E> clazz) {
         Objects.requireNonNull(value);
-        EnumSet<E> allEnums = EnumSet.allOf(clazz); // 获取类型下的所有枚举
+        // 获取类型下的所有枚举
+        EnumSet<E> allEnums = EnumSet.allOf(clazz);
 
-        E matchEnum = allEnums.stream()
+        return allEnums.stream()
                 .filter(e -> Objects.equals(e.getValue(), value))
                 .findFirst()
                 .orElse(null);
-        return matchEnum;
     }
 
     /**
      * 根据文本标签获取值
      *
      */
-    static <E extends Enum<E> & BaseEnum> String getLabelByValue(Object value, Class<E> clazz) {
+    static <E extends Enum<E> & BaseEnum<?>> String getLabelByValue(Object value, Class<E> clazz) {
         Objects.requireNonNull(value);
-        EnumSet<E> allEnums = EnumSet.allOf(clazz); // 获取类型下的所有枚举
+        EnumSet<E> allEnums = EnumSet.allOf(clazz);
         E matchEnum = allEnums.stream()
                 .filter(e -> Objects.equals(e.getValue(), value))
                 .findFirst()
@@ -55,12 +61,11 @@ public interface BaseEnum<T> {
      * 根据文本标签获取值
      *
      */
-    static <E extends Enum<E> & BaseEnum> Object getValueByLabel(String label, Class<E> clazz) {
+    static <E extends Enum<E> & BaseEnum<?>> Object getValueByLabel(String label, Class<E> clazz) {
         Objects.requireNonNull(label);
-        EnumSet<E> allEnums = EnumSet.allOf(clazz); // 获取类型下的所有枚举
-        String finalLabel = label;
+        EnumSet<E> allEnums = EnumSet.allOf(clazz);
         E matchEnum = allEnums.stream()
-                .filter(e -> Objects.equals(e.getLabel(), finalLabel))
+                .filter(e -> Objects.equals(e.getLabel(), label))
                 .findFirst()
                 .orElse(null);
 
@@ -70,5 +75,7 @@ public interface BaseEnum<T> {
         }
         return value;
     }
+
+
 
 }

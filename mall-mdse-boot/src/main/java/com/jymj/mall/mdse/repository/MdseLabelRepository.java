@@ -17,5 +17,8 @@ import java.util.List;
  */
 @Repository
 public interface MdseLabelRepository  extends JpaRepository<MdseLabel,Long> {
-    List<MdseLabel> findAllByShopIdIn(List<Long> shopIdList);
+
+    List<MdseLabel> findAllByMallIdIn(List<Long> mallIdList);
+
+    List<MdseLabel> findAllByMallId(Long mallId);
 }

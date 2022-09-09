@@ -1,5 +1,6 @@
 package com.jymj.mall.oauth.security.extension.mobile;
 
+import com.google.common.collect.Maps;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,7 +16,8 @@ import java.util.Map;
 
 /**
  * 手机验证码授权者
- /**
+ * /**
+ *
  * @author J.Tang
  * @version 1.0
  * @email seven_tjb@163.com
@@ -41,13 +43,16 @@ public class SmsCodeTokenGranter extends AbstractTokenGranter {
         this.authenticationManager = authenticationManager;
     }
 
+
+    @SuppressWarnings("AlibabaLowerCamelCaseVariableNaming")
     @Override
     protected OAuth2Authentication getOAuth2Authentication(ClientDetails client, TokenRequest tokenRequest) {
 
-        Map<String, String> parameters = new LinkedHashMap(tokenRequest.getRequestParameters());
-
-        String mobile = parameters.get("mobile"); // 手机号
-        String code = parameters.get("code"); // 短信验证码
+        Map<String, String> parameters = Maps.newLinkedHashMap(tokenRequest.getRequestParameters());
+        // 手机号
+        String mobile = parameters.get("mobile");
+        // 短信验证码
+        String code = parameters.get("code");
 
         parameters.remove("code");
 
@@ -56,10 +61,8 @@ public class SmsCodeTokenGranter extends AbstractTokenGranter {
 
         try {
             userAuth = this.authenticationManager.authenticate(userAuth);
-        } catch (AccountStatusException var8) {
+        } catch (AccountStatusException | BadCredentialsException var8) {
             throw new InvalidGrantException(var8.getMessage());
-        } catch (BadCredentialsException var9) {
-            throw new InvalidGrantException(var9.getMessage());
         }
 
         if (userAuth != null && userAuth.isAuthenticated()) {

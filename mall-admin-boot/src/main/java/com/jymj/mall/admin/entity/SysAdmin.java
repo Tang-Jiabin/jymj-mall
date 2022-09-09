@@ -10,6 +10,8 @@ import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
 /**
  * 系统管理员
  *
@@ -63,5 +65,7 @@ public class SysAdmin extends BaseEntity {
     @ApiModelProperty("部门ID")
     private Long deptId;
 
+    @ApiModelProperty("商场ID")
+    private Long mallId;
 
 }

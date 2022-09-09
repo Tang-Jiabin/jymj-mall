@@ -41,6 +41,6 @@ public class MdseLabel extends BaseEntity {
     @ApiModelProperty("备注")
     private String remarks;
 
-    @ApiModelProperty("店铺(网点)id")
-    private Long shopId;
+    @ApiModelProperty("商场id")
+    private Long mallId;
 }

@@ -20,11 +20,11 @@ import java.util.Map;
  */
 @Service("moreUserDetailsService")
 @NoArgsConstructor
-public class MoreAuthenticatedUserDetailsService implements UserDetailsService {
+public class MoreAuthenticatedUserDetailsServiceImpl implements UserDetailsService {
 
     private Map<String, UserDetailsService> userDetailsServiceMap;
 
-    public MoreAuthenticatedUserDetailsService(Map<String, UserDetailsService> userDetailsServiceMap) {
+    public MoreAuthenticatedUserDetailsServiceImpl(Map<String, UserDetailsService> userDetailsServiceMap) {
         Assert.notNull(userDetailsServiceMap, "userDetailsService cannot be null.");
         this.userDetailsServiceMap = userDetailsServiceMap;
     }

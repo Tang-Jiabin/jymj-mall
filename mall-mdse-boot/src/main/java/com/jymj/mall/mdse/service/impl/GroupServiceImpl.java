@@ -1,19 +1,23 @@
 package com.jymj.mall.mdse.service.impl;
 
 import com.google.common.collect.Lists;
+import com.jymj.mall.admin.api.DeptFeignClient;
+import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
+import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.mdse.dto.GroupDTO;
 import com.jymj.mall.mdse.dto.GroupPageQuery;
 import com.jymj.mall.mdse.entity.MallMdseGroupMap;
 import com.jymj.mall.mdse.entity.MdseGroup;
-import com.jymj.mall.mdse.repository.MdseGroupRepository;
 import com.jymj.mall.mdse.repository.MdseGroupMapRepository;
+import com.jymj.mall.mdse.repository.MdseGroupRepository;
 import com.jymj.mall.mdse.service.GroupService;
 import com.jymj.mall.mdse.vo.GroupInfo;
-import com.jymj.mall.shop.api.ShopFeignClient;
+import com.jymj.mall.shop.api.MallFeignClient;
+import com.jymj.mall.shop.vo.MallInfo;
 import com.jymj.mall.shop.vo.ShopInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -45,35 +49,23 @@ public class GroupServiceImpl implements GroupService {
 
     private final MdseGroupRepository mdseGroupRepository;
     private final MdseGroupMapRepository mdseGroupMapRepository;
-    private final ShopFeignClient shopFeignClient;
+    private final MallFeignClient mallFeignClient;
+    private final DeptFeignClient deptFeignClient;
 
     @Override
     public MdseGroup add(GroupDTO dto) {
-
-
-        verifyShopId(dto.getShopId());
 
         MdseGroup group = new MdseGroup();
         group.setNumber(dto.getNumber());
         group.setName(dto.getName());
         group.setShow(dto.getShow());
-        group.setShopId(dto.getShopId());
+        group.setMallId(dto.getMallId());
         group.setRemarks(dto.getRemarks());
         group.setDeleted(SystemConstants.DELETED_NO);
 
         return mdseGroupRepository.save(group);
     }
 
-    private void verifyShopId(Long shopId) {
-        Result<List<ShopInfo>> shopListResult = shopFeignClient.lists();
-        if (!Result.isSuccess(shopListResult)) {
-            throw new BusinessException("店铺信息获取失败");
-        }
-        List<Long> shopIdList = shopListResult.getData().stream().map(ShopInfo::getShopId).collect(Collectors.toList());
-        if (!shopIdList.contains(shopId)) {
-            throw new BusinessException("没有店铺【 " + shopId + " 】的操作权限");
-        }
-    }
 
     private void verifyGroupName(String name) {
         Optional<MdseGroup> groupOptional = mdseGroupRepository.findByName(name);
@@ -108,9 +100,9 @@ public class GroupServiceImpl implements GroupService {
                     group.setRemarks(dto.getRemarks());
                     update = true;
                 }
-                if (!ObjectUtils.isEmpty(dto.getShopId()) && !group.getShopId().equals(dto.getShopId())) {
-                    verifyShopId(dto.getShopId());
-                    group.setShopId(dto.getShopId());
+                if (!ObjectUtils.isEmpty(dto.getMallId()) && !group.getMallId().equals(dto.getMallId())) {
+
+                    group.setMallId(dto.getMallId());
                     update = true;
                 }
                 if (update) {
@@ -145,6 +137,9 @@ public class GroupServiceImpl implements GroupService {
             info.setName(entity.getName());
             info.setShow(entity.getShow());
             info.setRemarks(entity.getRemarks());
+            info.setCreateTime(entity.getCreateTime());
+            Integer count = mdseGroupMapRepository.countByGroupId(entity.getGroupId());
+            info.setMdseCount(count);
             return info;
         }
 
@@ -163,11 +158,34 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public List<MdseGroup> findAllByAuth() {
-        Result<List<ShopInfo>> shopListResult = shopFeignClient.lists();
-        if (Result.isSuccess(shopListResult)) {
-            List<ShopInfo> shopInfoList = shopListResult.getData();
-            List<Long> shopIdList = shopInfoList.stream().map(ShopInfo::getShopId).collect(Collectors.toList());
-            return mdseGroupRepository.findAllByShopIdIn(shopIdList);
+        Long deptId = UserUtils.getDeptId();
+        Result<List<DeptInfo>> deptListResult = deptFeignClient.tree(deptId);
+
+        if (Result.isSuccess(deptListResult)) {
+            List<DeptInfo> deptInfoList = deptListResult.getData();
+            List<Long> deptIdList = deptInfoList.stream().map(DeptInfo::getDeptId).collect(Collectors.toList());
+            Result<List<MallInfo>> mallInfoListResult = mallFeignClient.getMallByDeptIdIn(StringUtils.collectionToCommaDelimitedString(deptIdList));
+            if (Result.isSuccess(mallInfoListResult)) {
+                List<MallInfo> mallInfoList = mallInfoListResult.getData();
+                List<Long> mallIdList = mallInfoList.stream().map(MallInfo::getMallId).collect(Collectors.toList());
+                return mdseGroupRepository.findAllByMallIdInAndShow(mallIdList,true);
+            }
+        }
+        return Lists.newArrayList();
+    }
+
+    private List<Long> findMallIdList() {
+        Long deptId = UserUtils.getDeptId();
+        Result<List<DeptInfo>> deptListResult = deptFeignClient.tree(deptId);
+
+        if (Result.isSuccess(deptListResult)) {
+            List<DeptInfo> deptInfoList = deptListResult.getData();
+            List<Long> deptIdList = deptInfoList.stream().map(DeptInfo::getDeptId).collect(Collectors.toList());
+            Result<List<MallInfo>> mallInfoListResult = mallFeignClient.getMallByDeptIdIn(StringUtils.collectionToCommaDelimitedString(deptIdList));
+            if (Result.isSuccess(mallInfoListResult)) {
+                List<MallInfo> mallInfoList = mallInfoListResult.getData();
+                return mallInfoList.stream().map(MallInfo::getMallId).collect(Collectors.toList());
+            }
         }
         return Lists.newArrayList();
     }
@@ -177,21 +195,12 @@ public class GroupServiceImpl implements GroupService {
 
         Pageable pageable = PageUtils.getPageable(groupPageQuery);
 
-        List<ShopInfo> shopInfoList = Lists.newArrayList();
-        Result<List<ShopInfo>> shopListResult = shopFeignClient.lists();
-        if (Result.isSuccess(shopListResult)) {
-            shopInfoList = shopListResult.getData();
-        }
-        List<Long> shopIdList = shopInfoList.stream().map(ShopInfo::getShopId).collect(Collectors.toList());
+
 
         Specification<MdseGroup> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> list = Lists.newArrayList();
 
-            if (!CollectionUtils.isEmpty(shopIdList)) {
-                CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("shopId").as(Long.class));
-                shopIdList.forEach(in::value);
-                list.add(in);
-            }
+
 
             if (StringUtils.hasText(groupPageQuery.getNumber())) {
                 list.add(criteriaBuilder.like(root.get("number").as(String.class), groupPageQuery.getNumber() + SystemConstants.SQL_LIKE));
@@ -203,6 +212,10 @@ public class GroupServiceImpl implements GroupService {
 
             if (!ObjectUtils.isEmpty(groupPageQuery.getShow())) {
                 list.add(criteriaBuilder.equal(root.get("show").as(Boolean.class), groupPageQuery.getShow()));
+            }
+
+            if (!ObjectUtils.isEmpty(groupPageQuery.getMallId())) {
+                list.add(criteriaBuilder.equal(root.get("mallId").as(Boolean.class), groupPageQuery.getMallId()));
             }
 
             list.add(criteriaBuilder.equal(root.get("deleted").as(Integer.class), SystemConstants.DELETED_NO));
@@ -220,14 +233,14 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public void addMdseGroupMap(Long mdseId, List<MdseGroup> groupList) {
-        List<MallMdseGroupMap> mdseGroupMaps = Optional.of(groupList)
+    public void addMdseGroupMap(Long mdseId, List<Long> groupIdList) {
+        List<MallMdseGroupMap> mdseGroupMaps = Optional.of(groupIdList)
                 .orElse(Lists.newArrayList())
                 .stream().filter(group -> !ObjectUtils.isEmpty(group))
-                .map(group -> {
+                .map(groupId -> {
                     MallMdseGroupMap mdseGroupMap = new MallMdseGroupMap();
                     mdseGroupMap.setMdseId(mdseId);
-                    mdseGroupMap.setGroupId(group.getGroupId());
+                    mdseGroupMap.setGroupId(groupId);
                     mdseGroupMap.setDeleted(SystemConstants.DELETED_NO);
                     return mdseGroupMap;
                 }).collect(Collectors.toList());
@@ -249,5 +262,25 @@ public class GroupServiceImpl implements GroupService {
     public List<MallMdseGroupMap> findAllMdseGroupById(Long groupId) {
 
         return mdseGroupMapRepository.findAllByGroupId(groupId);
+    }
+
+    @Override
+    public void deleteMdseGroupAll(List<MallMdseGroupMap> deleteMdseGroupList) {
+        if (!CollectionUtils.isEmpty(deleteMdseGroupList)) {
+            mdseGroupMapRepository.deleteAll(deleteMdseGroupList);
+        }
+    }
+
+    @Override
+    public List<MallMdseGroupMap> findMdseGroupAllByMdseId(Long mdseId) {
+        return mdseGroupMapRepository.findAllByMdseId(mdseId);
+    }
+
+    @Override
+    public List<MdseGroup> findAllByMallId(Long mallId) {
+        if (mallId!=null){
+            return mdseGroupRepository.findAllByMallId(mallId);
+        }
+        return mdseGroupRepository.findAll();
     }
 }

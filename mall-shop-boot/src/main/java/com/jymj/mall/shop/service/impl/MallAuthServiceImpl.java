@@ -31,16 +31,11 @@ import java.util.Optional;
 public class MallAuthServiceImpl implements MallAuthService {
 
     private final MallAuthRepository authRepository;
-    private final MallService mallService;
+
 
     @Override
     public MallAuth addAuth(AddMallAuth addMallAuth) {
 
-        Optional<MallDetails> mallDetailsOptional = mallService.findById(addMallAuth.getMallId());
-
-        if (!mallDetailsOptional.isPresent()) {
-            throw new BusinessException("商场不存在");
-        }
 
         Optional<MallAuth> mallAuthOptional = authRepository.findByMallId(addMallAuth.getMallId());
 

@@ -35,7 +35,7 @@ public class BrandController {
 
     @ApiOperation(value = "添加品牌")
     @PostMapping
-    private Result<BrandInfo> addBrand(@Valid @RequestBody BrandDTO brandDTO) {
+    public Result<BrandInfo> addBrand(@Valid @RequestBody BrandDTO brandDTO) {
         MdseBrand brand = brandService.add(brandDTO);
         BrandInfo brandInfo = brandService.entity2vo(brand);
         return Result.success(brandInfo);
@@ -43,14 +43,14 @@ public class BrandController {
 
     @ApiOperation(value = "删除品牌")
     @DeleteMapping("/{ids}")
-    private Result deleteBrand(@Valid @PathVariable String ids) {
+    public Result<Object> deleteBrand(@Valid @PathVariable String ids) {
         brandService.delete(ids);
         return Result.success();
     }
 
     @ApiOperation(value = "修改品牌")
     @PutMapping
-    private Result<BrandInfo> updateBrand(@RequestBody BrandDTO brandDTO) {
+    public Result<BrandInfo> updateBrand(@RequestBody BrandDTO brandDTO) {
         Optional<MdseBrand> mdseBrandOptional = brandService.update(brandDTO);
         return mdseBrandOptional.map(entity -> Result.success(brandService.entity2vo(entity))).orElse(Result.failed("更新失败"));
     }
@@ -64,8 +64,8 @@ public class BrandController {
 
     @ApiOperation(value = "品牌列表")
     @GetMapping("/lists")
-    public Result<List<BrandInfo>> lists() {
-        List<MdseBrand> brandList = brandService.findAll();
+    public Result<List<BrandInfo>> lists(Long mallId) {
+        List<MdseBrand> brandList = brandService.findAllByMallId(mallId);
         List<BrandInfo> brandInfoList = brandService.list2vo(brandList);
         return Result.success(brandInfoList);
     }

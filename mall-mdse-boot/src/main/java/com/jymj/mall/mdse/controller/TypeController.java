@@ -36,7 +36,7 @@ public class TypeController {
 
     @ApiOperation(value = "添加类型")
     @PostMapping
-    private Result<TypeInfo> addType(@Valid @RequestBody TypeDTO typeDTO) {
+    public Result<TypeInfo> addType(@Valid @RequestBody TypeDTO typeDTO) {
         MdseType type = typeService.add(typeDTO);
         TypeInfo typeInfo = typeService.entity2vo(type);
         return Result.success(typeInfo);
@@ -44,14 +44,14 @@ public class TypeController {
 
     @ApiOperation(value = "删除类型")
     @DeleteMapping("/{ids}")
-    private Result deleteType(@Valid @PathVariable String ids) {
+    public Result<Object> deleteType(@Valid @PathVariable String ids) {
         typeService.delete(ids);
         return Result.success();
     }
 
     @ApiOperation(value = "修改类型")
     @PutMapping
-    private Result<TypeInfo> updateType(@RequestBody TypeDTO typeDTO) {
+    public Result<TypeInfo> updateType(@RequestBody TypeDTO typeDTO) {
         Optional<MdseType> mdseTypeOptional = typeService.update(typeDTO);
         return mdseTypeOptional.map(entity -> Result.success(typeService.entity2vo(entity))).orElse(Result.failed("更新失败"));
     }
@@ -65,8 +65,8 @@ public class TypeController {
 
     @ApiOperation(value = "列表")
     @GetMapping("/lists")
-    public Result<List<TypeInfo>> lists() {
-        List<MdseType> typeList = typeService.findAllByAuth();
+    public Result<List<TypeInfo>> lists(Long mallId) {
+        List<MdseType> typeList = typeService.findAllByMallId(mallId);
         List<TypeInfo> typeInfoList = typeService.list2vo(typeList);
         return Result.success(typeInfoList);
     }

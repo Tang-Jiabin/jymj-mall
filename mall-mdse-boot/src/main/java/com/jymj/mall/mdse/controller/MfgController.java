@@ -26,13 +26,13 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/v1/mfg")
 @RequiredArgsConstructor
-public class MFGController {
+public class MfgController {
 
     private final MfgService mfgService;
 
     @ApiOperation(value = "添加厂家")
     @PostMapping
-    private Result<MfgInfo> addMfg(@Valid @RequestBody MfgDTO mfgDTO) {
+    public Result<MfgInfo> addMfg(@Valid @RequestBody MfgDTO mfgDTO) {
         MdseMfg mdseMfg = mfgService.add(mfgDTO);
         MfgInfo mfgInfo = mfgService.entity2vo(mdseMfg);
         return Result.success(mfgInfo);
@@ -40,14 +40,14 @@ public class MFGController {
 
     @ApiOperation(value = "删除厂家")
     @DeleteMapping("/{ids}")
-    private Result deleteMfg(@Valid @PathVariable String ids) {
+    public Result<Object> deleteMfg(@Valid @PathVariable String ids) {
         mfgService.delete(ids);
         return Result.success();
     }
 
     @ApiOperation(value = "修改厂家")
     @PutMapping
-    private Result<MfgInfo> updateMfg(@RequestBody MfgDTO mfgDTO) {
+    public  Result<MfgInfo> updateMfg(@RequestBody MfgDTO mfgDTO) {
         Optional<MdseMfg> mfgOptional = mfgService.update(mfgDTO);
         return mfgOptional.map(entity -> Result.success(mfgService.entity2vo(entity))).orElse(Result.failed("更新失败"));
     }
@@ -61,8 +61,8 @@ public class MFGController {
 
     @ApiOperation(value = "厂家列表")
     @GetMapping("/lists")
-    public Result< List<MfgInfo> > lists() {
-        List<MdseMfg> mfgList =  mfgService.findAll();
+    public Result< List<MfgInfo> > lists(Long mallId) {
+        List<MdseMfg> mfgList =  mfgService.findAllByMallId(mallId);
         List<MfgInfo> mfgInfoList = mfgService.list2vo(mfgList);
         return Result.success(mfgInfoList);
     }

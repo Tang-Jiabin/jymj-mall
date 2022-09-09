@@ -42,9 +42,10 @@ public class RoleController {
 
     @ApiOperation(value = "新增角色")
     @PostMapping
-    public Result addRole(@Valid @RequestBody AddRole addRole) {
+    public Result<RoleInfo> addRole(@Valid @RequestBody AddRole addRole) {
         SysRole result = sysRoleService.addRole(addRole);
-        return Result.success(result);
+        RoleInfo roleInfo = sysRoleService.entity2vo(result);
+        return Result.success(roleInfo);
     }
 
     @ApiOperation(value = "删除角色")
@@ -63,9 +64,10 @@ public class RoleController {
 
     @ApiOperation(value = "角色详情")
     @GetMapping("/{roleId}")
-    public Result<SysRole> getRoleDetail(@ApiParam("角色ID") @PathVariable Long roleId) {
+    public Result<RoleInfo> getRoleDetail(@ApiParam("角色ID") @PathVariable Long roleId) {
         Optional<SysRole> roleOptional = sysRoleService.getById(roleId);
-        return roleOptional.map(Result::success).orElseGet(() -> Result.failed("角色不存在"));
+
+        return roleOptional.map(role->Result.success(sysRoleService.entity2vo(role))).orElseGet(() -> Result.failed("角色不存在"));
     }
 
     @ApiOperation(value = "角色下拉列表")

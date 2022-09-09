@@ -46,23 +46,24 @@ public class AdminController {
 
     @ApiOperation(value = "添加管理员")
     @PostMapping
-    public Result addAdmin(@Valid @RequestBody UpdateAdminDTO updateAdminDTO) {
+    public Result<AdminInfo> addAdmin(@Valid @RequestBody UpdateAdminDTO updateAdminDTO) {
         SysAdmin admin = adminService.add(updateAdminDTO);
-        return Result.success();
+        AdminInfo adminInfo = adminService.entity2vo(admin);
+        return Result.success(adminInfo);
     }
 
     @ApiOperation(value = "删除管理员")
     @DeleteMapping("/{ids}")
-    public Result deleteAdmin(@ApiParam("删除，多个id用英文逗号分割") @PathVariable String ids) {
+    public Result<Object> deleteAdmin(@ApiParam("删除，多个id用英文逗号分割") @PathVariable String ids) {
         adminService.delete(ids);
         return Result.success();
     }
 
     @ApiOperation(value = "修改管理员")
     @PutMapping
-    public Result updateAdmin( @RequestBody UpdateAdminDTO updateAdminDTO) {
-        adminService.update(updateAdminDTO);
-        return Result.success();
+    public Result<AdminInfo> updateAdmin( @RequestBody UpdateAdminDTO updateAdminDTO) {
+        Optional<SysAdmin> adminOptional = adminService.update(updateAdminDTO);
+        return adminOptional.map(admin -> Result.success(adminService.entity2vo(admin))).orElse(Result.failed());
     }
 
     @ApiOperation(value = "管理员信息")

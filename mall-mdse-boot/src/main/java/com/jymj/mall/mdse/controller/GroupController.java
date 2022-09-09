@@ -74,8 +74,8 @@ public class GroupController {
 
     @ApiOperation(value = "分组列表")
     @GetMapping("/lists")
-    public Result<List<GroupInfo>> lists() {
-        List<MdseGroup> groupList = groupService.findAllByAuth();
+    public Result<List<GroupInfo>> lists(Long mallId) {
+        List<MdseGroup> groupList = groupService.findAllByMallId(mallId);
         List<GroupInfo> groupInfoList = groupService.list2vo(groupList);
         return Result.success(groupInfoList);
     }

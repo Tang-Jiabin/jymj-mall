@@ -1,5 +1,6 @@
 package com.jymj.mall.mdse.dto;
 
+import com.jymj.mall.mdse.vo.PictureInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -42,12 +43,12 @@ public class StockDTO {
     @ApiModelProperty("总库存")
     private Integer totalInventory;
 
-    @ApiModelProperty("剩余库存")
-    private Integer remainingStock;
+
 
     @ApiModelProperty("库存编号")
     private String number;
 
     @ApiModelProperty("规格图片")
-    private List<String> specPictureList;
+    private List<PictureDTO> specPictureList;
+
 }

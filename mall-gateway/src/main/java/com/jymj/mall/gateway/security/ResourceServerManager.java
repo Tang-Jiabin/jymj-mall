@@ -43,7 +43,8 @@ public class ResourceServerManager implements ReactiveAuthorizationManager<Autho
     public Mono<AuthorizationDecision> check(Mono<Authentication> mono, AuthorizationContext authorizationContext) {
 
         ServerHttpRequest request = authorizationContext.getExchange().getRequest();
-        if (request.getMethod() == HttpMethod.OPTIONS) { // 预检请求放行
+        // 预检请求放行
+        if (request.getMethod() == HttpMethod.OPTIONS) {
             return Mono.just(new AuthorizationDecision(true));
         }
         PathMatcher pathMatcher = new AntPathMatcher();
@@ -70,8 +71,10 @@ public class ResourceServerManager implements ReactiveAuthorizationManager<Autho
          */
         Map<Object, Object> urlPermRolesRules = redisUtils.hmget(GlobalConstants.URL_PERM_ROLES_KEY);
         // 根据请求路径获取有访问权限的角色列表
-        List<String> authorizedRoles = Lists.newArrayList(); // 拥有访问权限的角色
-        boolean requireCheck = false; // 是否需要鉴权，默认未设置拦截规则不需鉴权
+        // 拥有访问权限的角色
+        List<String> authorizedRoles = Lists.newArrayList();
+        // 是否需要鉴权，默认未设置拦截规则不需鉴权
+        boolean requireCheck = false;
 
         for (Map.Entry<Object, Object> permRoles : urlPermRolesRules.entrySet()) {
             String perm = (String) permRoles.getKey();

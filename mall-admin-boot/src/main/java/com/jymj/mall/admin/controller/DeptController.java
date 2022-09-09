@@ -67,4 +67,12 @@ public class DeptController {
         List<DeptInfo> deptInfoList = deptService.list2vo(deptList);
         return Result.success(deptInfoList);
     }
+
+    @ApiOperation(value = "树列表")
+    @GetMapping("/{deptId}/tree")
+    public Result<List<DeptInfo>> tree(@PathVariable Long deptId) {
+        List<SysDept> deptList = deptService.tree(deptId);
+        List<DeptInfo> deptInfoList = deptService.list2vo(deptList);
+        return Result.success(deptInfoList);
+    }
 }

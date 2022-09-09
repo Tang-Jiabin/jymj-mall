@@ -56,11 +56,4 @@ public class MallAuthInfo {
     @ApiModelProperty("身份证（反面）")
     private String idBack;
 
-    public String getMobile() {
-        return DesensitizedUtil.mobilePhone(this.mobile);
-    }
-
-    public String getIdentity() {
-        return DesensitizedUtil.idCardNum(this.identity,1,2);
-    }
 }

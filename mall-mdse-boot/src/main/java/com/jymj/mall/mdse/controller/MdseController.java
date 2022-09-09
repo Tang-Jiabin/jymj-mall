@@ -30,7 +30,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/v1/mdse")
 @RequiredArgsConstructor
-public class MDSEController {
+public class MdseController {
 
     private final MdseService mdseService;
 

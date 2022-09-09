@@ -1,6 +1,7 @@
 package com.jymj.mall.mdse.dto;
 
 import com.jymj.mall.mdse.enums.InventoryReductionMethod;
+import com.jymj.mall.mdse.vo.PictureInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -25,10 +26,10 @@ public class MdseDTO {
     private Long mdseId;
 
     @ApiModelProperty("商品图片")
-    private Set<String> pictureList;
+    private List<PictureDTO> pictureList;
 
     @ApiModelProperty("商品视频")
-    private List<String> videoList;
+    private List<PictureDTO> videoList;
 
     @ApiModelProperty("商品名称")
     private String name;
@@ -46,10 +47,10 @@ public class MdseDTO {
     private Integer startingQuantity;
 
     @ApiModelProperty("剩余数量 t-显示 f-不显示")
-    private boolean showRemainingQuantity;
+    private Boolean showRemainingQuantity;
 
     @ApiModelProperty("退款 t-支持退款 f-不支持退款")
-    private boolean refund;
+    private Boolean refund;
 
     @ApiModelProperty("库存减少方式")
     private InventoryReductionMethod inventoryReductionMethod;
@@ -78,8 +79,8 @@ public class MdseDTO {
     @ApiModelProperty("类型id")
     private Long typeId;
 
-    @ApiModelProperty("店铺id")
-    private Long shopId;
+    @ApiModelProperty("商场id")
+    private Long mallId;
 
     @ApiModelProperty("库存规格集合")
     private Set<StockDTO> stockList;

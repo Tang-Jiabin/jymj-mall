@@ -34,4 +34,11 @@ public class AddRole {
     @ApiModelProperty("角色状态(1-正常；0-停用)")
     @NotNull(message = "角色状态不能为空")
     private Integer status;
+
+    @NotNull(message = "部门id不能为空")
+    @ApiModelProperty("部门id")
+    private Long deptId;
+
+    @ApiModelProperty("描述")
+    private String describe;
 }

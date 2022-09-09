@@ -3,6 +3,7 @@ package com.jymj.mall.admin.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Maps;
 import com.jymj.mall.admin.dto.PermissionDTO;
 import com.jymj.mall.admin.dto.UpdatePerm;
 import com.jymj.mall.admin.entity.SysPermission;
@@ -59,8 +60,8 @@ public class PermissionServiceImpl implements PermissionService {
                     .filter(item -> StrUtil.isNotBlank(item.getUrlPerm()))
                     .collect(Collectors.toList());
             if (CollectionUtil.isNotEmpty(urlPermList)) {
-                Map<String, List<String>> urlPermRoles = new HashMap<>();
-                urlPermList.stream().forEach(item -> {
+                Map<String, List<String>> urlPermRoles = Maps.newHashMap();
+                urlPermList.forEach(item -> {
                     String perm = item.getUrlPerm();
                     urlPermRoles.put(perm, item.getRoles());
                 });
@@ -73,7 +74,7 @@ public class PermissionServiceImpl implements PermissionService {
                     .collect(Collectors.toList());
             if (CollectionUtil.isNotEmpty(btnPermList)) {
                 Map<String, List<String>> btnPermRoles = MapUtil.newHashMap();
-                btnPermList.stream().forEach(item -> {
+                btnPermList.forEach(item -> {
                     String perm = item.getBtnPerm();
                     btnPermRoles.put(perm, item.getRoles());
                 });

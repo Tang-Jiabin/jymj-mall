@@ -51,4 +51,6 @@ public interface RoleService {
     Page<SysRole> findPage(RolePageQuery rolePageQuery);
 
     List<SysAdminRole> findAdminRoleAllByRoleId(Long roleId);
+
+    RoleInfo entity2vo(SysRole result);
 }

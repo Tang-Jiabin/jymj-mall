@@ -1,8 +1,9 @@
 package com.jymj.mall.oauth.security.config;
 
 import cn.binarywang.wx.miniapp.api.WxMaService;
+import com.google.common.collect.Maps;
 import com.jymj.mall.common.constants.SecurityConstants;
-import com.jymj.mall.oauth.security.core.MoreAuthenticatedUserDetailsService;
+import com.jymj.mall.oauth.security.core.MoreAuthenticatedUserDetailsServiceImpl;
 import com.jymj.mall.oauth.security.extension.mobile.SmsCodeAuthenticationProvider;
 import com.jymj.mall.oauth.security.extension.wechat.WechatAuthenticationProvider;
 import com.jymj.mall.user.api.UserFeignClient;
@@ -41,11 +42,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        Map<String, UserDetailsService> userDetailsServiceMap = new HashMap<>();
+        Map<String, UserDetailsService> userDetailsServiceMap = Maps.newHashMap();
         userDetailsServiceMap.put(SecurityConstants.APP_CLIENT_ID, sysUserDetailsService);
         userDetailsServiceMap.put(SecurityConstants.WEAPP_CLIENT_ID, sysUserDetailsService);
         userDetailsServiceMap.put(SecurityConstants.ADMIN_CLIENT_ID, sysAdminDetailsService);
-        authenticationProvider.setUserDetailsService(new MoreAuthenticatedUserDetailsService(userDetailsServiceMap));
+        authenticationProvider.setUserDetailsService(new MoreAuthenticatedUserDetailsServiceImpl(userDetailsServiceMap));
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
     }
@@ -121,13 +122,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        Map<String, UserDetailsService> userDetailsServiceMap = new HashMap<>();
+        Map<String, UserDetailsService> userDetailsServiceMap = Maps.newHashMap();
         userDetailsServiceMap.put(SecurityConstants.APP_CLIENT_ID, sysUserDetailsService);
         userDetailsServiceMap.put(SecurityConstants.WEAPP_CLIENT_ID, sysUserDetailsService);
         userDetailsServiceMap.put(SecurityConstants.ADMIN_CLIENT_ID, sysAdminDetailsService);
-        provider.setUserDetailsService(new MoreAuthenticatedUserDetailsService(userDetailsServiceMap));
+        provider.setUserDetailsService(new MoreAuthenticatedUserDetailsServiceImpl(userDetailsServiceMap));
         provider.setPasswordEncoder(passwordEncoder());
-        provider.setHideUserNotFoundExceptions(false); // 是否隐藏用户不存在异常，默认:true-隐藏；false-抛出异常；
+        // 是否隐藏用户不存在异常，默认:true-隐藏；false-抛出异常；
+        provider.setHideUserNotFoundExceptions(true);
         return provider;
     }
 

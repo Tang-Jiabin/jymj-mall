@@ -6,7 +6,6 @@ import com.jymj.mall.mdse.entity.MallMdseLabelMap;
 import com.jymj.mall.mdse.entity.MdseLabel;
 import com.jymj.mall.mdse.vo.LabelInfo;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,11 +19,17 @@ import java.util.List;
 public interface LabelService extends BaseService<MdseLabel, LabelInfo, LabelDTO> {
     List<MdseLabel> findAllById(List<Long> idList);
 
-    void addMdseLabelMap(Long mdseId, List<MdseLabel> labelList);
+    void addMdseLabelMap(Long mdseId, List<Long> labelList);
 
     List<MdseLabel> findAllByMdseId(Long mdseId);
 
     List<MdseLabel> findAllByAuth();
 
-    List<MallMdseLabelMap> findAllMdseLabelByLabelId(Long labelId);
+    List<MallMdseLabelMap> findMdseLabelAllByLabelId(Long labelId);
+
+    List<MallMdseLabelMap> findMdseLabelAllByMdseId(Long mdseId);
+
+    void deleteMdseLabel(List<MallMdseLabelMap> deleteMdseLabelMapList);
+
+    List<MdseLabel> findAllByMallId(Long mallId);
 }

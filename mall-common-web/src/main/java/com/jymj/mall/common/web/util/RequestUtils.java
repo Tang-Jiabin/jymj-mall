@@ -42,7 +42,7 @@ public class RequestUtils {
      * @return
      */
     @SneakyThrows
-    public static String getOAuth2ClientId() {
+    public static String getOauth2ClientId() {
 
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
 
@@ -57,7 +57,7 @@ public class RequestUtils {
         if (StrUtil.isNotBlank(basic) && basic.startsWith(SecurityConstants.BASIC_PREFIX)) {
             basic = basic.replace(SecurityConstants.BASIC_PREFIX, Strings.EMPTY);
             String basicPlainText = new String(Base64.getDecoder().decode(basic.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
-            clientId = basicPlainText.split(":")[0]; //client:secret
+            clientId = basicPlainText.split(":")[0];
         }
         return clientId;
     }

@@ -46,4 +46,7 @@ public class MallPicture extends BaseEntity {
 
     @ApiModelProperty("规格id")
     private Long stockId;
+
+    @ApiModelProperty("规格id")
+    private Long cardId;
 }

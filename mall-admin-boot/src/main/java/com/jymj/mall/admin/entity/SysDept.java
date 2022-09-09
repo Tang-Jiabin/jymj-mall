@@ -3,8 +3,7 @@ package com.jymj.mall.admin.entity;
 
 import com.jymj.mall.common.web.pojo.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -20,6 +19,9 @@ import javax.persistence.*;
  */
 @Data
 @Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "sys_dept")
 @Where(clause = "deleted = 0")
 @SQLDelete(sql = "UPDATE sys_dept SET deleted = 1 where dept_id = ?")

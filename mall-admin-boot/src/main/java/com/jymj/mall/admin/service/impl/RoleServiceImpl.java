@@ -5,14 +5,12 @@ import com.jymj.mall.admin.dto.AddRole;
 import com.jymj.mall.admin.dto.RolePageQuery;
 import com.jymj.mall.admin.dto.RoleResource;
 import com.jymj.mall.admin.dto.UpdateRole;
-import com.jymj.mall.admin.entity.SysAdminRole;
-import com.jymj.mall.admin.entity.SysRole;
-import com.jymj.mall.admin.entity.SysRoleMenu;
-import com.jymj.mall.admin.entity.SysRolePermission;
+import com.jymj.mall.admin.entity.*;
 import com.jymj.mall.admin.repository.SysAdminRoleRepository;
 import com.jymj.mall.admin.repository.SysRoleMenuRepository;
 import com.jymj.mall.admin.repository.SysRolePermissionRepository;
 import com.jymj.mall.admin.repository.SysRoleRepository;
+import com.jymj.mall.admin.service.DeptService;
 import com.jymj.mall.admin.service.RoleService;
 import com.jymj.mall.admin.vo.RoleInfo;
 import com.jymj.mall.common.constants.SystemConstants;
@@ -50,6 +48,7 @@ import java.util.stream.Collectors;
 public class RoleServiceImpl implements RoleService {
 
     private final SysRoleRepository roleRepository;
+    private final DeptService deptService;
     private final SysAdminRoleRepository adminRoleRepository;
     private final SysRolePermissionRepository rolePermissionRepository;
     private final SysRoleMenuRepository roleMenuRepository;
@@ -69,7 +68,11 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public SysRole addRole(AddRole addRole) {
         Long deptId = UserUtils.getDeptId();
-        String code = deptId + "_" + addRole.getCode();
+        List<SysDept> deptList = deptService.findChildren(deptId);
+        if (!deptList.stream().map(SysDept::getDeptId).collect(Collectors.toList()).contains(addRole.getDeptId())){
+            throw new BusinessException("部门权限不足");
+        }
+        String code = addRole.getDeptId() + "_" + addRole.getCode();
         Optional<SysRole> roleOptional = roleRepository.findByCode(code);
         if (roleOptional.isPresent()) {
             throw new BusinessException("角色编码已存在");
@@ -77,10 +80,11 @@ public class RoleServiceImpl implements RoleService {
         SysRole role = new SysRole();
         role.setName(addRole.getName());
         role.setCode(code);
+        role.setDescribe(addRole.getDescribe());
         role.setSort(addRole.getSort());
         role.setStatus(addRole.getStatus());
         role.setDeleted(SystemConstants.DELETED_NO);
-        role.setDeptId(deptId);
+        role.setDeptId(addRole.getDeptId());
         return roleRepository.save(role);
 
     }
@@ -212,6 +216,9 @@ public class RoleServiceImpl implements RoleService {
         if (StringUtils.hasText(updateRole.getName())) {
             role.setName(updateRole.getName());
         }
+        if (StringUtils.hasText(updateRole.getDescribe())){
+            role.setDescribe(updateRole.getDescribe());
+        }
         if (StringUtils.hasText(updateRole.getCode())) {
             role.setCode(updateRole.getCode());
         }
@@ -248,12 +255,28 @@ public class RoleServiceImpl implements RoleService {
         return adminRoleRepository.findAllByRoleId(roleId);
     }
 
+    @Override
+    public RoleInfo entity2vo(SysRole role) {
+        RoleInfo roleInfo = new RoleInfo();
+        roleInfo.setRoleId(role.getRoleId());
+        roleInfo.setName(role.getName());
+        roleInfo.setCode(role.getCode());
+        roleInfo.setSort(role.getSort());
+        roleInfo.setDescribe(role.getDescribe());
+        roleInfo.setStatus(role.getStatus());
+        long count = adminRoleRepository.countByRoleId(role.getRoleId());
+        roleInfo.setWorkforce(count);
+        return roleInfo;
+    }
+
+
     public RoleInfo role2vo(SysRole role) {
         RoleInfo roleInfo = new RoleInfo();
         roleInfo.setRoleId(role.getRoleId());
         roleInfo.setName(role.getName());
         roleInfo.setCode(role.getCode());
         roleInfo.setSort(role.getSort());
+        roleInfo.setDescribe(role.getDescribe());
         roleInfo.setStatus(role.getStatus());
         long count = adminRoleRepository.countByRoleId(role.getRoleId());
         roleInfo.setWorkforce(count);

@@ -13,8 +13,19 @@ package com.jymj.mall.common.enums;
 public enum AuthenticationIdentityEnum implements BaseEnum<String>{
 
 
+    /**
+     * 用户名
+     */
     USERNAME("username", "用户名"),
+
+    /**
+     * 手机号
+     */
     MOBILE("mobile", "手机号"),
+
+    /**
+     * 开放式认证系统唯一身份标识
+     */
     OPENID("openId", "开放式认证系统唯一身份标识");
 
 

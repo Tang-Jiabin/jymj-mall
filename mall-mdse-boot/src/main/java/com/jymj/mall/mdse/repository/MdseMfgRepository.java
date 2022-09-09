@@ -19,5 +19,8 @@ import java.util.Optional;
 public interface MdseMfgRepository extends JpaRepository<MdseMfg,Long> {
     Optional<MdseMfg> findByName(String name);
 
-    List<MdseMfg> findAllByShopIdIn(List<Long> shopIdList);
+
+    List<MdseMfg> findAllByMallIdIn(List<Long> mallIdList);
+
+    List<MdseMfg> findAllByMallId(Long mallId);
 }

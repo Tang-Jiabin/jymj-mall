@@ -81,4 +81,12 @@ public class ShopController {
         List<ShopInfo> shopInfoList = shopService.list2vo(mallShopList);
         return Result.success(shopInfoList);
     }
+
+    @ApiOperation(value = "店铺列表")
+    @GetMapping("/{ids}")
+    public Result<List<ShopInfo>> getAllById(@PathVariable String ids) {
+        List<MallShop> mallShopList = shopService.findAllById(ids);
+        List<ShopInfo> shopInfoList = shopService.list2vo(mallShopList);
+        return Result.success(shopInfoList);
+    }
 }

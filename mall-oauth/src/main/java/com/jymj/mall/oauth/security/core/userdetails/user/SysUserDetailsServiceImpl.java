@@ -55,7 +55,8 @@ public class SysUserDetailsServiceImpl implements UserDetailsService {
             UserAuthDTO member = result.getData();
             if (null != member) {
                 sysUserDetails = new SysUserDetails(member);
-                sysUserDetails.setAuthenticationIdentity(AuthenticationIdentityEnum.MOBILE.getValue());   // 认证身份标识:mobile
+                // 认证身份标识:mobile
+                sysUserDetails.setAuthenticationIdentity(AuthenticationIdentityEnum.MOBILE.getValue());
             }
         }
         return getUserDetails(sysUserDetails);
@@ -73,7 +74,8 @@ public class SysUserDetailsServiceImpl implements UserDetailsService {
             UserAuthDTO member = result.getData();
             if (null != member) {
                 sysUserDetails = new SysUserDetails(member);
-                sysUserDetails.setAuthenticationIdentity(AuthenticationIdentityEnum.OPENID.getValue());   // 认证身份标识:openId
+                // 认证身份标识:openId
+                sysUserDetails.setAuthenticationIdentity(AuthenticationIdentityEnum.OPENID.getValue());
             }
         }
         return getUserDetails(sysUserDetails);

@@ -35,4 +35,6 @@ public interface MallService {
     MallInfo mall2vo(MallDetails mallDetails);
 
     Optional<MallDetails> findByDeptId(Long deptId);
+
+    List<MallDetails> findAllByDeptIdIn(String deptIds);
 }

@@ -33,5 +33,8 @@ public interface DeptFeignClient {
     @GetMapping("/api/v1/dept/{deptId}/children")
     public Result<List<DeptInfo>> children(@PathVariable Long deptId);
 
+    @GetMapping("/api/v1/dept/{deptId}/tree")
+     Result<List<DeptInfo>> tree(@PathVariable Long deptId);
+
 
 }

@@ -60,6 +60,10 @@ public class UpdateAdminDTO {
     @ApiModelProperty("部门ID")
     private Long deptId;
 
+    @NotNull(message = "商城ID不能为空")
+    @ApiModelProperty("商城ID")
+    private Long mallId;
+
     @NotEmpty(message = "用户角色不能为空")
     @ApiModelProperty("角色Id集合")
     private List<Long> roleIdList;

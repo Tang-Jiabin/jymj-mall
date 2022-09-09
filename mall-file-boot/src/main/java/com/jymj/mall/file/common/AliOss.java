@@ -11,8 +11,9 @@ import org.springframework.beans.factory.annotation.Value;
  * @email seven_tjb@163.com
  * @date 2022-09-05
  */
+
 @Data
-public class AliOSS {
+public class AliOss {
     /**
      * 区域id
      */

@@ -25,4 +25,7 @@ public class GroupPageQuery extends BasePageQueryDTO {
 
     @ApiModelProperty("显示")
     private Boolean show;
+
+    @ApiModelProperty("商场id")
+    private Long mallId;
 }

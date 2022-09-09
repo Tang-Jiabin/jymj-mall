@@ -1,9 +1,12 @@
 package com.jymj.mall.mdse.service.impl;
 
 import com.google.common.collect.Lists;
+import com.jymj.mall.admin.api.DeptFeignClient;
+import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.Result;
+import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.mdse.dto.LabelDTO;
 import com.jymj.mall.mdse.entity.MallMdseLabelMap;
 import com.jymj.mall.mdse.entity.MdseLabel;
@@ -11,7 +14,9 @@ import com.jymj.mall.mdse.repository.MdseLabelMapRepository;
 import com.jymj.mall.mdse.repository.MdseLabelRepository;
 import com.jymj.mall.mdse.service.LabelService;
 import com.jymj.mall.mdse.vo.LabelInfo;
+import com.jymj.mall.shop.api.MallFeignClient;
 import com.jymj.mall.shop.api.ShopFeignClient;
+import com.jymj.mall.shop.vo.MallInfo;
 import com.jymj.mall.shop.vo.ShopInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,7 +41,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LabelServiceImpl implements LabelService {
 
-    private final ShopFeignClient shopFeignClient;
+    private final MallFeignClient mallFeignClient;
+    private final DeptFeignClient deptFeignClient;
 
     private final MdseLabelRepository labelRepository;
     private final MdseLabelMapRepository labelMapRepository;
@@ -44,12 +50,12 @@ public class LabelServiceImpl implements LabelService {
     @Override
     public MdseLabel add(LabelDTO dto) {
 
-        verifyShopId(dto.getShopId());
+
 
         MdseLabel label = new MdseLabel();
         label.setName(dto.getName());
         label.setRemarks(dto.getRemarks());
-        label.setShopId(dto.getShopId());
+        label.setMallId(dto.getMallId());
         label.setDeleted(SystemConstants.DELETED_NO);
 
         return labelRepository.save(label);
@@ -74,9 +80,8 @@ public class LabelServiceImpl implements LabelService {
                     update = true;
                 }
 
-                if (!ObjectUtils.isEmpty(dto.getShopId())) {
-                    verifyShopId(dto.getShopId());
-                    mdseLabel.setShopId(dto.getShopId());
+                if (!ObjectUtils.isEmpty(dto.getMallId())) {
+                    mdseLabel.setMallId(dto.getMallId());
                     update = true;
                 }
                 if (update) {
@@ -109,7 +114,7 @@ public class LabelServiceImpl implements LabelService {
             labelInfo.setLabelId(entity.getLabelId());
             labelInfo.setName(entity.getName());
             labelInfo.setRemarks(entity.getRemarks());
-            labelInfo.setShopId(entity.getShopId());
+            labelInfo.setMallId(entity.getMallId());
             return labelInfo;
 
         }
@@ -126,16 +131,7 @@ public class LabelServiceImpl implements LabelService {
                 .collect(Collectors.toList());
     }
 
-    private void verifyShopId(Long shopId) {
-        Result<List<ShopInfo>> shopListResult = shopFeignClient.lists();
-        if (!Result.isSuccess(shopListResult)) {
-            throw new BusinessException("店铺信息获取失败");
-        }
-        List<Long> shopIdList = shopListResult.getData().stream().map(ShopInfo::getShopId).collect(Collectors.toList());
-        if (!shopIdList.contains(shopId)) {
-            throw new BusinessException("没有店铺【 " + shopId + " 】的操作权限");
-        }
-    }
+
 
     @Override
     public List<MdseLabel> findAllById(List<Long> idList) {
@@ -143,11 +139,11 @@ public class LabelServiceImpl implements LabelService {
     }
 
     @Override
-    public void addMdseLabelMap(Long mdseId, List<MdseLabel> labelList) {
-        for (MdseLabel mdseLabel : labelList) {
+    public void addMdseLabelMap(Long mdseId, List<Long> labelList) {
+        for (Long labelId : labelList) {
             MallMdseLabelMap labelMap = new MallMdseLabelMap();
             labelMap.setMdseId(mdseId);
-            labelMap.setLabelId(mdseLabel.getLabelId());
+            labelMap.setLabelId(labelId);
             labelMap.setDeleted(SystemConstants.DELETED_NO);
             labelMapRepository.save(labelMap);
         }
@@ -163,18 +159,45 @@ public class LabelServiceImpl implements LabelService {
 
     @Override
     public List<MdseLabel> findAllByAuth() {
-        Result<List<ShopInfo>> shopListResult = shopFeignClient.lists();
-        if (Result.isSuccess(shopListResult)) {
-            List<ShopInfo> shopInfoList = shopListResult.getData();
-            List<Long> shopIdList = shopInfoList.stream().map(ShopInfo::getShopId).collect(Collectors.toList());
-            return labelRepository.findAllByShopIdIn(shopIdList);
+        Long deptId = UserUtils.getDeptId();
+        Result<List<DeptInfo>> deptListResult = deptFeignClient.tree(deptId);
+
+        if (Result.isSuccess(deptListResult)) {
+            List<DeptInfo> deptInfoList = deptListResult.getData();
+            List<Long> deptIdList = deptInfoList.stream().map(DeptInfo::getDeptId).collect(Collectors.toList());
+            Result<List<MallInfo>> mallInfoListResult = mallFeignClient.getMallByDeptIdIn(StringUtils.collectionToCommaDelimitedString(deptIdList));
+            if (Result.isSuccess(mallInfoListResult)){
+                List<MallInfo> mallInfoList = mallInfoListResult.getData();
+                List<Long> mallIdList = mallInfoList.stream().map(MallInfo::getMallId).collect(Collectors.toList());
+                return labelRepository.findAllByMallIdIn(mallIdList);
+            }
         }
         return Lists.newArrayList();
     }
 
     @Override
-    public List<MallMdseLabelMap> findAllMdseLabelByLabelId(Long labelId) {
+    public List<MallMdseLabelMap> findMdseLabelAllByLabelId(Long labelId) {
 
         return labelMapRepository.findAllByLabelId(labelId);
+    }
+
+    @Override
+    public List<MallMdseLabelMap> findMdseLabelAllByMdseId(Long mdseId) {
+
+        return labelMapRepository.findAllByMdseId(mdseId);
+    }
+
+    @Override
+    public void deleteMdseLabel(List<MallMdseLabelMap> deleteMdseLabelMapList) {
+        labelMapRepository.deleteAll(deleteMdseLabelMapList);
+    }
+
+    @Override
+    public List<MdseLabel> findAllByMallId(Long mallId) {
+
+        if (mallId!=null){
+            return labelRepository.findAllByMallId(mallId);
+        }
+        return labelRepository.findAll();
     }
 }

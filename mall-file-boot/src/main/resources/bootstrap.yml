@@ -22,17 +22,10 @@ spring:
             group: DEFAULT_GROUP
             refresh: true
 
-logging:
-  level:
-    # feign日志以什么级别监控哪个接口
-    com.jymj.mall: debug
+          - data-id: mall-aliyun-config.yaml
+            group: DEFAULT_GROUP
+            refresh: true
 
-aliyun:
-  access-key: LTAI5t7Fv9NE8M2kwTxaQPCx
-  secret: 6N64IzVdNbZfuIPFX1mgGMStCIZisV
-  role:
-    arn: acs:ram::1189076519250737:role/aaas
-    session-name: aaas
-  oss:
-    region-id: cn-beijing
-    endpoint: https://oss-cn-beijing.aliyuncs.com
+          - data-id: mall-log-config.yaml
+            group: DEFAULT_GROUP
+            refresh: true

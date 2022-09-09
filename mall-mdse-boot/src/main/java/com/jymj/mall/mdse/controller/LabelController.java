@@ -61,8 +61,8 @@ public class LabelController {
 
     @ApiOperation(value = "列表")
     @GetMapping("/lists")
-    public Result<List<LabelInfo>> lists() {
-        List<MdseLabel> labelList = labelService.findAllByAuth();
+    public Result<List<LabelInfo>> lists(Long mallId) {
+        List<MdseLabel> labelList = labelService.findAllByMallId(mallId);
         List<LabelInfo> labelInfoList = labelService.list2vo(labelList);
         return Result.success(labelInfoList);
     }

@@ -3,6 +3,7 @@ package com.jymj.mall.oauth.security.config;
 
 import com.alibaba.fastjson2.JSON;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.jymj.mall.common.constants.SecurityConstants;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.result.ResultCode;
@@ -13,7 +14,7 @@ import com.jymj.mall.oauth.security.core.userdetails.user.SysUserDetails;
 import com.jymj.mall.oauth.security.core.userdetails.user.SysUserDetailsServiceImpl;
 import com.jymj.mall.oauth.security.extension.captcha.CaptchaTokenGranter;
 import com.jymj.mall.oauth.security.extension.mobile.SmsCodeTokenGranter;
-import com.jymj.mall.oauth.security.extension.refresh.PreAuthenticatedUserDetailsService;
+import com.jymj.mall.oauth.security.extension.refresh.PreAuthenticatedUserDetailsServiceImpl;
 import com.jymj.mall.oauth.security.extension.wechat.WechatTokenGranter;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
@@ -158,19 +159,22 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         tokenServices.setTokenEnhancer(tokenEnhancerChain);
 
         // 多用户体系下，刷新token再次认证客户端ID和 UserDetailService 的映射Map
-        Map<String, UserDetailsService> clientUserDetailsServiceMap = new HashMap<>();
-        clientUserDetailsServiceMap.put(SecurityConstants.ADMIN_CLIENT_ID, sysAdminDetailsService); // 系统管理客户端
-        clientUserDetailsServiceMap.put(SecurityConstants.APP_CLIENT_ID, sysUserDetailsService); // Android、IOS、H5 移动客户端
-        clientUserDetailsServiceMap.put(SecurityConstants.WEAPP_CLIENT_ID, sysUserDetailsService); // 微信小程序客户端
+        Map<String, UserDetailsService> clientUserDetailsServiceMap = Maps.newHashMap();
+        // 系统管理客户端
+        clientUserDetailsServiceMap.put(SecurityConstants.ADMIN_CLIENT_ID, sysAdminDetailsService);
+        // Android、IOS、H5 移动客户端
+        clientUserDetailsServiceMap.put(SecurityConstants.APP_CLIENT_ID, sysUserDetailsService);
+        // 微信小程序客户端
+        clientUserDetailsServiceMap.put(SecurityConstants.WEAPP_CLIENT_ID, sysUserDetailsService);
 
         // 刷新token模式下，重写预认证提供者替换其AuthenticationManager，可自定义根据客户端ID和认证方式区分用户体系获取认证用户信息
         PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
-        provider.setPreAuthenticatedUserDetailsService(new PreAuthenticatedUserDetailsService<>(clientUserDetailsServiceMap));
-        tokenServices.setAuthenticationManager(new ProviderManager(Arrays.asList(provider)));
+        provider.setPreAuthenticatedUserDetailsService(new PreAuthenticatedUserDetailsServiceImpl<>(clientUserDetailsServiceMap));
+        tokenServices.setAuthenticationManager(new ProviderManager(Collections.singletonList(provider)));
 
-        /** refresh_token有两种使用方式：重复使用(true)、非重复使用(false)，默认为true
-         *  1 重复使用：access_token过期刷新时， refresh_token过期时间未改变，仍以初次生成的时间为准
-         *  2 非重复使用：access_token过期刷新时， refresh_token过期时间延续，在refresh_token有效期内刷新便永不失效达到无需再次登录的目的
+        /* refresh_token有两种使用方式：重复使用(true)、非重复使用(false)，默认为true
+           1 重复使用：access_token过期刷新时， refresh_token过期时间未改变，仍以初次生成的时间为准
+           2 非重复使用：access_token过期刷新时， refresh_token过期时间延续，在refresh_token有效期内刷新便永不失效达到无需再次登录的目的
          */
         tokenServices.setReuseRefreshToken(true);
         return tokenServices;
@@ -207,7 +211,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Bean
     public TokenEnhancer tokenEnhancer() {
         return (accessToken, authentication) -> {
-            Map<String, Object> additionalInfo = new HashMap<>();
+            Map<String, Object> additionalInfo = Maps.newHashMap();
             Object principal = authentication.getUserAuthentication().getPrincipal();
             if (principal instanceof SysAdminDetails) {
                 SysAdminDetails sysAdminDetails = (SysAdminDetails) principal;

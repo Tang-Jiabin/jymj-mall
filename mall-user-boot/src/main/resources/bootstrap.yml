@@ -21,3 +21,12 @@ spring:
           - data-id: mall-seata-client.yaml
             group: DEFAULT_GROUP
             refresh: true
+
+          - data-id: mall-log-config.yaml
+            group: DEFAULT_GROUP
+            refresh: true
+
+logging:
+  level:
+    root: info
+    com.jymj.mall: debug

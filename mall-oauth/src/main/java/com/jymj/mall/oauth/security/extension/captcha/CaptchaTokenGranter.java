@@ -2,6 +2,7 @@ package com.jymj.mall.oauth.security.extension.captcha;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Maps;
 import com.jymj.mall.common.constants.SecurityConstants;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.*;
@@ -44,10 +45,12 @@ public class CaptchaTokenGranter extends AbstractTokenGranter {
         this.redisTemplate = redisTemplate;
     }
 
+
+    @SuppressWarnings("AlibabaLowerCamelCaseVariableNaming")
     @Override
     protected OAuth2Authentication getOAuth2Authentication(ClientDetails client, TokenRequest tokenRequest) {
 
-        Map<String, String> parameters = new LinkedHashMap(tokenRequest.getRequestParameters());
+        Map<String, String> parameters = Maps.newLinkedHashMap(tokenRequest.getRequestParameters());
 
         // 验证码校验逻辑
         String validateCode = parameters.get("code");
@@ -78,16 +81,14 @@ public class CaptchaTokenGranter extends AbstractTokenGranter {
 
         try {
             userAuth = this.authenticationManager.authenticate(userAuth);
-        } catch (AccountStatusException var8) {
+        } catch (AccountStatusException | BadCredentialsException var8) {
             throw new InvalidGrantException(var8.getMessage());
-        } catch (BadCredentialsException var9) {
-            throw new InvalidGrantException(var9.getMessage());
         }
 
 
         if (userAuth != null && userAuth.isAuthenticated()) {
-            OAuth2Request storedOAuth2Request = this.getRequestFactory().createOAuth2Request(client, tokenRequest);
-            return new OAuth2Authentication(storedOAuth2Request, userAuth);
+            OAuth2Request storedOauth2Request = this.getRequestFactory().createOAuth2Request(client, tokenRequest);
+            return new OAuth2Authentication(storedOauth2Request, userAuth);
         } else {
             throw new InvalidGrantException("Could not authenticate user: " + username);
         }

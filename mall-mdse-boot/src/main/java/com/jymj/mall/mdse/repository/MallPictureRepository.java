@@ -1,6 +1,7 @@
 package com.jymj.mall.mdse.repository;
 
 import com.jymj.mall.mdse.entity.MallPicture;
+import com.jymj.mall.mdse.enums.PictureType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,4 +18,12 @@ import java.util.List;
 @Repository
 public interface MallPictureRepository extends JpaRepository<MallPicture,Long> {
     List<MallPicture> findAllByMdseId(Long mdseId);
+
+    List<MallPicture> findAllByMdseIdAndType(Long mdseId, PictureType type);
+
+    List<MallPicture> findAllByStockIdIn(List<Long> stockIdList);
+
+    List<MallPicture> findAllByCardId(Long cardId);
+
+    List<MallPicture> findAllByCardIdAndType(Long cardId, PictureType type);
 }

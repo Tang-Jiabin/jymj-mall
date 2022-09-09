@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -77,6 +78,15 @@ public class MallController {
         MallDetails mallDetails = mallOptional.orElseThrow(() -> new BusinessException("商场不存在"));
         MallInfo mallInfo = mallService.mall2vo(mallDetails);
         return Result.success(mallInfo);
+    }
+
+    @ApiIgnore
+    @ApiOperation(value = "商场信息")
+    @GetMapping("/dept/{deptIds}")
+    public Result<List<MallInfo>> getMallByDeptIdIn(@PathVariable String deptIds) {
+        List<MallDetails> mallDetailsList = mallService.findAllByDeptIdIn(deptIds);
+        List<MallInfo> mallInfoList = mallService.list2vo(mallDetailsList);
+        return Result.success(mallInfoList);
     }
 
     @ApiOperation(value = "商场类型")

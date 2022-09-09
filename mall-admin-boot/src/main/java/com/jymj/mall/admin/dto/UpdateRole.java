@@ -33,4 +33,7 @@ public class UpdateRole {
     @ApiModelProperty("角色状态(1-正常；0-停用)")
     private Integer status;
 
+    @ApiModelProperty("描述")
+    private String describe;
+
 }

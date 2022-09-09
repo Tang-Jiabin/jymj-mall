@@ -1,16 +1,14 @@
 package com.jymj.mall.mdse.service.impl;
 
 import com.google.common.collect.Lists;
+import com.jymj.mall.admin.api.DeptFeignClient;
 import com.jymj.mall.common.constants.SystemConstants;
-import com.jymj.mall.common.exception.BusinessException;
-import com.jymj.mall.common.result.Result;
 import com.jymj.mall.mdse.dto.BrandDTO;
 import com.jymj.mall.mdse.entity.MdseBrand;
 import com.jymj.mall.mdse.repository.MdseBrandRepository;
 import com.jymj.mall.mdse.service.BrandService;
 import com.jymj.mall.mdse.vo.BrandInfo;
-import com.jymj.mall.shop.api.ShopFeignClient;
-import com.jymj.mall.shop.vo.ShopInfo;
+import com.jymj.mall.shop.api.MallFeignClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -35,31 +33,24 @@ import java.util.stream.Collectors;
 public class BrandServiceImpl implements BrandService {
 
     private final MdseBrandRepository mdseBrandRepository;
-    private final ShopFeignClient shopFeignClient;
+    private final MallFeignClient mallFeignClient;
+    private final DeptFeignClient deptFeignClient;
 
     @Override
     public MdseBrand add(BrandDTO dto) {
 
-        verifyShopId(dto.getShopId());
 
         MdseBrand brand = new MdseBrand();
         brand.setName(dto.getName());
         brand.setLogo(dto.getLogo());
         brand.setAlias(dto.getAlias());
         brand.setRemarks(dto.getRemarks());
-        brand.setShopId(dto.getShopId());
+        brand.setMallId(dto.getMallId());
         brand.setDeleted(SystemConstants.DELETED_NO);
 
         return mdseBrandRepository.save(brand);
     }
 
-    private void verifyBrandName(String name) {
-        Optional<MdseBrand> brandOptional = mdseBrandRepository.findByName(name);
-
-        if (brandOptional.isPresent()) {
-            throw new BusinessException("品牌 【" + name + "】 已存在");
-        }
-    }
 
     @Override
     public Optional<MdseBrand> update(BrandDTO dto) {
@@ -85,9 +76,9 @@ public class BrandServiceImpl implements BrandService {
                     brand.setRemarks(dto.getRemarks());
                     update = true;
                 }
-                if (!ObjectUtils.isEmpty(dto.getShopId()) && !brand.getShopId().equals(dto.getShopId())) {
-                    verifyShopId(dto.getShopId());
-                    brand.setShopId(dto.getShopId());
+                if (!ObjectUtils.isEmpty(dto.getMallId()) && !brand.getMallId().equals(dto.getMallId())) {
+
+                    brand.setMallId(dto.getMallId());
                     update = true;
                 }
 
@@ -139,25 +130,15 @@ public class BrandServiceImpl implements BrandService {
                 .collect(Collectors.toList());
     }
 
+
     @Override
-    public List<MdseBrand> findAll() {
-        Result<List<ShopInfo>> shopListResult = shopFeignClient.lists();
-        if (Result.isSuccess(shopListResult)){
-            List<ShopInfo> shopInfoList = shopListResult.getData();
-            List<Long> shopIdList = shopInfoList.stream().map(ShopInfo::getShopId).collect(Collectors.toList());
-            return mdseBrandRepository.findAllByShopIdIn(shopIdList);
+    public List<MdseBrand> findAllByMallId(Long mallId) {
+        if (mallId != null) {
+
+            return mdseBrandRepository.findAllByMallId(mallId);
         }
-        return Lists.newArrayList();
+        return mdseBrandRepository.findAll();
     }
 
-    private void verifyShopId(Long shopId) {
-        Result<List<ShopInfo>> shopListResult = shopFeignClient.lists();
-        if (!Result.isSuccess(shopListResult)){
-            throw new BusinessException("店铺信息获取失败");
-        }
-        List<Long> shopIdList = shopListResult.getData().stream().map(ShopInfo::getShopId).collect(Collectors.toList());
-        if (!shopIdList.contains(shopId)){
-            throw new BusinessException("没有店铺【 "+ shopId+" 】的操作权限");
-        }
-    }
+
 }

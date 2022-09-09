@@ -22,7 +22,6 @@ spring:
             group: DEFAULT_GROUP
             refresh: true
 
-logging:
-  level:
-    # feign日志以什么级别监控哪个接口
-    com.jymj.mall: debug
+          - data-id: mall-log-config.yaml
+            group: DEFAULT_GROUP
+            refresh: true

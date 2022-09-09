@@ -20,16 +20,17 @@ public class WechatAuthenticationToken extends AbstractAuthenticationToken {
     private String encryptedData;
     @Getter
     private String iv;
+
     /**
      * 账号校验之前的token构建
      *
      * @param principal
      */
-    public WechatAuthenticationToken(Object principal, String encryptedData,String iv) {
+    public WechatAuthenticationToken(Object principal, String encryptedData, String iv) {
         super(null);
         this.principal = principal;
         this.encryptedData = encryptedData;
-        this.iv=iv;
+        this.iv = iv;
         setAuthenticated(false);
     }
 
@@ -55,12 +56,15 @@ public class WechatAuthenticationToken extends AbstractAuthenticationToken {
         return this.principal;
     }
 
+    @Override
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
         Assert.isTrue(!isAuthenticated, "Cannot set this token to trusted - use constructor which takes a GrantedAuthority list instead");
         super.setAuthenticated(false);
     }
 
-    public void eraseCredentials() {
-        super.eraseCredentials();
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
+
 }

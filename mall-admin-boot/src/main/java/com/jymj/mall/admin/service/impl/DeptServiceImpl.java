@@ -13,10 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -104,6 +101,24 @@ public class DeptServiceImpl implements DeptService {
             SysDept dept = deptOptional.get();
             String treePath = dept.getTreePath() + "," + deptId;
             return deptRepository.findAllByTreePathLike(treePath + "%");
+        }
+        return Lists.newArrayList();
+    }
+
+    @Override
+    public List<SysDept> tree(Long deptId) {
+        Optional<SysDept> deptOptional = findById(deptId);
+        if (deptOptional.isPresent()) {
+            SysDept sysDept = deptOptional.get();
+            if (Objects.equals(sysDept.getParentId(), SystemConstants.ROOT_DEPT_ID)) {
+                return deptRepository.findAll();
+            }
+            String treePath = sysDept.getTreePath() + "," + deptId;
+            List<SysDept> childrenList = deptRepository.findAllByTreePathLike(treePath + "%");
+            List<Long> deptIdList = Arrays.stream(treePath.split(",")).map(Long::parseLong).collect(Collectors.toList());
+            List<SysDept> deptList = deptRepository.findAllById(deptIdList);
+            deptList.addAll(childrenList);
+            return deptList;
         }
         return Lists.newArrayList();
     }

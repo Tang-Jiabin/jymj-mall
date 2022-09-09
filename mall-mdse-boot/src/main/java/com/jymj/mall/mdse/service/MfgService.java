@@ -22,4 +22,5 @@ public interface MfgService extends BaseService<MdseMfg, MfgInfo, MfgDTO> {
 
     List<MdseMfg> findAll();
 
+    List<MdseMfg> findAllByMallId(Long mallId);
 }

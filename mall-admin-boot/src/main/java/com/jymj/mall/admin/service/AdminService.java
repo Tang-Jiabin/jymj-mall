@@ -17,17 +17,10 @@ import java.util.Optional;
  * @date 2022-08-12
  */
 public interface AdminService extends BaseService<SysAdmin,AdminInfo,UpdateAdminDTO> {
-//    void add(AddAdminDTO adminDTO);
+
 
     AdminAuthDTO getAuthInfoByUsername(String username);
 
-//    Optional<SysAdmin> findById(Long adminId);
-
-//    AdminInfo admin2vo(SysAdmin admin);
-
-//    void deleteAdmin(String ids);
-
-//    void updateAdmin(UpdateAdminDTO updateAdminDTO);
 
     Optional<SysAdmin> findByMobile(String mobile);
 

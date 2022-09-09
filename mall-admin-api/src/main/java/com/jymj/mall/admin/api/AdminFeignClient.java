@@ -23,10 +23,10 @@ public interface AdminFeignClient {
     Result<AdminAuthDTO> loadAdminByUsername(@PathVariable String username);
 
     @PostMapping("/api/v1/admin")
-    Result add(UpdateAdminDTO adminDTO);
+    Result<AdminInfo> add(UpdateAdminDTO adminDTO);
 
     @PutMapping("/api/v1/admin")
-    Result updateAdmin(UpdateAdminDTO updateAdminDTO);
+    Result<AdminInfo> updateAdmin(UpdateAdminDTO updateAdminDTO);
     @GetMapping("/api/v1/admin/id/{adminId}/info")
     Result<AdminInfo> getAdminById(@PathVariable Long adminId);
     @GetMapping("/api/v1/admin/mobile/{mobile}/info")

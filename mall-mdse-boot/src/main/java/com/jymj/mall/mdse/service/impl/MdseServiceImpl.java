@@ -6,18 +6,17 @@ import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
-import com.jymj.mall.mdse.dto.MdseDTO;
-import com.jymj.mall.mdse.dto.MdsePageQuery;
-import com.jymj.mall.mdse.dto.PictureDTO;
-import com.jymj.mall.mdse.dto.StockDTO;
+import com.jymj.mall.mdse.dto.*;
 import com.jymj.mall.mdse.entity.*;
 import com.jymj.mall.mdse.enums.InventoryReductionMethod;
 import com.jymj.mall.mdse.enums.PictureType;
 import com.jymj.mall.mdse.repository.MdseRepository;
+import com.jymj.mall.mdse.repository.ShopMdseMapRepository;
 import com.jymj.mall.mdse.service.*;
 import com.jymj.mall.mdse.vo.*;
 import com.jymj.mall.shop.api.ShopFeignClient;
 import com.jymj.mall.shop.vo.ShopInfo;
+import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
@@ -25,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -55,15 +55,13 @@ public class MdseServiceImpl implements MdseService {
     private final PictureService pictureService;
     private final TypeService typeService;
     private final LabelService labelService;
-
     private final ShopFeignClient shopFeignClient;
+    private final ShopMdseMapRepository shopMdseMapRepository;
 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public MallMdse add(MdseDTO dto) {
-
-        verifyShopId(dto.getShopId());
 
         MallMdse mdse = new MallMdse();
 
@@ -73,13 +71,13 @@ public class MdseServiceImpl implements MdseService {
         mdse.setInventoryQuantity(dto.getInventoryQuantity());
         mdse.setStartingQuantity(dto.getStartingQuantity());
         mdse.setRemainingQuantity(dto.getInventoryQuantity());
-        mdse.setShowRemainingQuantity(dto.isShowRemainingQuantity());
-        mdse.setRefund(dto.isRefund());
+        mdse.setShowRemainingQuantity(dto.getShowRemainingQuantity());
+        mdse.setRefund(dto.getRefund());
         mdse.setInventoryReductionMethod(dto.getInventoryReductionMethod());
         mdse.setButtonName(dto.getButtonName());
         mdse.setDetails(dto.getDetails());
         mdse.setSalesVolume(0);
-        mdse.setShopId(dto.getShopId());
+        mdse.setMallId(dto.getMallId());
         mdse.setDeleted(SystemConstants.DELETED_NO);
         mdse.setStatus(dto.getStatus() == null ? 2 : dto.getStatus());
 
@@ -106,31 +104,61 @@ public class MdseServiceImpl implements MdseService {
             MdseType mdseType = typeOptional.orElseThrow(() -> new BusinessException("类型不存在"));
             mdse.setTypeId(mdseType.getTypeId());
         }
-
-
         mdse = mdseRepository.save(mdse);
 
         //商品图片
-        Set<String> pictureList = dto.getPictureList();
-        for (String url : pictureList) {
+        List<PictureDTO> pictureList = dto.getPictureList();
+        for (PictureDTO pictureDTO : pictureList) {
             PictureDTO picture = new PictureDTO();
-            picture.setUrl(url);
+            picture.setUrl(pictureDTO.getUrl());
             picture.setType(PictureType.MDSE_PIC);
             picture.setMdseId(mdse.getMdseId());
             pictureService.add(picture);
         }
 
+        //商品视频
+        List<PictureDTO> videoList = dto.getVideoList();
+        if (!CollectionUtils.isEmpty(videoList)) {
+            for (PictureDTO pictureDTO : videoList) {
+                PictureDTO picture = new PictureDTO();
+                picture.setUrl(pictureDTO.getUrl());
+                picture.setType(PictureType.MDSE_VIDEO);
+                picture.setMdseId(mdse.getMdseId());
+                pictureService.add(picture);
+            }
+        }
+
+
         //商品标签
         Set<Long> labelIdList = dto.getLabelIdList();
         if (!CollectionUtils.isEmpty(labelIdList)) {
             List<MdseLabel> labelList = labelService.findAllById(Lists.newArrayList(labelIdList));
-            labelService.addMdseLabelMap(mdse.getMdseId(), labelList);
+            labelService.addMdseLabelMap(mdse.getMdseId(), labelList.stream().map(MdseLabel::getLabelId).collect(Collectors.toList()));
         }
+
         //商品分组
         Set<Long> groupIdList = dto.getGroupIdList();
         if (!CollectionUtils.isEmpty(groupIdList)) {
             List<MdseGroup> groupList = groupService.findAllById(Lists.newArrayList(groupIdList));
-            groupService.addMdseGroupMap(mdse.getMdseId(), groupList);
+            groupService.addMdseGroupMap(mdse.getMdseId(), groupList.stream().map(MdseGroup::getGroupId).collect(Collectors.toList()));
+        }
+
+        //商品所属店铺
+        Set<Long> shopIdList = dto.getShopIdList();
+        if (!CollectionUtils.isEmpty(shopIdList)) {
+            Result<List<ShopInfo>> shopInfoListResult = shopFeignClient.getAllById(StringUtils.collectionToCommaDelimitedString(shopIdList));
+            if (Result.isSuccess(shopInfoListResult)) {
+                List<ShopInfo> shopInfoList = shopInfoListResult.getData();
+                List<ShopMdseMap> shopMdseMapList = Lists.newArrayList();
+                for (ShopInfo shopInfo : shopInfoList) {
+                    ShopMdseMap shopMdseMap = new ShopMdseMap();
+                    shopMdseMap.setMdseId(dto.getMdseId());
+                    shopMdseMap.setShopId(shopInfo.getShopId());
+                    shopMdseMap.setDeleted(SystemConstants.DELETED_NO);
+                    shopMdseMapList.add(shopMdseMap);
+                }
+                shopMdseMapRepository.saveAll(shopMdseMapList);
+            }
         }
 
         //商品库存
@@ -150,9 +178,156 @@ public class MdseServiceImpl implements MdseService {
     }
 
     @Override
+    @GlobalTransactional(name = "mall-mdse-mdse-update", rollbackFor = Exception.class)
     public Optional<MallMdse> update(MdseDTO dto) {
-        return Optional.empty();
+
+        Assert.notNull(dto.getMdseId(), "商品id不能为空");
+
+        Optional<MallMdse> mdseOptional = findById(dto.getMdseId());
+
+        MallMdse mallMdse = mdseOptional.orElseThrow(() -> new BusinessException("商品不存在"));
+
+        //商品名称
+        if (StringUtils.hasText(dto.getName())) {
+            mallMdse.setName(dto.getName());
+        }
+        //商品编号
+        if (StringUtils.hasText(dto.getNumber())) {
+            mallMdse.setNumber(dto.getNumber());
+        }
+        //商品参考价格
+        if (!ObjectUtils.isEmpty(dto.getPrice())) {
+            mallMdse.setPrice(dto.getPrice());
+        }
+        //剩余库存数量
+        if (!ObjectUtils.isEmpty(dto.getInventoryQuantity())) {
+            mallMdse.setRemainingQuantity(dto.getInventoryQuantity());
+        }
+        //商品起售数量
+        if (!ObjectUtils.isEmpty(dto.getStartingQuantity())) {
+            mallMdse.setStartingQuantity(dto.getStartingQuantity());
+        }
+        //是否显示剩余数量
+        if (!ObjectUtils.isEmpty(dto.getShowRemainingQuantity())) {
+            mallMdse.setShowRemainingQuantity(dto.getShowRemainingQuantity());
+        }
+        //商品是否允许退款
+        if (!ObjectUtils.isEmpty(dto.getRefund())) {
+            mallMdse.setRefund(dto.getRefund());
+        }
+        //商品库存减少方式
+        if (!ObjectUtils.isEmpty(dto.getInventoryReductionMethod())) {
+            mallMdse.setInventoryReductionMethod(dto.getInventoryReductionMethod());
+        }
+        //商品立即购买按钮名称
+        if (StringUtils.hasText(dto.getButtonName())) {
+            mallMdse.setButtonName(dto.getButtonName());
+        }
+        //商品详情
+        if (StringUtils.hasText(dto.getDetails())) {
+            mallMdse.setDetails(dto.getDetails());
+        }
+        //商品品牌id
+        if (!ObjectUtils.isEmpty(dto.getBrandId())) {
+            mallMdse.setBrandId(dto.getBrandId());
+        }
+        //商品厂家id
+        if (!ObjectUtils.isEmpty(dto.getMfgId())) {
+            mallMdse.setMfgId(dto.getMfgId());
+        }
+        //商品类型id
+        if (!ObjectUtils.isEmpty(dto.getTypeId())) {
+            mallMdse.setTypeId(dto.getTypeId());
+        }
+        //商品状态
+        if (!ObjectUtils.isEmpty(dto.getStatus())) {
+            mallMdse.setStatus(dto.getStatus());
+        }
+
+        pictureService.updateMdsePicture(dto.getPictureList(), dto.getMdseId(), PictureType.MDSE_PIC);
+
+        pictureService.updateMdsePicture(dto.getVideoList(), dto.getMdseId(), PictureType.MDSE_VIDEO);
+
+        updateMdseGroup(dto);
+
+        updateMdseShop(dto);
+
+        updateMdseLabel(dto);
+
+        updateMdseStock(dto);
+
+        return Optional.of(mdseRepository.save(mallMdse));
     }
+
+    private void updateMdseStock(MdseDTO dto) {
+        Set<StockDTO> stockList = dto.getStockList();
+        List<MdseStock> mdseStockList = stockService.findAllByMdseId(dto.getMdseId());
+        //需要删除的库存
+        List<MdseStock> deleteMdseStockList = mdseStockList.stream().filter(mdseStock -> !stockList.stream().map(StockDTO::getStockId).filter(Objects::nonNull).collect(Collectors.toList()).contains(mdseStock.getStockId())).collect(Collectors.toList());
+        stockService.deleteMdseStock(deleteMdseStockList);
+
+        //需要添加的库存
+        List<StockDTO> addMdseStockList = stockList.stream().filter(stockDTO -> {
+            if (stockDTO.getStockId() == null || stockDTO.getStockId() == 0L) {
+                return true;
+            }
+            for (MdseStock stock : mdseStockList) {
+                if (stock.getStockId().equals(stockDTO.getStockId())) {
+                    return false;
+                }
+            }
+            return false;
+        }).collect(Collectors.toList());
+        addMdseStockList.forEach(stockService::add);
+
+
+        //需要修改的库存
+        List<StockDTO> updateMdseStockList = stockList.stream().filter(stockDTO -> mdseStockList.stream().map(MdseStock::getStockId).collect(Collectors.toList()).contains(stockDTO.getStockId())).collect(Collectors.toList());
+        updateMdseStockList.forEach(stockService::update);
+    }
+
+
+    private void updateMdseLabel(MdseDTO dto) {
+        Set<Long> labelIdList = dto.getLabelIdList();
+        List<MallMdseLabelMap> mdseLabelMapList = labelService.findMdseLabelAllByMdseId(dto.getMdseId());
+        //需要删除的标签
+        List<MallMdseLabelMap> deleteMdseLabelMapList = mdseLabelMapList.stream().filter(mdseLabel -> !labelIdList.contains(mdseLabel.getLabelId())).collect(Collectors.toList());
+        labelService.deleteMdseLabel(deleteMdseLabelMapList);
+        //需要添加的标签
+        List<Long> addMdseLabelIdList = labelIdList.stream().filter(labelId -> !mdseLabelMapList.stream().map(MallMdseLabelMap::getLabelId).collect(Collectors.toList()).contains(labelId)).collect(Collectors.toList());
+        labelService.addMdseLabelMap(dto.getMdseId(), addMdseLabelIdList);
+    }
+
+    private void updateMdseShop(MdseDTO dto) {
+        Set<Long> shopIdList = dto.getShopIdList();
+        List<ShopMdseMap> shopMdseMapList = shopMdseMapRepository.findAllByMdseId(dto.getMdseId());
+        //需要删除的店铺
+        List<ShopMdseMap> deleteShopMdseList = shopMdseMapList.stream().filter(shopMdse -> !shopIdList.contains(shopMdse.getShopId())).collect(Collectors.toList());
+        shopMdseMapRepository.deleteAll(deleteShopMdseList);
+        //需要添加的店铺
+        List<Long> addShopIdList = shopIdList.stream().filter(shopId -> !shopMdseMapList.stream().map(ShopMdseMap::getShopId).collect(Collectors.toList()).contains(shopId)).collect(Collectors.toList());
+        List<ShopMdseMap> shopMdseMaps = Lists.newArrayList();
+        for (Long shopId : addShopIdList) {
+            ShopMdseMap shopMdseMap = new ShopMdseMap();
+            shopMdseMap.setMdseId(dto.getMdseId());
+            shopMdseMap.setShopId(shopId);
+            shopMdseMap.setDeleted(SystemConstants.DELETED_NO);
+            shopMdseMaps.add(shopMdseMap);
+        }
+        shopMdseMapRepository.saveAll(shopMdseMaps);
+    }
+
+    private void updateMdseGroup(MdseDTO dto) {
+        Set<Long> groupIdList = dto.getGroupIdList();
+        List<MallMdseGroupMap> mdseGroupList = groupService.findMdseGroupAllByMdseId(dto.getMdseId());
+        //需要删除的分组
+        List<MallMdseGroupMap> deleteMdseGroupList = mdseGroupList.stream().filter(mdseGroup -> !groupIdList.contains(mdseGroup.getGroupId())).collect(Collectors.toList());
+        groupService.deleteMdseGroupAll(deleteMdseGroupList);
+        //需要添加的分组
+        List<Long> addMdseGroupIdList = groupIdList.stream().filter(id -> !mdseGroupList.stream().map(MallMdseGroupMap::getGroupId).collect(Collectors.toList()).contains(id)).collect(Collectors.toList());
+        groupService.addMdseGroupMap(dto.getMdseId(), addMdseGroupIdList);
+    }
+
 
     @Override
     public void delete(String ids) {
@@ -239,12 +414,15 @@ public class MdseServiceImpl implements MdseService {
     }
 
     @Override
+    public List<MallMdse> findAllById(List<Long> idList) {
+
+        return mdseRepository.findAllById(idList);
+    }
+
+    @Override
     public Page<MallMdse> findPage(MdsePageQuery mdsePageQuery) {
 
         Pageable pageable = PageUtils.getPageable(mdsePageQuery);
-
-        List<Long> shopIdList = findAllShopIdByAuth();
-
 
         Specification<MallMdse> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> list = Lists.newArrayList();
@@ -269,20 +447,67 @@ public class MdseServiceImpl implements MdseService {
                 list.add(criteriaBuilder.like(root.get("name").as(String.class), mdsePageQuery.getName() + SystemConstants.SQL_LIKE));
             }
 
+            //商品状态
+            if (mdsePageQuery.getStatus() != null) {
+                list.add(criteriaBuilder.equal(root.get("status").as(Integer.class), mdsePageQuery.getStatus()));
+            }
+
+            //品牌id
+            if (mdsePageQuery.getBrandId() != null) {
+                list.add(criteriaBuilder.equal(root.get("brandId").as(Integer.class), mdsePageQuery.getBrandId()));
+            }
+
+            //商场id
+            if (mdsePageQuery.getMallId() != null) {
+                list.add(criteriaBuilder.equal(root.get("mallId").as(Integer.class), mdsePageQuery.getMallId()));
+            }
+
+            //店铺id
+            if (mdsePageQuery.getShopId() != null) {
+                List<ShopMdseMap> shopMdseMapList = shopMdseMapRepository.findAllByShopId(mdsePageQuery.getShopId());
+                CriteriaBuilder.In<Long> mdseIdIn = criteriaBuilder.in(root.get("mdseId").as(Long.class));
+                shopMdseMapList.forEach(mdseLabel -> mdseIdIn.value(mdseLabel.getMdseId()));
+                mdseIdIn.value(0L);
+                list.add(mdseIdIn);
+
+            }
+
+
+
+            //数量大于等于
+            if (mdsePageQuery.getQuantityGreaterThanOrEqual() != null) {
+                list.add(criteriaBuilder.greaterThanOrEqualTo(root.get("remainingQuantity").as(Integer.class), mdsePageQuery.getQuantityGreaterThanOrEqual()));
+            }
+
+            //数量小于等于
+            if (mdsePageQuery.getQuantityLessThanOrEqual() != null) {
+                list.add(criteriaBuilder.lessThanOrEqualTo(root.get("remainingQuantity").as(Integer.class), mdsePageQuery.getQuantityLessThanOrEqual()));
+            }
+
+            //销量大于等于
+            if (mdsePageQuery.getSalesVolumeGreaterThanOrEqual() != null) {
+                list.add(criteriaBuilder.greaterThanOrEqualTo(root.get("salesVolume").as(Integer.class), mdsePageQuery.getSalesVolumeGreaterThanOrEqual()));
+            }
+
+            //销量小于等于
+            if (mdsePageQuery.getSalesVolumeLessThanOrEqual() != null) {
+                list.add(criteriaBuilder.lessThanOrEqualTo(root.get("salesVolume").as(Integer.class), mdsePageQuery.getSalesVolumeLessThanOrEqual()));
+            }
+
             //分组
             if (!ObjectUtils.isEmpty(mdsePageQuery.getGroupId())) {
                 List<MallMdseGroupMap> mdseGroupMaps = groupService.findAllMdseGroupById(mdsePageQuery.getGroupId());
                 CriteriaBuilder.In<Long> mdseIdIn = criteriaBuilder.in(root.get("mdseId").as(Long.class));
-                mdseGroupMaps.forEach(mdseGroup-> mdseIdIn.value(mdseGroup.getMdseId()));
+                mdseGroupMaps.forEach(mdseGroup -> mdseIdIn.value(mdseGroup.getMdseId()));
                 mdseIdIn.value(0L);
                 list.add(mdseIdIn);
             }
 
             //标签
             if (!ObjectUtils.isEmpty(mdsePageQuery.getLabelId())) {
-                List<MallMdseLabelMap> mdseLabelMaps = labelService.findAllMdseLabelByLabelId(mdsePageQuery.getLabelId());
+                List<MallMdseLabelMap> mdseLabelMaps = labelService.findMdseLabelAllByLabelId(mdsePageQuery.getLabelId());
                 CriteriaBuilder.In<Long> mdseIdIn = criteriaBuilder.in(root.get("mdseId").as(Long.class));
-                mdseLabelMaps.forEach(mdseLabel-> mdseIdIn.value(mdseLabel.getMdseId()));
+                mdseLabelMaps.forEach(mdseLabel -> mdseIdIn.value(mdseLabel.getMdseId()));
                 mdseIdIn.value(0L);
                 list.add(mdseIdIn);
             }
@@ -297,12 +522,6 @@ public class MdseServiceImpl implements MdseService {
                 list.add(criteriaBuilder.equal(root.get("inventoryReductionMethod").as(InventoryReductionMethod.class), mdsePageQuery.getInventoryReductionMethod()));
             }
 
-
-            CriteriaBuilder.In<Long> shopIdIn = criteriaBuilder.in(root.get("shopId").as(Long.class));
-            shopIdList.forEach(shopIdIn::value);
-            shopIdIn.value(0L);
-            list.add(shopIdIn);
-
             list.add(criteriaBuilder.equal(root.get("deleted").as(Integer.class), SystemConstants.DELETED_NO));
             Predicate[] p = new Predicate[list.size()];
             return criteriaBuilder.and((Predicate[]) list.toArray(p));
@@ -310,18 +529,7 @@ public class MdseServiceImpl implements MdseService {
         return mdseRepository.findAll(spec, pageable);
     }
 
-    @NotNull
-    private List<Long> findAllShopIdByAuth() {
-        Result<List<ShopInfo>> shopListResult = shopFeignClient.lists();
-        if (!Result.isSuccess(shopListResult)) {
-            throw new BusinessException("店铺权限信息获取失败");
-        }
-        List<Long> shopIdList = shopListResult.getData().stream().map(ShopInfo::getShopId).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(shopIdList)) {
-            throw new BusinessException("权限不足");
-        }
-        return shopIdList;
-    }
+
 
     @Override
     public MdseInfo voAddPictureList(MdseInfo mdseInfo) {
@@ -397,13 +605,4 @@ public class MdseServiceImpl implements MdseService {
         return mdseInfo;
     }
 
-    private void verifyShopId(Long shopId) {
-        if (ObjectUtils.isEmpty(shopId)) {
-            throw new BusinessException("店铺信息获取失败");
-        }
-        List<Long> shopIdList = findAllShopIdByAuth();
-        if (!shopIdList.contains(shopId)) {
-            throw new BusinessException("没有店铺【 " + shopId + " 】的操作权限");
-        }
-    }
 }

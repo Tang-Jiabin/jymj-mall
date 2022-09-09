@@ -39,7 +39,7 @@ public class GroupDTO {
     @ApiModelProperty("备注")
     private String remarks;
 
-    @NotNull(message = "店铺（网点）id不能为空")
-    @ApiModelProperty("店铺（网点）id")
-    private Long shopId;
+    @NotNull(message = "商场id不能为空")
+    @ApiModelProperty("商场id")
+    private Long mallId;
 }
