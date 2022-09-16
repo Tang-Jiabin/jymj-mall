@@ -22,12 +22,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 public interface UserFeignClient {
 
 
-    @GetMapping("/api/v1/users/{username}")
-    Result<UserAuthDTO> loadUserByUsername(@PathVariable String username);
-
     @GetMapping("/api/v1/users/{openId}")
     Result<UserAuthDTO> loadUserByOpenId(@PathVariable String openId);
 
-    @PostMapping("/api/v1/users/add")
+    @PostMapping("/api/v1/users")
     void addUser(UserDTO userDTO);
 }

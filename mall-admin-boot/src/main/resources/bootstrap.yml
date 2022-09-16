@@ -26,3 +26,7 @@ spring:
           - data-id: mall-log-config.yaml
             group: DEFAULT_GROUP
             refresh: true
+
+          - data-id: mall-redis.yaml
+            group: DEFAULT_GROUP
+            refresh: true

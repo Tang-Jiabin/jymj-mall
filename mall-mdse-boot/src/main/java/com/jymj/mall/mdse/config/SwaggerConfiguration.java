@@ -44,7 +44,7 @@ public class SwaggerConfiguration {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("商品管理")
+                .title("商品服务")
                 .description("<div style='font-size:14px;color:red;'>商品、库存相关信息</div>")
                 .contact(new Contact("北京金域美境科技有限公司", "", ""))
                 .version("1.0.0")

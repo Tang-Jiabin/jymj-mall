@@ -36,7 +36,7 @@ public class UserUtils {
 
     public static Long getAdminId() {
         if (ObjectUtils.isEmpty(JwtUtils.getJwtPayload())) {
-            throw new BusinessException(ResultCode.AUTHORIZED_ERROR);
+            return 0L;
         }
         return JwtUtils.getJwtPayload().getLong("adminId");
     }

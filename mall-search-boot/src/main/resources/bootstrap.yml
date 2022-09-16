@@ -1,6 +1,8 @@
 spring:
   application:
-    name: mall-gateway
+    name: mall-search
+  main:
+    allow-circular-references: true
   cloud:
     nacos:
       discovery:
@@ -16,11 +18,10 @@ spring:
         username: jymj-nacos
         password: jymj-nacos
         shared-configs:
-          - data-id: mall-redis.yaml
+          - data-id: mall-seata-client.yaml
             group: DEFAULT_GROUP
             refresh: true
 
           - data-id: mall-log-config.yaml
             group: DEFAULT_GROUP
             refresh: true
-

@@ -32,7 +32,7 @@ public class SysUserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) {
         SysUserDetails userDetails = null;
-        Result<UserAuthDTO> result = userFeignClient.loadUserByUsername(username);
+        Result<UserAuthDTO> result = userFeignClient.loadUserByOpenId(username);
         log.info("loadUser:{}",result.toString());
         if (Result.isSuccess(result)) {
             UserAuthDTO user = result.getData();
@@ -50,7 +50,7 @@ public class SysUserDetailsServiceImpl implements UserDetailsService {
      */
     public UserDetails loadUserByMobile(String mobile) {
         SysUserDetails sysUserDetails = null;
-        Result<UserAuthDTO> result = userFeignClient.loadUserByUsername(mobile);
+        Result<UserAuthDTO> result = userFeignClient.loadUserByOpenId(mobile);
         if (Result.isSuccess(result)) {
             UserAuthDTO member = result.getData();
             if (null != member) {

@@ -20,11 +20,6 @@ import org.springframework.stereotype.Component;
 public class UserFeignFallbackClient implements UserFeignClient {
 
 
-    @Override
-    public Result<UserAuthDTO> loadUserByUsername(String mobile) {
-        log.error("feign远程调用系统用户服务异常后的降级方法");
-        return Result.failed(ResultCode.DEGRADATION);
-    }
 
     @Override
     public Result<UserAuthDTO> loadUserByOpenId(String openId) {
@@ -34,7 +29,7 @@ public class UserFeignFallbackClient implements UserFeignClient {
 
     @Override
     public void addUser(UserDTO userDTO) {
-
+        log.error("feign远程调用系统用户服务异常后的降级方法");
     }
 
 

@@ -15,4 +15,8 @@ spring:
         server-addr: localhost:20200
         username: jymj-nacos
         password: jymj-nacos
+        shared-configs:
+          - data-id: mall-log-config.yaml
+            group: DEFAULT_GROUP
+            refresh: true
 

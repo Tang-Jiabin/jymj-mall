@@ -22,7 +22,9 @@ public class SysUserDetails implements org.springframework.security.core.userdet
     private String username;
     private Boolean enabled;
 
+    private String openId;
 
+    private String sessionKey;
 
     private String password;
     /**

@@ -13,4 +13,5 @@ include 'mall-shop-api'
 include 'mall-mdse-boot'
 include 'mall-mdse-api'
 include 'mall-file-boot'
+include 'mall-search-boot'
 

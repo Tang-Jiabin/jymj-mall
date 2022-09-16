@@ -3,6 +3,8 @@ package com.jymj.mall.user.dto;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.util.List;
+
 /**
  * @author J.Tang
  * @version 1.0
@@ -22,10 +24,17 @@ public class UserAuthDTO {
      */
     private String username;
 
+    private String nickname;
+
     /**
      * 状态(1:正常；0：禁用)
      */
     private Integer status;
 
     private String password;
+
+    /**
+     * 用户角色编码集合 ["ROOT","ADMIN"]
+     */
+    private List<String> roles;
 }

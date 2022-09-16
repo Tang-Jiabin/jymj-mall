@@ -77,5 +77,4 @@ public interface BaseEnum<T> {
     }
 
 
-
 }

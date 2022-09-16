@@ -1,4 +1,4 @@
-package com.jymj.mall.user.dto;
+package com.jymj.mall.user.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -7,34 +7,26 @@ import com.jymj.mall.common.localdate.LocalDateDeserializer;
 import com.jymj.mall.common.localdate.LocalDateSerializer;
 import com.jymj.mall.user.enums.MemberEnum;
 import com.jymj.mall.user.enums.SourceEnum;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.Date;
 
 /**
+ * 用户
+ *
  * @author J.Tang
  * @version 1.0
  * @email seven_tjb@163.com
- * @date 2022-08-08
+ * @date 2022-09-13
  */
 @Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@ApiModel(value = "用户")
-public class UserDTO {
+public class UserInfo {
 
-    @ApiModelProperty(value = "id")
+    @ApiModelProperty(value = "id" )
     private Long userId;
-    @ApiModelProperty(value = "性别")
-    private Integer gender;
 
     @ApiModelProperty(value = "用户名")
     private String username;
@@ -42,11 +34,11 @@ public class UserDTO {
     @ApiModelProperty(value = "昵称")
     private String nickName;
 
-    @ApiModelProperty(value = "密码")
-    private String password;
-
     @ApiModelProperty(value = "手机号")
     private String mobile;
+
+    @ApiModelProperty(value = "性别")
+    private Integer gender;
 
     @ApiModelProperty(value = "生日")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
@@ -57,9 +49,6 @@ public class UserDTO {
 
     @ApiModelProperty(value = "头像")
     private String avatarUrl;
-
-    @ApiModelProperty(value = "openid")
-    private String openid;
 
     @ApiModelProperty(value = "城市")
     private String city;
@@ -73,6 +62,9 @@ public class UserDTO {
     @ApiModelProperty(value = "省份")
     private String province;
 
+    @ApiModelProperty(value = "状态")
+    private Integer status;
+
     @ApiModelProperty(value = "用户身份")
     private MemberEnum memberType;
 
@@ -81,6 +73,9 @@ public class UserDTO {
 
     @ApiModelProperty(value = "购买次数")
     private Integer purchaseCount;
+
+    @ApiModelProperty(value = "创建时间")
+    private Date createTime;
 
     @ApiModelProperty(value = "登录时间")
     private Date loginTime;

@@ -1,5 +1,10 @@
 package com.jymj.mall.mdse.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.jymj.mall.common.web.config.LocalDateDeserializer;
+import com.jymj.mall.common.web.config.LocalDateSerializer;
 import com.jymj.mall.mdse.enums.EffectiveRulesEnum;
 import com.jymj.mall.mdse.enums.UsageRulesEnum;
 import io.swagger.annotations.ApiModel;
@@ -35,8 +40,12 @@ public class EffectiveRulesDTO {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty("可用开始时间")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private LocalDate startDate;
 
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @JsonDeserialize(using = LocalDateDeserializer.class)
+    @JsonSerialize(using = LocalDateSerializer.class)
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty("可用结束时间")
     private LocalDate endDate;

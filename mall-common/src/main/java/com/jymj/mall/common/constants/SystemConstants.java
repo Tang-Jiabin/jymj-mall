@@ -1,5 +1,7 @@
 package com.jymj.mall.common.constants;
 
+import org.springframework.util.StringUtils;
+
 /**
  * @author J.Tang
  * @version 1.0
@@ -48,5 +50,18 @@ public interface SystemConstants {
     Integer STATUS_CLOSE = 2;
 
     String SQL_LIKE = "%";
+
+    /**
+     * 生成sqlLike语句
+     *
+     * @param param 参数
+     * @return like
+     */
+    static String generateSqlLike(String param) {
+        if (StringUtils.hasText(param)) {
+            return SQL_LIKE + param + SQL_LIKE;
+        }
+        return "NULL";
+    }
 
 }

@@ -49,7 +49,9 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.util.StringUtils;
 
 import java.security.KeyPair;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 认证服务器配置
@@ -141,13 +143,13 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
      * jwt token存储模式
      */
     @Bean
-    public JwtTokenStore jwtTokenStore(){
+    public JwtTokenStore jwtTokenStore() {
         return new JwtTokenStore(jwtAccessTokenConverter());
     }
 
     public DefaultTokenServices tokenServices(AuthorizationServerEndpointsConfigurer endpoints) {
         TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
-        List<TokenEnhancer> tokenEnhancers =Lists.newArrayList();
+        List<TokenEnhancer> tokenEnhancers = Lists.newArrayList();
         tokenEnhancers.add(tokenEnhancer());
         tokenEnhancers.add(jwtAccessTokenConverter());
         tokenEnhancerChain.setTokenEnhancers(tokenEnhancers);
@@ -180,7 +182,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         return tokenServices;
 
     }
-
 
 
     /**
@@ -225,7 +226,15 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
             } else if (principal instanceof SysUserDetails) {
                 SysUserDetails sysUserDetails = (SysUserDetails) principal;
                 additionalInfo.put("userId", sysUserDetails.getMemberId());
-                additionalInfo.put("username", sysUserDetails.getUsername());
+                if (StringUtils.hasText(sysUserDetails.getUsername())) {
+                    additionalInfo.put("username", sysUserDetails.getUsername());
+                }
+                if (StringUtils.hasText(sysUserDetails.getSessionKey())) {
+                    additionalInfo.put("sessionKey", sysUserDetails.getSessionKey());
+                }
+                if (StringUtils.hasText(sysUserDetails.getOpenId())) {
+                    additionalInfo.put("openid", sysUserDetails.getOpenId());
+                }
                 // 认证身份标识(mobile:手机号；openId:开放式认证系统唯一身份标识)
                 if (StringUtils.hasText(sysUserDetails.getAuthenticationIdentity())) {
                     additionalInfo.put("authenticationIdentity", sysUserDetails.getAuthenticationIdentity());
