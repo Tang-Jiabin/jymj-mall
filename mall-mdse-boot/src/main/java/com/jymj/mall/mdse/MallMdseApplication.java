@@ -1,12 +1,8 @@
 package com.jymj.mall.mdse;
 
-import com.jymj.mall.admin.api.AdminFeignClient;
 import com.jymj.mall.admin.api.DeptFeignClient;
-import com.jymj.mall.admin.api.DistrictFeignClient;
-import com.jymj.mall.admin.api.PermissionFeignClient;
 import com.jymj.mall.shop.api.MallFeignClient;
 import com.jymj.mall.shop.api.ShopFeignClient;
-import io.seata.spring.annotation.datasource.EnableAutoDataSourceProxy;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;

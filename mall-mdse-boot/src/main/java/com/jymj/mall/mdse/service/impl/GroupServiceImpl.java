@@ -18,7 +18,6 @@ import com.jymj.mall.mdse.service.GroupService;
 import com.jymj.mall.mdse.vo.GroupInfo;
 import com.jymj.mall.shop.api.MallFeignClient;
 import com.jymj.mall.shop.vo.MallInfo;
-import com.jymj.mall.shop.vo.ShopInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +27,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
 import java.util.Arrays;
 import java.util.List;

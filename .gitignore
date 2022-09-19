@@ -42,5 +42,6 @@ log/
 *.orig
 temp/
 
-/mall-nacos
-/mall-seata
+/mall-nacos/
+/mall-seata/
+/mall-elasticsearch/

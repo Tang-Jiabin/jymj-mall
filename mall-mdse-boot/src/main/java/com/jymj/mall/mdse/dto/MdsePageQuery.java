@@ -9,7 +9,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Set;
 
 /**
  * 商品分页查询
@@ -54,6 +53,9 @@ public class MdsePageQuery extends BasePageQueryDTO {
 
     @ApiModelProperty("品牌id")
     private Long brandId;
+
+    @ApiModelProperty("厂家id")
+    private Long mfgId;
 
     @ApiModelProperty("标签id")
     private Long labelId;

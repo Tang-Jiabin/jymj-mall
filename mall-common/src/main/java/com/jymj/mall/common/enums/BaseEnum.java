@@ -1,11 +1,7 @@
 package com.jymj.mall.common.enums;
 
-import org.assertj.core.util.Lists;
-
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author J.Tang

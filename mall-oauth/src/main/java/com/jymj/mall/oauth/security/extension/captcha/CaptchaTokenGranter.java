@@ -12,7 +12,6 @@ import org.springframework.security.oauth2.provider.*;
 import org.springframework.security.oauth2.provider.token.AbstractTokenGranter;
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**

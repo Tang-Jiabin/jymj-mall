@@ -1,7 +1,6 @@
 package com.jymj.mall.mdse.dto;
 
 import com.jymj.mall.mdse.enums.InventoryReductionMethod;
-import com.jymj.mall.mdse.vo.PictureInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

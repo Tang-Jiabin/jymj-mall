@@ -29,6 +29,7 @@ public class SwaggerConfiguration {
     @Value(value = "${springfox.documentation.pathMapping}")
     private String pathMapping;
 
+    private static final String AUTHORIZATION = "Authorization";
     @Bean
     public Docket restApi() {
         return new Docket(DocumentationType.OAS_30)
@@ -52,12 +53,12 @@ public class SwaggerConfiguration {
     }
 
     private List<SecurityScheme> security() {
-        ApiKey apiKey = new ApiKey("Authorization", "Authorization", "header");
+        ApiKey apiKey = new ApiKey(AUTHORIZATION, AUTHORIZATION, "header");
         return Collections.singletonList(apiKey);
     }
 
     private List<SecurityContext> securityContexts() {
-        return Collections.singletonList(SecurityContext.builder().securityReferences(Collections.singletonList(new SecurityReference("Authorization", new AuthorizationScope[]{new AuthorizationScope("global", "")}))).build());
+        return Collections.singletonList(SecurityContext.builder().securityReferences(Collections.singletonList(new SecurityReference(AUTHORIZATION, new AuthorizationScope[]{new AuthorizationScope("global", "")}))).build());
     }
 
 }

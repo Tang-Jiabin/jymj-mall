@@ -36,7 +36,7 @@ public class MdseController {
 
     @ApiOperation(value = "添加商品")
     @PostMapping
-    private Result<MdseInfo> addMdse(@Valid @RequestBody MdseDTO mdseDTO) {
+    public Result<MdseInfo> addMdse(@Valid @RequestBody MdseDTO mdseDTO) {
         MallMdse mallMdse = mdseService.add(mdseDTO);
         MdseInfo mdseInfo = mdseService.entity2vo(mallMdse);
         return Result.success(mdseInfo);
@@ -44,14 +44,14 @@ public class MdseController {
 
     @ApiOperation(value = "删除商品")
     @DeleteMapping("/{ids}")
-    private Result deleteMdse(@Valid @PathVariable String ids) {
+    public  Result<Object> deleteMdse(@Valid @PathVariable String ids) {
         mdseService.delete(ids);
         return Result.success();
     }
 
     @ApiOperation(value = "修改商品")
     @PutMapping
-    private Result<MdseInfo> updateMdse(@RequestBody MdseDTO mdseDTO) {
+    public Result<MdseInfo> updateMdse(@RequestBody MdseDTO mdseDTO) {
         Optional<MallMdse> mdseOptional = mdseService.update(mdseDTO);
         return mdseOptional.map(entity -> Result.success(mdseService.entity2vo(entity))).orElse(Result.failed("修改失败"));
     }

@@ -1,7 +1,6 @@
 package com.jymj.mall.mdse.repository;
 
 import com.jymj.mall.mdse.entity.MallMdseGroupMap;
-import io.swagger.models.auth.In;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,14 +1,17 @@
 package com.jymj.mall.mdse.vo;
 
-import com.jymj.mall.mdse.entity.*;
+
 import com.jymj.mall.mdse.enums.InventoryReductionMethod;
 import com.jymj.mall.shop.vo.ShopInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -22,8 +25,10 @@ import java.util.List;
  */
 @Data
 @ApiModel("商品信息")
+@Document(indexName = "mdse_info")
 public class MdseInfo {
 
+    @Id
     @ApiModelProperty("商品id")
     private Long mdseId;
 
@@ -91,6 +96,7 @@ public class MdseInfo {
     private Integer status;
 
     @ApiModelProperty("创建时间")
+    @Field(type = FieldType.Date)
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 }

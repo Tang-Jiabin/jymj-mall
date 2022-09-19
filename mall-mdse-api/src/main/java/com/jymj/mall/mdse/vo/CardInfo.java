@@ -1,7 +1,6 @@
 package com.jymj.mall.mdse.vo;
 
-import com.jymj.mall.mdse.dto.EffectiveRulesDTO;
-import com.jymj.mall.mdse.dto.PictureDTO;
+
 import com.jymj.mall.mdse.enums.InventoryReductionMethod;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

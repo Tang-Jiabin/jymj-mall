@@ -2,10 +2,8 @@ package com.jymj.mall.mdse.controller;
 
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.mdse.dto.TypeDTO;
-import com.jymj.mall.mdse.entity.MdseLabel;
 import com.jymj.mall.mdse.entity.MdseType;
 import com.jymj.mall.mdse.service.TypeService;
-import com.jymj.mall.mdse.vo.LabelInfo;
 import com.jymj.mall.mdse.vo.TypeInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

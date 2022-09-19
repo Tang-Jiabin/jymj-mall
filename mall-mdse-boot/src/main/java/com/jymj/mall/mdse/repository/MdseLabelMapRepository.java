@@ -1,6 +1,5 @@
 package com.jymj.mall.mdse.repository;
 
-import com.jymj.mall.mdse.entity.MallMdseGroupMap;
 import com.jymj.mall.mdse.entity.MallMdseLabelMap;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

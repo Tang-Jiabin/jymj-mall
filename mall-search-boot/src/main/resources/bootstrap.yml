@@ -25,3 +25,8 @@ spring:
           - data-id: mall-log-config.yaml
             group: DEFAULT_GROUP
             refresh: true
+  elasticsearch:
+    username: elastic
+    password: jymj-elastic
+    uris: http://127.0.0.1:22200
+    connection-timeout: 1000

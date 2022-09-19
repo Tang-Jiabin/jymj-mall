@@ -1,6 +1,5 @@
 package com.jymj.mall.shop.vo;
 
-import cn.hutool.core.util.DesensitizedUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;

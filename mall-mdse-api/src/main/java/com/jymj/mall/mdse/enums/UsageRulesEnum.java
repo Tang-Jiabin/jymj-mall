@@ -1,6 +1,5 @@
 package com.jymj.mall.mdse.enums;
 
-import com.jymj.mall.common.enums.BaseEnum;
 import com.jymj.mall.common.enums.EnumTypeInfo;
 import org.assertj.core.util.Lists;
 

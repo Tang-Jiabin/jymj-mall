@@ -19,5 +19,6 @@ dependencies {
     implementation project(":mall-common-redis")
     implementation project(":mall-common-web")
     implementation project(":mall-shop-api")
+    implementation project(":mall-mdse-api")
 }
 

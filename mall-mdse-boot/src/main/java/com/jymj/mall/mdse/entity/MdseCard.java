@@ -1,8 +1,6 @@
 package com.jymj.mall.mdse.entity;
 
 import com.jymj.mall.common.web.pojo.BaseEntity;
-import com.jymj.mall.mdse.dto.EffectiveRulesDTO;
-import com.jymj.mall.mdse.dto.PictureDTO;
 import com.jymj.mall.mdse.enums.InventoryReductionMethod;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -14,8 +12,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
 
 /**
  * 卡

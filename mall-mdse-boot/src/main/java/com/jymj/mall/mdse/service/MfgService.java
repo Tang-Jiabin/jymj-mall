@@ -1,11 +1,8 @@
 package com.jymj.mall.mdse.service;
 
 import com.jymj.mall.common.web.service.BaseService;
-import com.jymj.mall.mdse.dto.BrandDTO;
 import com.jymj.mall.mdse.dto.MfgDTO;
-import com.jymj.mall.mdse.entity.MdseBrand;
 import com.jymj.mall.mdse.entity.MdseMfg;
-import com.jymj.mall.mdse.vo.BrandInfo;
 import com.jymj.mall.mdse.vo.MfgInfo;
 
 import java.util.List;

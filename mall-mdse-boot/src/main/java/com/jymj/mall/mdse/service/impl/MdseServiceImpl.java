@@ -6,7 +6,10 @@ import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
-import com.jymj.mall.mdse.dto.*;
+import com.jymj.mall.mdse.dto.MdseDTO;
+import com.jymj.mall.mdse.dto.MdsePageQuery;
+import com.jymj.mall.mdse.dto.PictureDTO;
+import com.jymj.mall.mdse.dto.StockDTO;
 import com.jymj.mall.mdse.entity.*;
 import com.jymj.mall.mdse.enums.InventoryReductionMethod;
 import com.jymj.mall.mdse.enums.PictureType;
@@ -18,7 +21,6 @@ import com.jymj.mall.shop.api.ShopFeignClient;
 import com.jymj.mall.shop.vo.ShopInfo;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -457,6 +459,11 @@ public class MdseServiceImpl implements MdseService {
                 list.add(criteriaBuilder.equal(root.get("brandId").as(Integer.class), mdsePageQuery.getBrandId()));
             }
 
+            //厂家id
+            if (mdsePageQuery.getMfgId() != null) {
+                list.add(criteriaBuilder.equal(root.get("mfgId").as(Integer.class), mdsePageQuery.getMfgId()));
+            }
+
             //商场id
             if (mdsePageQuery.getMallId() != null) {
                 list.add(criteriaBuilder.equal(root.get("mallId").as(Integer.class), mdsePageQuery.getMallId()));
@@ -471,7 +478,6 @@ public class MdseServiceImpl implements MdseService {
                 list.add(mdseIdIn);
 
             }
-
 
 
             //数量大于等于

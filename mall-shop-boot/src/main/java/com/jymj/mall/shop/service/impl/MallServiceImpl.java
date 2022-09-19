@@ -1,6 +1,4 @@
 package com.jymj.mall.shop.service.impl;
-import com.jymj.mall.shop.enums.MallType;
-import java.util.Date;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.RandomUtil;
@@ -30,8 +28,6 @@ import com.jymj.mall.shop.vo.TagInfo;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

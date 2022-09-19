@@ -1,10 +1,5 @@
 package com.jymj.mall.mdse.enums;
 
-import com.jymj.mall.shop.enums.MallType;
-import com.jymj.mall.shop.vo.MallTypeInfo;
-import org.assertj.core.util.Lists;
-
-import java.util.List;
 
 /**
  * 库存减少方式
@@ -42,13 +37,4 @@ public enum InventoryReductionMethod {
         this.label = label;
     }
 
-    public static List<MallTypeInfo> toList(){
-        List<MallTypeInfo> mallTypeInfoList = Lists.newArrayList();
-        for (MallType value : MallType.values()) {
-            MallTypeInfo info = new MallTypeInfo(value,value.getLabel());
-
-            mallTypeInfoList.add(info);
-        }
-        return mallTypeInfoList;
-    }
 }
