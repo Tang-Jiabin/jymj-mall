@@ -45,3 +45,5 @@ temp/
 /mall-nacos/
 /mall-seata/
 /mall-elasticsearch/
+/mall-elasticsearch/jdk/
+/mall-elasticsearch/path/
