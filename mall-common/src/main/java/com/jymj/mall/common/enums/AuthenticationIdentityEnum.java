@@ -29,7 +29,7 @@ public enum AuthenticationIdentityEnum implements BaseEnum<String>{
     OPENID("openId", "开放式认证系统唯一身份标识");
 
 
-    private String value;
+    private final String value;
 
     public String getValue() {
         return value;
@@ -40,7 +40,7 @@ public enum AuthenticationIdentityEnum implements BaseEnum<String>{
     }
 
 
-    private String label;
+    private final String label;
 
     AuthenticationIdentityEnum(String value, String label) {
         this.value = value;

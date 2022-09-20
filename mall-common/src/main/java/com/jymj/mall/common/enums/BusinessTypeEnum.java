@@ -18,10 +18,10 @@ public enum BusinessTypeEnum implements BaseEnum<Integer> {
     ORDER(300, "订单");
 
     @Getter
-    private Integer value;
+    private final Integer value;
 
     @Getter
-    private String label;
+    private final String label;
 
     BusinessTypeEnum(Integer value, String label) {
         this.value = value;

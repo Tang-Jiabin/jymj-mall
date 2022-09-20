@@ -157,7 +157,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         DefaultTokenServices tokenServices = new DefaultTokenServices();
         tokenServices.setTokenStore(endpoints.getTokenStore());
         tokenServices.setSupportRefreshToken(true);
-        tokenServices.setClientDetailsService((ClientDetailsService) clientDetailsService);
+        tokenServices.setClientDetailsService(clientDetailsService);
         tokenServices.setTokenEnhancer(tokenEnhancerChain);
 
         // 多用户体系下，刷新token再次认证客户端ID和 UserDetailService 的映射Map

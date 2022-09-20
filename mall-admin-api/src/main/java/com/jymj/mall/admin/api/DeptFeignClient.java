@@ -31,7 +31,7 @@ public interface DeptFeignClient {
     Result<DeptInfo> getDeptById(@PathVariable Long deptId);
 
     @GetMapping("/api/v1/dept/{deptId}/children")
-    public Result<List<DeptInfo>> children(@PathVariable Long deptId);
+    Result<List<DeptInfo>> children(@PathVariable Long deptId);
 
     @GetMapping("/api/v1/dept/{deptId}/tree")
      Result<List<DeptInfo>> tree(@PathVariable Long deptId);

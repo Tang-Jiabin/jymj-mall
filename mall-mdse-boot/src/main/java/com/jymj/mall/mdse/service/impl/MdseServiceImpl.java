@@ -530,7 +530,7 @@ public class MdseServiceImpl implements MdseService {
 
             list.add(criteriaBuilder.equal(root.get("deleted").as(Integer.class), SystemConstants.DELETED_NO));
             Predicate[] p = new Predicate[list.size()];
-            return criteriaBuilder.and((Predicate[]) list.toArray(p));
+            return criteriaBuilder.and(list.toArray(p));
         };
         return mdseRepository.findAll(spec, pageable);
     }

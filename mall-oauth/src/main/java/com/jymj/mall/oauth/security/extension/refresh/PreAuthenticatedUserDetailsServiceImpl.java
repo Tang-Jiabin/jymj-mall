@@ -60,27 +60,20 @@ public class PreAuthenticatedUserDetailsServiceImpl<T extends Authentication> im
         if (clientId.equals(SecurityConstants.APP_CLIENT_ID)) {
             // 移动端的用户体系是会员，认证方式是通过手机号 mobile 认证
             SysUserDetailsServiceImpl sysUserDetailsService = (SysUserDetailsServiceImpl) userDetailsService;
-            switch (authenticationIdentityEnum) {
-                case MOBILE:
-                    return sysUserDetailsService.loadUserByMobile(authentication.getName());
-                default:
-                    return sysUserDetailsService.loadUserByUsername(authentication.getName());
+            if (authenticationIdentityEnum == AuthenticationIdentityEnum.MOBILE) {
+                return sysUserDetailsService.loadUserByMobile(authentication.getName());
             }
+            return sysUserDetailsService.loadUserByUsername(authentication.getName());
         } else if (clientId.equals(SecurityConstants.WEAPP_CLIENT_ID)) {
             // 小程序的用户体系是会员，认证方式是通过微信三方标识 openid 认证
             SysUserDetailsServiceImpl sysUserDetailsService = (SysUserDetailsServiceImpl) userDetailsService;
-            switch (authenticationIdentityEnum) {
-                case OPENID:
-                    return sysUserDetailsService.loadUserByOpenId(authentication.getName());
-                default:
-                    return sysUserDetailsService.loadUserByUsername(authentication.getName());
+            if (authenticationIdentityEnum == AuthenticationIdentityEnum.OPENID) {
+                return sysUserDetailsService.loadUserByOpenId(authentication.getName());
             }
+            return sysUserDetailsService.loadUserByUsername(authentication.getName());
         } else if (clientId.equals(SecurityConstants.ADMIN_CLIENT_ID)) {
             // 管理系统的用户体系是系统用户，认证方式通过用户名 username 认证
-            switch (authenticationIdentityEnum) {
-                default:
-                    return userDetailsService.loadUserByUsername(authentication.getName());
-            }
+            return userDetailsService.loadUserByUsername(authentication.getName());
         } else {
             return userDetailsService.loadUserByUsername(authentication.getName());
         }

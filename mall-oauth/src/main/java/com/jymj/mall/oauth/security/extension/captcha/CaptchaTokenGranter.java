@@ -33,7 +33,7 @@ public class CaptchaTokenGranter extends AbstractTokenGranter {
      */
     private static final String GRANT_TYPE = "captcha";
     private final AuthenticationManager authenticationManager;
-    private StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     public CaptchaTokenGranter(AuthorizationServerTokenServices tokenServices, ClientDetailsService clientDetailsService,
                                OAuth2RequestFactory requestFactory, AuthenticationManager authenticationManager,

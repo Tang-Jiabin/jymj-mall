@@ -21,10 +21,10 @@ public enum MenuTypeEnum implements BaseEnum<Integer> {
     EXT_LINK(3, "外链");
 
     @Getter
-    private Integer value;
+    private final Integer value;
 
     @Getter
-    private String label;
+    private final String label;
 
     MenuTypeEnum(Integer value, String label) {
         this.value = value;

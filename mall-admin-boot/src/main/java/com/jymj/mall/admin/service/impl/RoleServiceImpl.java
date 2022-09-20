@@ -245,7 +245,7 @@ public class RoleServiceImpl implements RoleService {
             list.add(criteriaBuilder.equal(root.get("deptId").as(Integer.class), deptId));
             list.add(criteriaBuilder.equal(root.get("deleted").as(Integer.class), SystemConstants.DELETED_NO));
             Predicate[] p = new Predicate[list.size()];
-            return criteriaBuilder.and((Predicate[]) list.toArray(p));
+            return criteriaBuilder.and(list.toArray(p));
         }, pageable);
     }
 

@@ -17,7 +17,7 @@ public enum PasswordEncoderTypeEnum {
     NOOP("{noop}", "无加密明文");
 
     @Getter
-    private String prefix;
+    private final String prefix;
 
     PasswordEncoderTypeEnum(String prefix, String desc) {
         this.prefix = prefix;
