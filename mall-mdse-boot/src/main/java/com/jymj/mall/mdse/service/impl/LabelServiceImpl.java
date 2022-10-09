@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.jymj.mall.admin.api.DeptFeignClient;
 import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.constants.SystemConstants;
+import com.jymj.mall.common.redis.utils.RedisUtils;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.mdse.dto.LabelDTO;
@@ -16,6 +17,8 @@ import com.jymj.mall.mdse.vo.LabelInfo;
 import com.jymj.mall.shop.api.MallFeignClient;
 import com.jymj.mall.shop.vo.MallInfo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -34,6 +37,7 @@ import java.util.stream.Collectors;
  * @email seven_tjb@163.com
  * @date 2022-09-02
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LabelServiceImpl implements LabelService {
@@ -43,6 +47,9 @@ public class LabelServiceImpl implements LabelService {
 
     private final MdseLabelRepository labelRepository;
     private final MdseLabelMapRepository labelMapRepository;
+    private final RedisUtils redisUtils;
+
+    private final ThreadPoolTaskExecutor executor;
 
     @Override
     public MdseLabel add(LabelDTO dto) {
@@ -107,15 +114,39 @@ public class LabelServiceImpl implements LabelService {
     public LabelInfo entity2vo(MdseLabel entity) {
 
         if (!ObjectUtils.isEmpty(entity)) {
-            LabelInfo labelInfo = new LabelInfo();
-            labelInfo.setLabelId(entity.getLabelId());
-            labelInfo.setName(entity.getName());
-            labelInfo.setRemarks(entity.getRemarks());
-            labelInfo.setMallId(entity.getMallId());
+
+            String key = String.format("mall-mdse:labelInfo:id:%d", entity.getLabelId());
+            LabelInfo value = (LabelInfo) redisUtils.get(key);
+
+            if (!ObjectUtils.isEmpty(value)) {
+                executor.execute(()->syncUpdateVo(key, entity));
+                return value;
+            }
+
+            LabelInfo labelInfo = getLabelInfo(entity);
+            redisUtils.set(key, labelInfo, 3600 * 60 * 8L);
+
             return labelInfo;
 
         }
         return null;
+    }
+
+
+    public void syncUpdateVo(String key, MdseLabel entity) {
+        LabelInfo labelInfo = getLabelInfo(entity);
+        log.info("异步更新LabelInfo : {}", labelInfo);
+        redisUtils.set(key, labelInfo, 3600 * 60 * 8L);
+    }
+
+    @Override
+    public  LabelInfo getLabelInfo(MdseLabel entity) {
+        LabelInfo labelInfo = new LabelInfo();
+        labelInfo.setLabelId(entity.getLabelId());
+        labelInfo.setName(entity.getName());
+        labelInfo.setRemarks(entity.getRemarks());
+        labelInfo.setMallId(entity.getMallId());
+        return labelInfo;
     }
 
     @Override

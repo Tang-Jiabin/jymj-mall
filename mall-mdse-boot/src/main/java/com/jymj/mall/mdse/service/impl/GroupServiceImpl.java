@@ -5,23 +5,31 @@ import com.jymj.mall.admin.api.DeptFeignClient;
 import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
+import com.jymj.mall.common.redis.utils.RedisUtils;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.mdse.dto.GroupDTO;
 import com.jymj.mall.mdse.dto.GroupPageQuery;
 import com.jymj.mall.mdse.entity.MallMdseGroupMap;
+import com.jymj.mall.mdse.entity.MdseBrand;
 import com.jymj.mall.mdse.entity.MdseGroup;
 import com.jymj.mall.mdse.repository.MdseGroupMapRepository;
 import com.jymj.mall.mdse.repository.MdseGroupRepository;
 import com.jymj.mall.mdse.service.GroupService;
+import com.jymj.mall.mdse.vo.BrandInfo;
 import com.jymj.mall.mdse.vo.GroupInfo;
 import com.jymj.mall.shop.api.MallFeignClient;
 import com.jymj.mall.shop.vo.MallInfo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.time.DateFormatUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -41,6 +49,7 @@ import java.util.stream.Collectors;
  * @email seven_tjb@163.com
  * @date 2022-09-01
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GroupServiceImpl implements GroupService {
@@ -49,7 +58,8 @@ public class GroupServiceImpl implements GroupService {
     private final MdseGroupMapRepository mdseGroupMapRepository;
     private final MallFeignClient mallFeignClient;
     private final DeptFeignClient deptFeignClient;
-
+    private final RedisUtils redisUtils;
+    private final ThreadPoolTaskExecutor executor;
     @Override
     public MdseGroup add(GroupDTO dto) {
 
@@ -128,20 +138,41 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public GroupInfo entity2vo(MdseGroup entity) {
+
         if (entity != null) {
-            GroupInfo info = new GroupInfo();
-            info.setGroupId(entity.getGroupId());
-            info.setNumber(entity.getNumber());
-            info.setName(entity.getName());
-            info.setShow(entity.getShow());
-            info.setRemarks(entity.getRemarks());
-            info.setCreateTime(entity.getCreateTime());
-            Integer count = mdseGroupMapRepository.countByGroupId(entity.getGroupId());
-            info.setMdseCount(count);
+            String key = String.format("mall-mdse:groupInfo:id:%d", entity.getGroupId());
+            GroupInfo value = (GroupInfo) redisUtils.get(key);
+            if (!ObjectUtils.isEmpty(value)) {
+                executor.execute(()->syncUpdateVo(key, entity));
+                return value;
+            }
+            GroupInfo info = getGroupInfo(entity);
+            redisUtils.set(key, info, 3600 * 60 * 8L);
             return info;
         }
 
         return null;
+    }
+
+    @Async
+    public void syncUpdateVo(String key, MdseGroup entity) {
+        GroupInfo info = getGroupInfo(entity);
+        log.info("同步更新GroupInfo : {}", info);
+        redisUtils.set(key, info, 3600 * 60 * 8L);
+    }
+
+    @NotNull
+    private GroupInfo getGroupInfo(MdseGroup entity) {
+        GroupInfo info = new GroupInfo();
+        info.setGroupId(entity.getGroupId());
+        info.setNumber(entity.getNumber());
+        info.setName(entity.getName());
+        info.setShow(entity.getShow());
+        info.setRemarks(entity.getRemarks());
+        info.setCreateTime(DateFormatUtils.format(entity.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
+        Integer count = mdseGroupMapRepository.countByGroupId(entity.getGroupId());
+        info.setMdseCount(count);
+        return info;
     }
 
     @Override
@@ -166,7 +197,7 @@ public class GroupServiceImpl implements GroupService {
             if (Result.isSuccess(mallInfoListResult)) {
                 List<MallInfo> mallInfoList = mallInfoListResult.getData();
                 List<Long> mallIdList = mallInfoList.stream().map(MallInfo::getMallId).collect(Collectors.toList());
-                return mdseGroupRepository.findAllByMallIdInAndShow(mallIdList,true);
+                return mdseGroupRepository.findAllByMallIdInAndShow(mallIdList, true);
             }
         }
         return Lists.newArrayList();
@@ -194,10 +225,8 @@ public class GroupServiceImpl implements GroupService {
         Pageable pageable = PageUtils.getPageable(groupPageQuery);
 
 
-
         Specification<MdseGroup> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> list = Lists.newArrayList();
-
 
 
             if (StringUtils.hasText(groupPageQuery.getNumber())) {
@@ -247,6 +276,22 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    public void addMdseGroupMap(List<Long> mdseIdList, Long groupId) {
+        List<MallMdseGroupMap> mdseGroupMaps = Optional.of(mdseIdList)
+                .orElse(Lists.newArrayList())
+                .stream().filter(group -> !ObjectUtils.isEmpty(group))
+                .map(mdseId -> {
+                    MallMdseGroupMap mdseGroupMap = new MallMdseGroupMap();
+                    mdseGroupMap.setMdseId(mdseId);
+                    mdseGroupMap.setGroupId(groupId);
+                    mdseGroupMap.setDeleted(SystemConstants.DELETED_NO);
+                    return mdseGroupMap;
+                }).collect(Collectors.toList());
+
+        mdseGroupMapRepository.saveAll(mdseGroupMaps);
+    }
+
+    @Override
     public List<MdseGroup> findAllByMdseId(Long mdseId) {
         List<MallMdseGroupMap> mdseGroupMapList = mdseGroupMapRepository.findAllByMdseId(mdseId);
         return mdseGroupRepository.findAllById(
@@ -276,7 +321,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public List<MdseGroup> findAllByMallId(Long mallId) {
-        if (mallId!=null){
+        if (mallId != null) {
             return mdseGroupRepository.findAllByMallId(mallId);
         }
         return mdseGroupRepository.findAll();

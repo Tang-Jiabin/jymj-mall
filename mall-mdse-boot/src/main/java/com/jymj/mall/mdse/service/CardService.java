@@ -17,4 +17,10 @@ import org.springframework.data.domain.Page;
  */
 public interface CardService extends BaseService<MdseCard, CardInfo, CardDTO> {
     Page<MdseCard> findPage(CardPageQuery cardPageQuery);
+
+    void syncToElasticAddCardInfo(CardInfo cardInfo);
+
+    void syncToElasticDeleteCardInfo(String ids);
+
+    void syncToElasticUpdateCardInfo(CardInfo cardInfo);
 }

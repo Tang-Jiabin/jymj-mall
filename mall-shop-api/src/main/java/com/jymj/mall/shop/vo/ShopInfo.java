@@ -3,6 +3,10 @@ package com.jymj.mall.shop.vo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.data.elasticsearch.annotations.DateFormat;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalTime;
 
@@ -39,11 +43,13 @@ public class ShopInfo {
     @ApiModelProperty("营业状态 1-营业中 2-休息")
     private Integer inBusiness;
 
+
     @ApiModelProperty("营业开始时间")
-    private LocalTime businessStartTime;
+    private String businessStartTime;
+
 
     @ApiModelProperty("营业结束时间")
-    private LocalTime businessEndTime;
+    private String businessEndTime;
 
     @ApiModelProperty("经度")
     private String longitude;

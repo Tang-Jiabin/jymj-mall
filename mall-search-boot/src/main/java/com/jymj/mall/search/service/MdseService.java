@@ -4,6 +4,7 @@ import com.jymj.mall.mdse.dto.MdsePageQuery;
 import com.jymj.mall.mdse.vo.MdseInfo;
 import org.springframework.data.elasticsearch.core.SearchPage;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -24,4 +25,6 @@ public interface MdseService  {
     Optional<MdseInfo> findById(Long mdseId);
 
     SearchPage<MdseInfo> findPage(MdsePageQuery mdsePageQuery);
+
+    List<MdseInfo> updateAll(List<MdseInfo> mdseInfoList);
 }

@@ -1,5 +1,6 @@
 package com.jymj.mall.search.service.impl;
 
+import com.google.common.collect.Lists;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.mdse.dto.MdsePageQuery;
 import com.jymj.mall.mdse.vo.MdseInfo;
@@ -55,6 +56,7 @@ public class MdseServiceImpl implements MdseService {
 
     @Override
     public MdseInfo update(MdseInfo mdseInfo) {
+
         return mdseInfoRepository.save(mdseInfo);
     }
 
@@ -79,6 +81,12 @@ public class MdseServiceImpl implements MdseService {
         return SearchHitSupport.searchPageFor(searchHitsResult, pageable);
     }
 
+    @Override
+    public List<MdseInfo> updateAll(List<MdseInfo> mdseInfoList) {
+        Iterable<MdseInfo> mdseInfoIterable = mdseInfoRepository.saveAll(mdseInfoList);
+        return Lists.newArrayList(mdseInfoIterable);
+    }
+
     private BoolQueryBuilder buildBasicQuery(MdsePageQuery mdsePageQuery) {
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
         if (StringUtils.hasText(mdsePageQuery.getName())) {
@@ -91,8 +99,9 @@ public class MdseServiceImpl implements MdseService {
             boolQueryBuilder.filter(QueryBuilders.matchQuery("brand.brandId", mdsePageQuery.getBrandId()));
         }
         if (!StringUtils.hasText(mdsePageQuery.getProperties())) {
-            mdsePageQuery.setProperties("createTime");
+            mdsePageQuery.setProperties("salesVolume");
         }
+        boolQueryBuilder.filter(QueryBuilders.matchQuery("status", 1));
         return boolQueryBuilder;
     }
 }

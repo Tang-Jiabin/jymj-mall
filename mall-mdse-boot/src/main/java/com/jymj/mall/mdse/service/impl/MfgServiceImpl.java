@@ -4,16 +4,23 @@ import com.google.common.collect.Lists;
 import com.jymj.mall.admin.api.DeptFeignClient;
 import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.constants.SystemConstants;
+import com.jymj.mall.common.redis.utils.RedisUtils;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.mdse.dto.MfgDTO;
+import com.jymj.mall.mdse.entity.MdseLabel;
 import com.jymj.mall.mdse.entity.MdseMfg;
 import com.jymj.mall.mdse.repository.MdseMfgRepository;
 import com.jymj.mall.mdse.service.MfgService;
+import com.jymj.mall.mdse.vo.LabelInfo;
 import com.jymj.mall.mdse.vo.MfgInfo;
 import com.jymj.mall.shop.api.MallFeignClient;
 import com.jymj.mall.shop.vo.MallInfo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -32,6 +39,7 @@ import java.util.stream.Collectors;
  * @email seven_tjb@163.com
  * @date 2022-09-01
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MfgServiceImpl implements MfgService {
@@ -39,6 +47,8 @@ public class MfgServiceImpl implements MfgService {
     private final MdseMfgRepository mdseMfgRepository;
     private final MallFeignClient mallFeignClient;
     private final DeptFeignClient deptFeignClient;
+    private final ThreadPoolTaskExecutor executor;
+    private final RedisUtils redisUtils;
 
     @Override
     public MdseMfg add(MfgDTO dto) {
@@ -115,16 +125,39 @@ public class MfgServiceImpl implements MfgService {
     @Override
     public MfgInfo entity2vo(MdseMfg entity) {
         if (entity != null) {
-            MfgInfo info = new MfgInfo();
-            info.setMfgId(entity.getMfgId());
-            info.setName(entity.getName());
-            info.setLogo(entity.getLogo());
-            info.setAddress(entity.getAddress());
-            info.setRemarks(entity.getRemarks());
-            return info;
+
+            String key = String.format("mall-mdse:mfgInfo:id:%d", entity.getMfgId());
+            MfgInfo value = (MfgInfo) redisUtils.get(key);
+            if (!ObjectUtils.isEmpty(value)) {
+                executor.execute(()->syncUpdateVo(key, entity));
+                return value;
+            }
+
+            MfgInfo mfgInfo = getMfgInfo(entity);
+            redisUtils.set(key, mfgInfo, 3600 * 60 * 8L);
+            return mfgInfo;
+
         }
 
         return null;
+    }
+
+    @Async
+    public void syncUpdateVo(String key, MdseMfg entity) {
+        MfgInfo mfgInfo = getMfgInfo(entity);
+        log.info("同步更新MfgInfo : {}", mfgInfo);
+        redisUtils.set(key, mfgInfo, 3600 * 60 * 8L);
+    }
+
+    @NotNull
+    private static MfgInfo getMfgInfo(MdseMfg entity) {
+        MfgInfo info = new MfgInfo();
+        info.setMfgId(entity.getMfgId());
+        info.setName(entity.getName());
+        info.setLogo(entity.getLogo());
+        info.setAddress(entity.getAddress());
+        info.setRemarks(entity.getRemarks());
+        return info;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.jymj.mall.shop.service.impl;
 
+import cn.hutool.core.date.LocalDateTimeUtil;
 import com.google.common.collect.Lists;
 import com.jymj.mall.admin.api.DeptFeignClient;
 import com.jymj.mall.admin.dto.AddDeptDTO;
@@ -28,6 +29,7 @@ import org.springframework.util.StringUtils;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -174,7 +176,7 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     public ShopInfo entity2vo(MallShop entity) {
-
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("HH:mm:ss");
         ShopInfo shopInfo = new ShopInfo();
         shopInfo.setShopId(entity.getShopId());
         shopInfo.setName(entity.getName());
@@ -183,13 +185,11 @@ public class ShopServiceImpl implements ShopService {
         shopInfo.setMobile(entity.getMobile());
         shopInfo.setStatus(entity.getStatus());
         shopInfo.setInBusiness(entity.getInBusiness());
-        shopInfo.setBusinessStartTime(entity.getBusinessStartTime());
-        shopInfo.setBusinessEndTime(entity.getBusinessEndTime());
+        shopInfo.setBusinessStartTime(df.format(entity.getBusinessStartTime()));
+        shopInfo.setBusinessEndTime(df.format(entity.getBusinessEndTime()));
         shopInfo.setLongitude(entity.getLongitude());
         shopInfo.setLatitude(entity.getLatitude());
 
-//        Optional<MallDetails> detailsOptional = mallService.findById(entity.getMallId());
-//        detailsOptional.ifPresent(mallDetails -> shopInfo.setMallInfo(mallService.mall2vo(mallDetails)));
 
         return shopInfo;
     }

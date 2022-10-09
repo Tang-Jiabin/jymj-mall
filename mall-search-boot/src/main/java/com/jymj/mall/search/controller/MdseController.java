@@ -55,6 +55,13 @@ public class MdseController {
         return Result.success(mdseInfo);
     }
 
+    @ApiOperation(value = "修改商品")
+    @PutMapping("/list")
+    public Result<List<MdseInfo>> updateMdseList(@RequestBody List<MdseInfo> mdseInfoList) {
+        mdseInfoList = mdseService.updateAll(mdseInfoList);
+        return Result.success(mdseInfoList);
+    }
+
     @ApiOperation(value = "商品信息")
     @GetMapping("/{mdseId}/info")
     public Result<MdseInfo> getMdseById(@Valid @PathVariable Long mdseId) {

@@ -252,9 +252,8 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Page<SysAdmin> findPage(AdminPageQuery adminPageQuery) {
-        Sort.Direction direction = PageUtils.getPageDirection(adminPageQuery);
-        String properties = PageUtils.getPageProperties(adminPageQuery);
-        Pageable pageable = PageRequest.of(adminPageQuery.getPage(), adminPageQuery.getSize(), direction, properties);
+
+        Pageable pageable = PageUtils.getPageable(adminPageQuery);
 
         Long deptId = UserUtils.getDeptId();
         List<SysDept> deptList = deptService.findChildren(deptId);

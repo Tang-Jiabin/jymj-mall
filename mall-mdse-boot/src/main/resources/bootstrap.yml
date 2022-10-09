@@ -1,27 +1,5 @@
 spring:
-  application:
-    name: mall-mdse
-  main:
-    allow-circular-references: true
-  cloud:
-    nacos:
-      discovery:
-        server-addr: localhost:20200
-        group: MALL-MANAGE
-        username: jymj-nacos
-        password: jymj-nacos
-      config:
-        file-extension: yaml
-        group: DEFAULT_GROUP
-        prefix: ${spring.application.name}
-        server-addr: localhost:20200
-        username: jymj-nacos
-        password: jymj-nacos
-        shared-configs:
-          - data-id: mall-seata-client.yaml
-            group: DEFAULT_GROUP
-            refresh: true
+  profiles:
+    active: prod
 
-          - data-id: mall-log-config.yaml
-            group: DEFAULT_GROUP
-            refresh: true
+

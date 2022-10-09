@@ -4,16 +4,23 @@ import com.google.common.collect.Lists;
 import com.jymj.mall.admin.api.DeptFeignClient;
 import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.constants.SystemConstants;
+import com.jymj.mall.common.redis.utils.RedisUtils;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.mdse.dto.TypeDTO;
+import com.jymj.mall.mdse.entity.MdseMfg;
 import com.jymj.mall.mdse.entity.MdseType;
 import com.jymj.mall.mdse.repository.MdseTypeRepository;
 import com.jymj.mall.mdse.service.TypeService;
+import com.jymj.mall.mdse.vo.MfgInfo;
 import com.jymj.mall.mdse.vo.TypeInfo;
 import com.jymj.mall.shop.api.MallFeignClient;
 import com.jymj.mall.shop.vo.MallInfo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -32,6 +39,7 @@ import java.util.stream.Collectors;
  * @email seven_tjb@163.com
  * @date 2022-09-02
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TypeServiceImpl implements TypeService {
@@ -39,8 +47,8 @@ public class TypeServiceImpl implements TypeService {
     private final MdseTypeRepository typeRepository;
     private final MallFeignClient mallFeignClient;
     private final DeptFeignClient deptFeignClient;
-
-
+    private final RedisUtils redisUtils;
+    private final ThreadPoolTaskExecutor executor;
     @Override
     public MdseType add(TypeDTO dto) {
 
@@ -106,14 +114,35 @@ public class TypeServiceImpl implements TypeService {
     @Override
     public TypeInfo entity2vo(MdseType entity) {
         if (!ObjectUtils.isEmpty(entity)) {
-            TypeInfo typeInfo = new TypeInfo();
-            typeInfo.setTypeId(entity.getTypeId());
-            typeInfo.setName(entity.getName());
-            typeInfo.setRemarks(entity.getRemarks());
-            typeInfo.setMallId(entity.getMallId());
+            String key = String.format("mall-mdse:typeInfo:id:%d", entity.getTypeId());
+            TypeInfo value = (TypeInfo) redisUtils.get(key);
+            if (!ObjectUtils.isEmpty(value)) {
+                executor.execute(()->syncUpdateVo(key, entity));
+                return value;
+            }
+
+            TypeInfo typeInfo = getTypeInfo(entity);
+            redisUtils.set(key, typeInfo, 3600 * 60 * 8L);
             return typeInfo;
         }
         return null;
+    }
+
+    @Async
+    public void syncUpdateVo(String key, MdseType entity) {
+        TypeInfo typeInfo = getTypeInfo(entity);
+        log.info("同步更新TypeInfo : {}", typeInfo);
+        redisUtils.set(key, typeInfo, 3600 * 60 * 8L);
+    }
+
+    @NotNull
+    private static TypeInfo getTypeInfo(MdseType entity) {
+        TypeInfo typeInfo = new TypeInfo();
+        typeInfo.setTypeId(entity.getTypeId());
+        typeInfo.setName(entity.getName());
+        typeInfo.setRemarks(entity.getRemarks());
+        typeInfo.setMallId(entity.getMallId());
+        return typeInfo;
     }
 
     @Override

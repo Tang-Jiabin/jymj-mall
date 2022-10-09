@@ -1,22 +1,5 @@
 spring:
-  application:
-    name: mall-oauth
-  cloud:
-    nacos:
-      discovery:
-        server-addr: localhost:20200
-        group: MALL-MANAGE
-        username: jymj-nacos
-        password: jymj-nacos
-      config:
-        file-extension: yaml
-        group: DEFAULT_GROUP
-        prefix: ${spring.application.name}
-        server-addr: localhost:20200
-        username: jymj-nacos
-        password: jymj-nacos
-        shared-configs:
-          - data-id: mall-log-config.yaml
-            group: DEFAULT_GROUP
-            refresh: true
+  profiles:
+    active: prod
+
 

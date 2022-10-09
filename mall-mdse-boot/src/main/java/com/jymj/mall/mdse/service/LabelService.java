@@ -32,4 +32,6 @@ public interface LabelService extends BaseService<MdseLabel, LabelInfo, LabelDTO
     void deleteMdseLabel(List<MallMdseLabelMap> deleteMdseLabelMapList);
 
     List<MdseLabel> findAllByMallId(Long mallId);
+
+    LabelInfo getLabelInfo(MdseLabel entity);
 }

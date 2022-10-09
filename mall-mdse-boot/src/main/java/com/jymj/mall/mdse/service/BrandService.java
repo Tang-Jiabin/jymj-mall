@@ -19,4 +19,6 @@ public interface BrandService extends BaseService<MdseBrand, BrandInfo, BrandDTO
 
 
     List<MdseBrand> findAllByMallId(Long mallId);
+
+    BrandInfo updateVo(MdseBrand entity);
 }

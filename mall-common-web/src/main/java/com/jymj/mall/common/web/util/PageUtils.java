@@ -21,15 +21,14 @@ import java.util.List;
 public class PageUtils {
 
     public static Pageable getPageable(BasePageQueryDTO pageQuery) {
+        if (getPageProperties(pageQuery) == null) {
+            return PageRequest.of(pageQuery.getPage(), pageQuery.getSize());
+        }
         return PageRequest.of(pageQuery.getPage(), pageQuery.getSize(), getPageDirection(pageQuery), getPageProperties(pageQuery));
     }
 
     public static String getPageProperties(BasePageQueryDTO pageQuery) {
-        String properties = "updateTime";
-        if (StringUtils.hasText(pageQuery.getProperties())) {
-            properties = pageQuery.getProperties();
-        }
-        return properties;
+        return StringUtils.hasText(pageQuery.getProperties()) ? pageQuery.getProperties() : null;
     }
 
     public static Sort.Direction getPageDirection(BasePageQueryDTO pageQuery) {

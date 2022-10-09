@@ -1,14 +1,21 @@
 package com.jymj.mall.mdse.service.impl;
 
 import com.jymj.mall.common.constants.SystemConstants;
+import com.jymj.mall.common.redis.utils.RedisUtils;
 import com.jymj.mall.mdse.dto.PictureDTO;
 import com.jymj.mall.mdse.entity.MallPicture;
+import com.jymj.mall.mdse.entity.MdseLabel;
 import com.jymj.mall.mdse.enums.PictureType;
 import com.jymj.mall.mdse.repository.MallPictureRepository;
 import com.jymj.mall.mdse.service.PictureService;
+import com.jymj.mall.mdse.vo.LabelInfo;
 import com.jymj.mall.mdse.vo.PictureInfo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.util.Lists;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -26,12 +33,14 @@ import java.util.stream.Collectors;
  * @email seven_tjb@163.com
  * @date 2022-09-02
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PictureServiceImpl implements PictureService {
 
     private final MallPictureRepository pictureRepository;
-
+    private final RedisUtils redisUtils;
+    private final ThreadPoolTaskExecutor executor;
     @Override
     public MallPicture add(PictureDTO dto) {
 
@@ -66,6 +75,32 @@ public class PictureServiceImpl implements PictureService {
 
     @Override
     public PictureInfo entity2vo(MallPicture entity) {
+        if (!ObjectUtils.isEmpty(entity)) {
+
+            String key = String.format("mall-mdse:pictureInfo:id:%d", entity.getPictureId());
+            PictureInfo value = (PictureInfo) redisUtils.get(key);
+            if (!ObjectUtils.isEmpty(value)) {
+                executor.execute(()->syncUpdateVo(key, entity));
+                return value;
+            }
+
+            PictureInfo pictureInfo = getPictureInfo(entity);
+            redisUtils.set(key, pictureInfo, 3600 * 60 * 8L);
+            return pictureInfo;
+
+        }
+        return null;
+
+    }
+
+    @Async
+    public void syncUpdateVo(String key, MallPicture entity) {
+        PictureInfo pictureInfo = getPictureInfo(entity);
+        log.info("同步更新PictureInfo : {}", pictureInfo);
+        redisUtils.set(key, pictureInfo, 3600 * 60 * 8L);
+    }
+    @NotNull
+    private static PictureInfo getPictureInfo(MallPicture entity) {
         PictureInfo pictureInfo = new PictureInfo();
         pictureInfo.setPictureId(entity.getPictureId());
         pictureInfo.setUrl(entity.getUrl());
@@ -119,7 +154,14 @@ public class PictureServiceImpl implements PictureService {
         List<MallPicture> deletePicList = dbDataList.stream().filter(dbPic -> !dtoDataList.stream().map(PictureDTO::getUrl).collect(Collectors.toList()).contains(dbPic.getUrl())).collect(Collectors.toList());
         delete(deletePicList);
         //需要添加的商品图片
-        List<PictureDTO> addPicList = dtoDataList.stream().filter(pic -> !dbDataList.stream().map(MallPicture::getUrl).collect(Collectors.toList()).contains(pic.getUrl())).collect(Collectors.toList());
+        List<PictureDTO> addPicList = dtoDataList.stream()
+                .filter(pic -> !dbDataList.stream().map(MallPicture::getUrl).collect(Collectors.toList()).contains(pic.getUrl()))
+                .map(pic->{
+                    pic.setMdseId(mdseId);
+                    pic.setType(type);
+                    return pic;
+                }).collect(Collectors.toList());
+
         addAll(addPicList);
     }
 
@@ -142,6 +184,11 @@ public class PictureServiceImpl implements PictureService {
     public List<MallPicture> findAllByCardId(Long cardId) {
 
         return pictureRepository.findAllByCardId(cardId);
+    }
+
+    @Override
+    public List<MallPicture> findAllByStockId(Long stockId) {
+        return pictureRepository.findAllByStockId(stockId);
     }
 
 

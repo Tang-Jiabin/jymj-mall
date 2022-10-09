@@ -3,6 +3,7 @@ package com.jymj.mall.mdse.service.impl;
 import com.google.common.collect.Lists;
 import com.jymj.mall.admin.api.DeptFeignClient;
 import com.jymj.mall.common.constants.SystemConstants;
+import com.jymj.mall.common.redis.utils.RedisUtils;
 import com.jymj.mall.mdse.dto.BrandDTO;
 import com.jymj.mall.mdse.entity.MdseBrand;
 import com.jymj.mall.mdse.repository.MdseBrandRepository;
@@ -10,7 +11,11 @@ import com.jymj.mall.mdse.service.BrandService;
 import com.jymj.mall.mdse.vo.BrandInfo;
 import com.jymj.mall.shop.api.MallFeignClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -28,6 +33,7 @@ import java.util.stream.Collectors;
  * @email seven_tjb@163.com
  * @date 2022-09-01
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BrandServiceImpl implements BrandService {
@@ -35,6 +41,9 @@ public class BrandServiceImpl implements BrandService {
     private final MdseBrandRepository mdseBrandRepository;
     private final MallFeignClient mallFeignClient;
     private final DeptFeignClient deptFeignClient;
+    private final RedisUtils redisUtils;
+
+    private final ThreadPoolTaskExecutor executor;
 
     @Override
     public MdseBrand add(BrandDTO dto) {
@@ -53,6 +62,7 @@ public class BrandServiceImpl implements BrandService {
 
 
     @Override
+    @Transactional
     public Optional<MdseBrand> update(BrandDTO dto) {
         if (!ObjectUtils.isEmpty(dto.getBrandId())) {
             Optional<MdseBrand> brandOptional = mdseBrandRepository.findById(dto.getBrandId());
@@ -109,15 +119,36 @@ public class BrandServiceImpl implements BrandService {
     @Override
     public BrandInfo entity2vo(MdseBrand entity) {
         if (entity != null) {
-            BrandInfo brandInfo = new BrandInfo();
-            brandInfo.setBrandId(entity.getBrandId());
-            brandInfo.setName(entity.getName());
-            brandInfo.setLogo(entity.getLogo());
-            brandInfo.setAlias(entity.getAlias());
-            brandInfo.setRemarks(entity.getRemarks());
+            String key = String.format("mall-mdse:brandInfo:id:%d", entity.getBrandId());
+            BrandInfo value = (BrandInfo) redisUtils.get(key);
+
+            if (!ObjectUtils.isEmpty(value)) {
+                executor.execute(()->syncUpdateVo(key, entity));
+                return value;
+            }
+            BrandInfo brandInfo = updateVo(entity);
+            redisUtils.set(key, brandInfo, 3600 * 60 * 8L);
             return brandInfo;
         }
         return null;
+    }
+
+    public void syncUpdateVo(String key, MdseBrand entity) {
+        BrandInfo brandInfo = updateVo(entity);
+        log.info("同步更新BrandInfo : {}", brandInfo);
+        redisUtils.set(key, brandInfo, 3600 * 60 * 8L);
+    }
+
+    @NotNull
+    @Override
+    public  BrandInfo updateVo(MdseBrand entity) {
+        BrandInfo brandInfo = new BrandInfo();
+        brandInfo.setBrandId(entity.getBrandId());
+        brandInfo.setName(entity.getName());
+        brandInfo.setLogo(entity.getLogo());
+        brandInfo.setAlias(entity.getAlias());
+        brandInfo.setRemarks(entity.getRemarks());
+        return brandInfo;
     }
 
     @Override

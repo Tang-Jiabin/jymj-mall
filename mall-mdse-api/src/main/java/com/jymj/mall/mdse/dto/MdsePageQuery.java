@@ -78,4 +78,9 @@ public class MdsePageQuery extends BasePageQueryDTO {
     @ApiModelProperty("商品状态 1-上架 2-下架")
     private Integer status;
 
+    @ApiModelProperty("厂家id")
+    private Long mfgId;
+
+
+
 }

@@ -4,6 +4,7 @@ import com.jymj.mall.mdse.vo.MdseInfo;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 
+
 /**
  * 商品信息
  *

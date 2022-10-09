@@ -13,9 +13,11 @@ import com.jymj.mall.mdse.repository.MdseSpecRepository;
 import com.jymj.mall.mdse.repository.MdseStockRepository;
 import com.jymj.mall.mdse.service.PictureService;
 import com.jymj.mall.mdse.service.StockService;
+import com.jymj.mall.mdse.vo.PictureInfo;
 import com.jymj.mall.mdse.vo.SpecInfo;
 import com.jymj.mall.mdse.vo.StockInfo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -42,7 +44,7 @@ public class StockServiceImpl implements StockService {
     private final PictureService pictureService;
 
     private final MdseSpecRepository mdseSpecRepository;
-
+    private final ThreadPoolTaskExecutor executor;
     private final MdseStockRepository stockRepository;
 
     @Override
@@ -114,19 +116,19 @@ public class StockServiceImpl implements StockService {
 
             MdseSpec mdseSpecA = updateStockSpec(stock.getMdseId(), dto.getSpecA());
             if (!ObjectUtils.isEmpty(mdseSpecA)){
-                stock.setSpecA(mdseSpecA.getMdseId());
+                stock.setSpecA(mdseSpecA.getSpecId());
                 update = true;
             }
 
             MdseSpec mdseSpecB = updateStockSpec(stock.getMdseId(), dto.getSpecB());
             if (!ObjectUtils.isEmpty(mdseSpecB)){
-                stock.setSpecB(mdseSpecB.getMdseId());
+                stock.setSpecB(mdseSpecB.getSpecId());
                 update = true;
             }
 
             MdseSpec mdseSpecC = updateStockSpec(stock.getMdseId(), dto.getSpecC());
             if (!ObjectUtils.isEmpty(mdseSpecC)){
-                stock.setSpecC(mdseSpecC.getMdseId());
+                stock.setSpecC(mdseSpecC.getSpecId());
                 update = true;
             }
 
@@ -134,7 +136,7 @@ public class StockServiceImpl implements StockService {
             pictureService.updateMdsePicture(specPictureList, dto.getMdseId(), PictureType.STOCK_SPEC);
 
             if (update){
-                Optional.of(save(stock));
+                return Optional.of(save(stock));
             }
         }
 
@@ -213,7 +215,9 @@ public class StockServiceImpl implements StockService {
         stockInfo.setTotalInventory(entity.getTotalInventory());
         stockInfo.setRemainingStock(entity.getRemainingStock());
         stockInfo.setNumber(entity.getNumber());
-
+        List<MallPicture> pictureList = pictureService.findAllByStockId(entity.getStockId());
+        List<PictureInfo> pictureInfoList = pictureService.list2vo(pictureList);
+        stockInfo.setPictureList(pictureInfoList);
         return stockInfo;
     }
 

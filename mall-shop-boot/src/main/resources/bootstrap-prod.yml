@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: mall-shop
+  main:
+    allow-circular-references: true
+  cloud:
+    nacos:
+      discovery:
+        service: ${spring.application.name}
+        server-addr: mall-nacos:8848
+        group: MALL-MANAGE
+        namespace: f78fa3bf-d1dc-4b03-a491-23d7010de39d
+        username: jymj-nacos
+        password: jymj-nacos
+      config:
+        file-extension: yaml
+        prefix: ${spring.application.name}
+        server-addr: mall-nacos:8848
+        namespace: f78fa3bf-d1dc-4b03-a491-23d7010de39d
+        username: jymj-nacos
+        password: jymj-nacos
+        shared-configs:
+          - data-id: mall-seata-client.yaml
+          - data-id: mall-log-config.yaml
+          - data-id: mall-admin-permids.yaml
+          - data-id: mall-zipkin-config.yaml
+          - data-id: mall-actuator.yaml
+          - data-id: mall-redis.yaml
+          - data-id: mall-elastic.yaml

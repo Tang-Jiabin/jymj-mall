@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 库存
@@ -41,6 +42,9 @@ public class StockInfo {
 
     @ApiModelProperty("库存编号")
     private String number;
+
+    @ApiModelProperty("库存图片")
+    private List<PictureInfo> pictureList;
 
 
 }

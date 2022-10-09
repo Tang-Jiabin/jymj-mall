@@ -31,4 +31,6 @@ public interface PictureService extends BaseService<MallPicture, PictureInfo, Pi
     void updateCardPicture(List<PictureDTO> videoList, Long mdseId, PictureType mdseVideo);
 
     List<MallPicture> findAllByCardId(Long cardId);
+
+    List<MallPicture> findAllByStockId(Long stockId);
 }

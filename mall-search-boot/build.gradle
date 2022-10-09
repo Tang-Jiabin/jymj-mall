@@ -3,12 +3,17 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'io.github.openfeign:feign-okhttp:11.9.1'
-    implementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:2021.1'
+    implementation ('com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:2021.1'){
+        exclude group: 'com.alibaba.nacos', module: 'nacos:nacos-client'
+    }
+    implementation 'com.alibaba.nacos:nacos-client:2.1.1'
     implementation 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config:2021.1'
     implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap:3.1.4'
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch:2.7.3'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'com.google.code.google-collections:google-collect:snapshot-20080530'
     runtimeOnly 'org.postgresql:postgresql'
     implementation project(":mall-common")
     implementation project(":mall-common-web")

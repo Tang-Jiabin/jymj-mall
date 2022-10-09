@@ -15,6 +15,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 商品vo
@@ -34,6 +35,10 @@ public class MdseInfo {
 
     @ApiModelProperty("商品图片")
     private List<PictureInfo> pictureList;
+
+    @ApiModelProperty("商品视频")
+    private List<PictureInfo> videoList;
+
 
     @ApiModelProperty("商品名称")
     private String name;
@@ -84,7 +89,7 @@ public class MdseInfo {
     private TypeInfo typeInfo;
 
     @ApiModelProperty("店铺")
-    private ShopInfo shopInfo;
+    private List<ShopInfo> shopInfoList;
 
     @ApiModelProperty("库存规格集合")
     private List<StockInfo> stockList;
@@ -96,7 +101,10 @@ public class MdseInfo {
     private Integer status;
 
     @ApiModelProperty("创建时间")
-    @Field(type = FieldType.Date)
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date createTime;
+    private String createTime;
+
+    @ApiModelProperty("商品状态 1-上架 2-下架")
+    private List<SpecMap> specMap;
+
+
 }

@@ -26,4 +26,6 @@ public interface MallPictureRepository extends JpaRepository<MallPicture,Long> {
     List<MallPicture> findAllByCardId(Long cardId);
 
     List<MallPicture> findAllByCardIdAndType(Long cardId, PictureType type);
+
+    List<MallPicture> findAllByStockId(Long stockId);
 }

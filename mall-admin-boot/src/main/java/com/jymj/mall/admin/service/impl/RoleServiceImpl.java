@@ -234,10 +234,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public Page<SysRole> findPage(RolePageQuery rolePageQuery) {
-        Sort.Direction direction = PageUtils.getPageDirection(rolePageQuery);
-        String properties = PageUtils.getPageProperties(rolePageQuery);
+
         Long deptId = UserUtils.getDeptId();
-        Pageable pageable = PageRequest.of(rolePageQuery.getPage(), rolePageQuery.getSize(), direction, properties);
+        Pageable pageable =PageUtils.getPageable(rolePageQuery);
         return roleRepository.findAll((root, query, criteriaBuilder) -> {
             List<Predicate> list = Lists.newArrayList();
 

@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: mall-oauth
+  cloud:
+    nacos:
+      discovery:
+        service: ${spring.application.name}
+        server-addr: nacos.mall.t625.com
+        group: MALL-MANAGE
+        username: jymj-nacos
+        password: jymj-nacos
+        namespace: 9b3cc338-1289-47f4-960a-6dd756841176
+      config:
+        file-extension: yaml
+        prefix: ${spring.application.name}
+        server-addr: nacos.mall.t625.com
+        username: jymj-nacos
+        password: jymj-nacos
+        namespace: 9b3cc338-1289-47f4-960a-6dd756841176
+        shared-configs:
+          - data-id: mall-log-config.yaml
+          - data-id: mall-redis.yaml
+          - data-id: mall-zipkin-config.yaml
+          - data-id: mall-actuator.yaml

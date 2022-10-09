@@ -39,6 +39,7 @@ public class CardController {
     public Result<CardInfo> addCard(@Valid @RequestBody CardDTO cardDTO) {
         MdseCard card = cardService.add(cardDTO);
         CardInfo cardInfo = cardService.entity2vo(card);
+        cardService.syncToElasticAddCardInfo(cardInfo);
         return Result.success(cardInfo);
     }
 
@@ -46,6 +47,7 @@ public class CardController {
     @DeleteMapping("/{ids}")
     public Result<String> deleteCard(@Valid @PathVariable String ids) {
         cardService.delete(ids);
+        cardService.syncToElasticDeleteCardInfo(ids);
         return Result.success();
     }
 
@@ -53,7 +55,12 @@ public class CardController {
     @PutMapping
     public Result<CardInfo> updateCard(@RequestBody CardDTO cardDTO) {
         Optional<MdseCard> cardOptional = cardService.update(cardDTO);
-        return cardOptional.map(entity -> Result.success(cardService.entity2vo(entity))).orElse(Result.failed("更新失败"));
+        if (cardOptional.isPresent()) {
+            CardInfo cardInfo = cardService.entity2vo(cardOptional.get());
+            cardService.syncToElasticUpdateCardInfo(cardInfo);
+            return Result.success(cardInfo);
+        }
+        return Result.failed("更新失败");
     }
 
     @ApiOperation(value = "卡信息")

@@ -42,7 +42,7 @@ public class AuthController {
 
 
     private final TokenEndpoint tokenEndpoint;
-    private final RedisTemplate<String,?> redisTemplate;
+    private final RedisTemplate<String,String> redisTemplate;
     private final KeyPair keyPair;
 
     @ApiOperation(value = "授权")

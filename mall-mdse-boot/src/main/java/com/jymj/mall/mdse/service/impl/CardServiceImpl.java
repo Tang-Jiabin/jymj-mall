@@ -3,6 +3,7 @@ package com.jymj.mall.mdse.service.impl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.jymj.mall.common.constants.SystemConstants;
+import com.jymj.mall.common.redis.utils.RedisUtils;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.mdse.dto.*;
 import com.jymj.mall.mdse.entity.*;
@@ -13,14 +14,17 @@ import com.jymj.mall.mdse.repository.MdseCardRulesRepository;
 import com.jymj.mall.mdse.service.CardService;
 import com.jymj.mall.mdse.service.MdseService;
 import com.jymj.mall.mdse.service.PictureService;
-import com.jymj.mall.mdse.vo.CardInfo;
-import com.jymj.mall.mdse.vo.EffectiveRulesInfo;
-import com.jymj.mall.mdse.vo.MdseInfo;
-import com.jymj.mall.mdse.vo.StockInfo;
+import com.jymj.mall.mdse.vo.*;
+import com.jymj.mall.search.api.MdseInfoFeignClient;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -43,6 +47,7 @@ import java.util.stream.Collectors;
  * @email seven_tjb@163.com
  * @date 2022-09-07
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CardServiceImpl implements CardService {
@@ -51,8 +56,10 @@ public class CardServiceImpl implements CardService {
     private final PictureService pictureService;
     private final CardMdseRepository cardMdseRepository;
     private final MdseCardRulesRepository cardRulesRepository;
-
+    private final MdseInfoFeignClient mdseInfoFeignClient;
     private final MdseService mdseService;
+    private final RedisUtils redisUtils;
+    private final ThreadPoolTaskExecutor executor;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -157,6 +164,31 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public CardInfo entity2vo(MdseCard entity) {
+
+        if (entity != null) {
+            String key = String.format("mall-mdse:cardInfo:id:%d", entity.getCardId());
+            CardInfo value = (CardInfo) redisUtils.get(key);
+            if (!ObjectUtils.isEmpty(value)) {
+                executor.execute(()->syncUpdateVo(key, entity));
+                return value;
+            }
+            CardInfo info = updateVo(entity);
+
+            redisUtils.set(key, info, 3600 * 60 * 8L);
+
+        }
+        return null;
+    }
+
+    @Async
+    public void syncUpdateVo(String key, MdseCard entity) {
+        CardInfo cardInfo = updateVo(entity);
+        log.info("同步更新CardInfo : {}", cardInfo);
+        redisUtils.set(key, cardInfo, 3600 * 60 * 8L);
+    }
+
+    @NotNull
+    private CardInfo updateVo(MdseCard entity) {
         CardInfo cardInfo = new CardInfo();
         cardInfo.setCardId(entity.getCardId());
         cardInfo.setName(entity.getName());
@@ -219,6 +251,28 @@ public class CardServiceImpl implements CardService {
             return criteriaBuilder.and(list.toArray(p));
         };
         return cardRepository.findAll(spec, pageable);
+    }
+
+    @Async
+    @Override
+    @SneakyThrows
+    public void syncToElasticAddCardInfo(CardInfo cardInfo) {
+        mdseInfoFeignClient.addCard(cardInfo);
+    }
+
+    @Async
+    @Override
+    @SneakyThrows
+    public void syncToElasticDeleteCardInfo(String ids) {
+        mdseInfoFeignClient.deleteCard(ids);
+    }
+
+    @Async
+    @Override
+    @SneakyThrows
+    public void syncToElasticUpdateCardInfo(CardInfo cardInfo) {
+
+        mdseInfoFeignClient.updateCard(cardInfo);
     }
 
 

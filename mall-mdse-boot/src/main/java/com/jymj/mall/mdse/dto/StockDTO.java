@@ -43,7 +43,6 @@ public class StockDTO {
     private Integer totalInventory;
 
 
-
     @ApiModelProperty("库存编号")
     private String number;
 

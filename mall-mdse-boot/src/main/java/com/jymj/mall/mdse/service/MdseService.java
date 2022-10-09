@@ -2,12 +2,16 @@ package com.jymj.mall.mdse.service;
 
 import com.jymj.mall.common.web.service.BaseService;
 import com.jymj.mall.mdse.dto.MdseDTO;
+import com.jymj.mall.mdse.dto.MdseInfoShow;
 import com.jymj.mall.mdse.dto.MdsePageQuery;
+import com.jymj.mall.mdse.dto.MdseStatusDTO;
 import com.jymj.mall.mdse.entity.MallMdse;
+import com.jymj.mall.mdse.vo.GroupInfo;
 import com.jymj.mall.mdse.vo.MdseInfo;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 商品
@@ -20,23 +24,23 @@ import java.util.List;
 public interface MdseService extends BaseService<MallMdse, MdseInfo, MdseDTO> {
     Page<MallMdse> findPage(MdsePageQuery mdsePageQuery);
 
-    MdseInfo voAddPictureList(MdseInfo mdseInfo);
+    List<GroupInfo> findGroupListByMdseId(Long mdseId);
 
-    MdseInfo voAddGroupList(MdseInfo mdseInfo);
+    MdseInfo entity2vo(MallMdse mallMdse, MdseInfoShow show);
 
-    MdseInfo voAddBrand(MdseInfo mdseInfo, Long brandId);
-
-    MdseInfo voAddMfg(MdseInfo mdseInfo, Long mfgId);
-
-    MdseInfo voAddStockList(MdseInfo mdseInfo);
-
-    MdseInfo voAddType(MdseInfo mdseInfo, Long typeId);
-
-    MdseInfo voAddLabelList(MdseInfo mdseInfo);
-
-    MdseInfo entity2vo(MallMdse mallMdse,boolean group,boolean  stock,boolean  label,boolean  picture,boolean  mfg,boolean  type,boolean  brand);
-
-    List<MdseInfo> list2vo(List<MallMdse> entityList, boolean group, boolean stock, boolean label, boolean picture, boolean mfg, boolean type, boolean brand);
+    List<MdseInfo> list2vo(List<MallMdse> entityList, MdseInfoShow show);
 
     List<MallMdse> findAllById(List<Long> idList);
+
+    void syncToElasticAddMdseInfo(MdseInfo mdseInfo);
+
+    void syncToElasticUpdateMdseInfo(MdseInfo mdseInfo);
+
+    void syncToElasticDeleteMdseInfo(String ids);
+
+    void updateStatus(MdseStatusDTO mdseDTO);
+
+    void syncToElasticUpdateMdseInfoList(List<Long> mdseIds);
+
+    void deleteCache(Long... array);
 }
