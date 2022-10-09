@@ -1,10 +1,6 @@
 package com.jymj.mall.search;
 
-import org.apache.commons.io.FileUtils;
-
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.io.File;
 
 /**
  * @author J.Tang

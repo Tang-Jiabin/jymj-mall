@@ -1,21 +1,10 @@
 package com.jymj.mall.mdse.controller;
 
-import java.lang.reflect.Array;
-import java.math.BigDecimal;
-
-import com.google.common.collect.Lists;
-import com.jymj.mall.common.exception.BusinessException;
-import com.jymj.mall.common.redis.utils.RedisUtils;
-import com.jymj.mall.mdse.dto.MdseInfoShow;
-import com.jymj.mall.mdse.vo.MfgInfo;
-import com.jymj.mall.mdse.enums.InventoryReductionMethod;
-import com.jymj.mall.mdse.vo.BrandInfo;
-import com.jymj.mall.mdse.vo.TypeInfo;
-
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.vo.PageVO;
 import com.jymj.mall.mdse.dto.MdseDTO;
+import com.jymj.mall.mdse.dto.MdseInfoShow;
 import com.jymj.mall.mdse.dto.MdsePageQuery;
 import com.jymj.mall.mdse.dto.MdseStatusDTO;
 import com.jymj.mall.mdse.entity.MallMdse;

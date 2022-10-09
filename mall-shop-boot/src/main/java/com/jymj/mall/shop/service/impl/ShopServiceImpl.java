@@ -1,6 +1,5 @@
 package com.jymj.mall.shop.service.impl;
 
-import cn.hutool.core.date.LocalDateTimeUtil;
 import com.google.common.collect.Lists;
 import com.jymj.mall.admin.api.DeptFeignClient;
 import com.jymj.mall.admin.dto.AddDeptDTO;
