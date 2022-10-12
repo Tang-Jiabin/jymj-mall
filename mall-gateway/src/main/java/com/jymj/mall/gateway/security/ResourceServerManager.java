@@ -88,8 +88,10 @@ public class ResourceServerManager implements ReactiveAuthorizationManager<Autho
         }
         // 没有设置拦截规则拒绝
         if (!requireCheck) {
-            log.info("没有设置拦截规则允许");
-            log.info("访问路径方式 : {}",restfulPath);
+            if (!restfulPath.contains("actuator")){
+                log.info("没有设置拦截规则允许");
+                log.info("访问路径方式 : {}",restfulPath);
+            }
             return Mono.just(new AuthorizationDecision(true));
         }
 

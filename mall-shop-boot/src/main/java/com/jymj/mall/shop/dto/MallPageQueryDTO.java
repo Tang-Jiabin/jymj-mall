@@ -15,7 +15,7 @@ import lombok.EqualsAndHashCode;
  * @date 2022-08-17
  */
 @Data
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper=true)
 @ApiModel(description = "商场查询分页")
 public class MallPageQueryDTO extends BasePageQueryDTO {
 

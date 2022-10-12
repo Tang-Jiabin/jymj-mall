@@ -20,6 +20,9 @@ import java.util.List;
  */
 public class PageUtils {
 
+    private PageUtils() {
+    }
+
     public static Pageable getPageable(BasePageQueryDTO pageQuery) {
         if (getPageProperties(pageQuery) == null) {
             return PageRequest.of(pageQuery.getPage(), pageQuery.getSize());

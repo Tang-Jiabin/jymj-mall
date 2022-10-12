@@ -25,4 +25,4 @@ spring:
           - data-id: mall-elastic.yaml
           - data-id: mall-redis.yaml
           - data-id: mall-zipkin-config.yaml
-          - data-id: mall-actuator.yaml
+          - data-id: mall-monitor-client.yaml

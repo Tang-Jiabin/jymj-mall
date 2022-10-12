@@ -46,27 +46,33 @@ public class WechatAuthenticationProvider implements AuthenticationProvider {
         WxMaJscode2SessionResult sessionInfo = wxMaService.getUserService().getSessionInfo(code);
         String openid = sessionInfo.getOpenid();
         Result<UserAuthDTO> memberAuthResult = userFeignClient.loadUserByOpenId(openid);
+        log.info("微信用户认证：openid:{} : {}",openid,memberAuthResult);
         // 微信用户不存在，注册成为新会员
         if (memberAuthResult != null && ResultCode.USER_NOT_EXIST.getCode().equals(memberAuthResult.getCode())) {
 
             String sessionKey = sessionInfo.getSessionKey();
             String encryptedData = authenticationToken.getEncryptedData();
             String iv = authenticationToken.getIv();
+            log.info("获取微信用户信息：sessionKey:{} encryptedData:{} iv:{}",sessionKey,encryptedData,iv);
             // 解密 encryptedData 获取用户信息
             WxMaUserInfo userInfo = wxMaService.getUserService().getUserInfo(sessionKey, encryptedData, iv);
+            log.info("获取微信用户信息：{}",userInfo);
             WxMaConfigHolder.remove();
             UserDTO userDTO = new UserDTO();
             BeanUtil.copyProperties(userInfo, userDTO);
             userDTO.setSourceType(SourceEnum.WECHAT);
             userDTO.setOpenid(openid);
+            log.info("新增微信用户：{}",userDTO);
             userFeignClient.addUser(userDTO);
         }
         SysUserDetails userDetails = (SysUserDetails) ((SysUserDetailsServiceImpl) userDetailsService).loadUserByOpenId(openid);
         userDetails.setSessionKey(sessionInfo.getSessionKey());
         userDetails.setOpenId(openid);
+        log.info("微信用户认证信息: {}",userDetails);
 
         WechatAuthenticationToken result = new WechatAuthenticationToken(userDetails, new HashSet<>());
         result.setDetails(authentication.getDetails());
+        log.info("微信用户凭证信息: {}",result);
         return result;
     }
 

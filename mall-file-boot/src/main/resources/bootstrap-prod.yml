@@ -24,6 +24,6 @@ spring:
           - data-id: mall-aliyun-config.yaml
           - data-id: mall-log-config.yaml
           - data-id: mall-zipkin-config.yaml
-          - data-id: mall-actuator.yaml
+          - data-id: mall-monitor-client.yaml
           - data-id: mall-redis.yaml
           - data-id: mall-elastic.yaml

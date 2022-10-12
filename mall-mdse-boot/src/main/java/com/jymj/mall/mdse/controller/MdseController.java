@@ -72,7 +72,7 @@ public class MdseController {
         return Result.failed("修改失败");
     }
 
-    @ApiOperation(value = "修改商品")
+    @ApiOperation(value = "修改商品状态")
     @PutMapping("/status")
     public Result<MdseInfo> updateMdseStatus(@RequestBody MdseStatusDTO mdseDTO) {
         mdseService.updateStatus(mdseDTO);
@@ -91,7 +91,19 @@ public class MdseController {
             MdseInfo mdseInfo = mdseService.entity2vo(mallMdse);
             return Result.success(mdseInfo);
         }
+        return Result.failed("商品不存在");
+    }
 
+    @ApiOperation(value = "商品信息")
+    @GetMapping("/{mdseId}/optional")
+    public Result<MdseInfo> getMdseOptionalById(@Valid @PathVariable Long mdseId,MdseInfoShow show) {
+        Optional<MallMdse> mdseOptional = mdseService.findById(mdseId);
+        if (mdseOptional.isPresent()) {
+            mdseService.deleteCache(mdseId);
+            MallMdse mallMdse = mdseOptional.get();
+            MdseInfo mdseInfo = mdseService.entity2vo(mallMdse,show);
+            return Result.success(mdseInfo);
+        }
         return Result.failed("商品不存在");
     }
 

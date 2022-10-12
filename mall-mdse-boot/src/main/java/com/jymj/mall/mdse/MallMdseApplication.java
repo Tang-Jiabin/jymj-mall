@@ -1,7 +1,7 @@
 package com.jymj.mall.mdse;
 
 import com.jymj.mall.admin.api.DeptFeignClient;
-import com.jymj.mall.search.api.MdseInfoFeignClient;
+import com.jymj.mall.search.api.MdseSearchFeignClient;
 import com.jymj.mall.shop.api.MallFeignClient;
 import com.jymj.mall.shop.api.ShopFeignClient;
 import org.springframework.boot.SpringApplication;
@@ -15,7 +15,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableJpaAuditing
 @EnableDiscoveryClient
 @SpringBootApplication(scanBasePackages = {"com.jymj.mall.*"})
-@EnableFeignClients(clients = {DeptFeignClient.class, MallFeignClient.class,ShopFeignClient.class, MdseInfoFeignClient.class})
+@EnableFeignClients(clients = {DeptFeignClient.class, MallFeignClient.class,ShopFeignClient.class, MdseSearchFeignClient.class})
 public class MallMdseApplication {
 
     public static void main(String[] args) {

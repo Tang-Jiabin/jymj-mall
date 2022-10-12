@@ -15,7 +15,7 @@ import com.jymj.mall.mdse.repository.MdseRepository;
 import com.jymj.mall.mdse.repository.ShopMdseMapRepository;
 import com.jymj.mall.mdse.service.*;
 import com.jymj.mall.mdse.vo.*;
-import com.jymj.mall.search.api.MdseInfoFeignClient;
+import com.jymj.mall.search.api.MdseSearchFeignClient;
 import com.jymj.mall.shop.api.ShopFeignClient;
 import com.jymj.mall.shop.vo.ShopInfo;
 import io.seata.spring.annotation.GlobalTransactional;
@@ -65,7 +65,7 @@ public class MdseServiceImpl implements MdseService {
     private final LabelService labelService;
     private final ShopFeignClient shopFeignClient;
     private final ShopMdseMapRepository shopMdseMapRepository;
-    private final MdseInfoFeignClient mdseInfoFeignClient;
+    private final MdseSearchFeignClient mdseSearchFeignClient;
     private final ThreadPoolTaskExecutor executor;
     private final RedisUtils redisUtils;
 
@@ -401,7 +401,6 @@ public class MdseServiceImpl implements MdseService {
             setMdseInfoOther(entity, show, mdseInfo);
             redisUtils.set(key, mdseInfo, 3600 * 60 * 8L);
 
-
             return mdseInfo;
         }
 
@@ -714,21 +713,21 @@ public class MdseServiceImpl implements MdseService {
     @Override
     @SneakyThrows
     public void syncToElasticAddMdseInfo(MdseInfo mdseInfo) {
-        mdseInfoFeignClient.addMdse(mdseInfo);
+        mdseSearchFeignClient.addMdse(mdseInfo);
     }
 
     @Async
     @Override
     @SneakyThrows
     public void syncToElasticUpdateMdseInfo(MdseInfo mdseInfo) {
-        mdseInfoFeignClient.updateMdse(mdseInfo);
+        mdseSearchFeignClient.updateMdse(mdseInfo);
     }
 
     @Async
     @Override
     @SneakyThrows
     public void syncToElasticDeleteMdseInfo(String ids) {
-        mdseInfoFeignClient.deleteMdse(ids);
+        mdseSearchFeignClient.deleteMdse(ids);
     }
 
     @Async
@@ -737,7 +736,7 @@ public class MdseServiceImpl implements MdseService {
     public void syncToElasticUpdateMdseInfoList(List<Long> mdseIds) {
         List<MallMdse> mallMdseList = findAllById(mdseIds);
         List<MdseInfo> mdseInfoList = list2vo(mallMdseList);
-        mdseInfoFeignClient.updateMdseList(mdseInfoList);
+        mdseSearchFeignClient.updateMdseList(mdseInfoList);
     }
 
     @Override

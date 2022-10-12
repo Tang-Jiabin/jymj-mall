@@ -98,7 +98,7 @@ public class MdseInfo {
     @ApiModelProperty("创建时间")
     private String createTime;
 
-    @ApiModelProperty("商品状态 1-上架 2-下架")
+    @ApiModelProperty("库存规格")
     private List<SpecMap> specMap;
 
 

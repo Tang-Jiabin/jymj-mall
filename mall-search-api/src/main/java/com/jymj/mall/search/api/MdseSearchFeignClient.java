@@ -15,7 +15,7 @@ import java.util.List;
  * @date 2022-08-10
  */
 @FeignClient(value = "mall-search", contextId = "mall-search")
-public interface MdseInfoFeignClient {
+public interface MdseSearchFeignClient {
 
     @PostMapping("/api/v1/mdse")
     Result<MdseInfo> addMdse(@RequestBody MdseInfo mdseInfo);

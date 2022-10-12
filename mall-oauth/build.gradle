@@ -16,7 +16,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'com.alibaba.fastjson2:fastjson2:2.0.13.graal'
     implementation 'cn.hutool:hutool-all:5.8.6'
-    implementation 'com.github.binarywang:weixin-java-miniapp:4.4.2.B'
+    implementation 'com.github.binarywang:weixin-java-miniapp:4.4.0'
     implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer:3.1.4'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'

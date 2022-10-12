@@ -1,5 +1,6 @@
 package com.jymj.mall.oauth.security.extension.wechat;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,6 +14,7 @@ import java.util.Collection;
  * @email seven_tjb@163.com
  * @date 2022-08-04
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class WechatAuthenticationToken extends AbstractAuthenticationToken {
     private static final long serialVersionUID = 550L;
     private final Object principal;

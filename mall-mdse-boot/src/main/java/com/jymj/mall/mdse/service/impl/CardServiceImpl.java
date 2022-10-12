@@ -18,7 +18,7 @@ import com.jymj.mall.mdse.vo.CardInfo;
 import com.jymj.mall.mdse.vo.EffectiveRulesInfo;
 import com.jymj.mall.mdse.vo.MdseInfo;
 import com.jymj.mall.mdse.vo.StockInfo;
-import com.jymj.mall.search.api.MdseInfoFeignClient;
+import com.jymj.mall.search.api.MdseSearchFeignClient;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +59,7 @@ public class CardServiceImpl implements CardService {
     private final PictureService pictureService;
     private final CardMdseRepository cardMdseRepository;
     private final MdseCardRulesRepository cardRulesRepository;
-    private final MdseInfoFeignClient mdseInfoFeignClient;
+    private final MdseSearchFeignClient mdseSearchFeignClient;
     private final MdseService mdseService;
     private final RedisUtils redisUtils;
     private final ThreadPoolTaskExecutor executor;
@@ -260,14 +260,14 @@ public class CardServiceImpl implements CardService {
     @Override
     @SneakyThrows
     public void syncToElasticAddCardInfo(CardInfo cardInfo) {
-        mdseInfoFeignClient.addCard(cardInfo);
+        mdseSearchFeignClient.addCard(cardInfo);
     }
 
     @Async
     @Override
     @SneakyThrows
     public void syncToElasticDeleteCardInfo(String ids) {
-        mdseInfoFeignClient.deleteCard(ids);
+        mdseSearchFeignClient.deleteCard(ids);
     }
 
     @Async
@@ -275,7 +275,7 @@ public class CardServiceImpl implements CardService {
     @SneakyThrows
     public void syncToElasticUpdateCardInfo(CardInfo cardInfo) {
 
-        mdseInfoFeignClient.updateCard(cardInfo);
+        mdseSearchFeignClient.updateCard(cardInfo);
     }
 
 

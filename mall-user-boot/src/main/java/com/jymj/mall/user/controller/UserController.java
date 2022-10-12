@@ -111,6 +111,7 @@ public class UserController {
     @ApiOperation(value = "用户来源列表")
     @GetMapping("/source/lists")
     public Result<List<EnumTypeInfo>> sourceLists() {
+        userService.test();
         return Result.success(SourceEnum.toList());
     }
 

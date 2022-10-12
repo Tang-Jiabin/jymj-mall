@@ -7,6 +7,7 @@ import com.jymj.mall.common.constants.SecurityConstants;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.ResultCode;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.i18nformatter.qual.I18nFormat;
 import org.springframework.util.ObjectUtils;
 
 import java.util.List;
@@ -28,10 +29,15 @@ public class UserUtils {
      * @return
      */
     public static Long getUserId() {
-        if (ObjectUtils.isEmpty(JwtUtils.getJwtPayload())) {
+        JSONObject jwtPayload = JwtUtils.getJwtPayload();
+        if (ObjectUtils.isEmpty(jwtPayload)) {
             throw new BusinessException(ResultCode.AUTHORIZED_ERROR);
         }
-        return JwtUtils.getJwtPayload().getLong("userId");
+        Long userId = jwtPayload.getLong("userId");
+        if (ObjectUtils.isEmpty(userId)) {
+            throw new BusinessException(ResultCode.AUTHORIZED_ERROR);
+        }
+        return userId;
     }
 
     public static Long getAdminId() {

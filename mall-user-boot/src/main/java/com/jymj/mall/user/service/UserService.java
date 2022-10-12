@@ -23,4 +23,7 @@ public interface UserService extends BaseService<MallUser, UserInfo, UserDTO> {
     Optional<UserAuthDTO> loadUserByOpenid(String openid);
 
     Page<MallUser> findPage(UserPageQuery userPageQuery);
+
+    void test();
+
 }
