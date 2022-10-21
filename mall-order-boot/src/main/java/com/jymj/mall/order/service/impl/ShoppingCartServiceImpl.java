@@ -1,20 +1,15 @@
 package com.jymj.mall.order.service.impl;
 
-import java.math.BigDecimal;
-
-import com.jymj.mall.common.web.util.PageUtils;
-import com.jymj.mall.mdse.vo.PictureInfo;
-
-import java.util.Date;
-
 import com.google.common.collect.Lists;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.Result;
+import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.mdse.api.MdseFeignClient;
 import com.jymj.mall.mdse.dto.MdseInfoShow;
 import com.jymj.mall.mdse.vo.MdseInfo;
+import com.jymj.mall.mdse.vo.PictureInfo;
 import com.jymj.mall.mdse.vo.StockInfo;
 import com.jymj.mall.order.dto.ShoppingCartMdseDTO;
 import com.jymj.mall.order.dto.ShoppingCartPageQuery;
@@ -32,15 +27,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 购物车
@@ -62,6 +54,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     @Transactional(rollbackFor = Exception.class)
     public ShoppingCartMdse add(ShoppingCartMdseDTO dto) {
         Long userId = UserUtils.getUserId();
+
         Long mdseId = dto.getMdseId();
         Long stockId = dto.getStockId();
         Long shopId = dto.getShopId();
@@ -94,20 +87,28 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         if (quantity < mdseInfo.getStartingQuantity()) {
             throw new BusinessException("购买数量必须大于起售数量");
         }
-
+        Optional<ShoppingCartMdse> shoppingCartMdseOptional = cartMdseRepository.findByUserIdAndMdseIdAndStockId(userId, mdseId, stockId);
         ShoppingCartMdse shoppingCartMdse = new ShoppingCartMdse();
-        if (!ObjectUtils.isEmpty(dto.getShoppingCartId())) {
-            Optional<ShoppingCartMdse> cartMdseOptional = findById(dto.getShoppingCartId());
-            shoppingCartMdse = cartMdseOptional.orElseThrow(() -> new BusinessException("购物车信息错误"));
+        if (shoppingCartMdseOptional.isPresent()) {
+            shoppingCartMdse = shoppingCartMdseOptional.get();
+            if (!ObjectUtils.isEmpty(dto.getShoppingCartId())) {
+                shoppingCartMdse.setQuantity(quantity);
+            } else {
+                shoppingCartMdse.setQuantity(shoppingCartMdse.getQuantity() + quantity);
+            }
+        } else {
+            if (!ObjectUtils.isEmpty(dto.getShoppingCartId())) {
+                Optional<ShoppingCartMdse> cartMdseOptional = findById(dto.getShoppingCartId());
+                shoppingCartMdse = cartMdseOptional.orElseThrow(() -> new BusinessException("购物车信息错误"));
+            }
+            shoppingCartMdse.setMdseId(mdseId);
+            shoppingCartMdse.setStockId(stockInfo.getStockId());
+            shoppingCartMdse.setQuantity(quantity);
+            shoppingCartMdse.setUserId(userId);
+            shoppingCartMdse.setShopId(shopInfo.getShopId());
+            shoppingCartMdse.setDeleted(0);
         }
-        shoppingCartMdse.setMdseId(mdseId);
-        shoppingCartMdse.setStockId(stockInfo.getStockId());
-        shoppingCartMdse.setQuantity(quantity);
-        shoppingCartMdse.setUserId(userId);
-        shoppingCartMdse.setShopId(shopInfo.getShopId());
-        shoppingCartMdse.setDeleted(0);
         return cartMdseRepository.save(shoppingCartMdse);
-
     }
 
     @Override
@@ -136,7 +137,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     public ShoppingCartMdseInfo entity2vo(ShoppingCartMdse entity) {
-        if (ObjectUtils.isEmpty(entity)) {
+        if (!ObjectUtils.isEmpty(entity)) {
 
             MdseInfoShow mdseInfoShow = MdseInfoShow.builder().shop(true).stock(true).picture(true).build();
             Result<MdseInfo> mdseInfoResult = mdseFeignClient.getMdseOptionalById(entity.getMdseId(), mdseInfoShow);
@@ -155,7 +156,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
                 PictureInfo pictureInfo = mdseInfo.getPictureList()
                         .stream()
-                        .filter(info -> info.getStockId().equals(entity.getStockId()))
+                        .filter(info -> !ObjectUtils.isEmpty(info.getStockId()) && info.getStockId().equals(entity.getStockId()))
                         .findFirst()
                         .orElse(ObjectUtils.isEmpty(mdseInfo.getPictureList()) ? null : mdseInfo.getPictureList().get(0));
                 cartMdseInfo.setPictureInfo(pictureInfo);
@@ -199,7 +200,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         Specification<ShoppingCartMdse> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> list = Lists.newArrayList();
 
-            if (!ObjectUtils.isEmpty(shoppingCartPageQuery.getUserId())){
+            if (!ObjectUtils.isEmpty(shoppingCartPageQuery.getUserId())) {
                 list.add(criteriaBuilder.equal(root.get("userId").as(Long.class), shoppingCartPageQuery.getUserId()));
             }
 

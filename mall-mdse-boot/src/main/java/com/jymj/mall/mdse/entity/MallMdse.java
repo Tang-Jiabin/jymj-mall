@@ -45,6 +45,9 @@ public class MallMdse extends BaseEntity {
     @ApiModelProperty("商品价格")
     private BigDecimal price;
 
+    @ApiModelProperty("运费")
+    private BigDecimal postage;
+
     @ApiModelProperty("库存数量")
     private Integer inventoryQuantity;
 

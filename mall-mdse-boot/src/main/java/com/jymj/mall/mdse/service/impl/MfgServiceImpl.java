@@ -132,7 +132,7 @@ public class MfgServiceImpl implements MfgService {
             }
 
             MfgInfo mfgInfo = getMfgInfo(entity);
-            redisUtils.set(key, mfgInfo, 3600 * 60 * 8L);
+            redisUtils.set(key, mfgInfo, 60 * 60 * 8L);
             return mfgInfo;
 
         }
@@ -144,7 +144,7 @@ public class MfgServiceImpl implements MfgService {
     public void syncUpdateVo(String key, MdseMfg entity) {
         MfgInfo mfgInfo = getMfgInfo(entity);
         log.info("同步更新MfgInfo : {}", mfgInfo);
-        redisUtils.set(key, mfgInfo, 3600 * 60 * 8L);
+        redisUtils.set(key, mfgInfo, 60 * 60 * 8L);
     }
 
     @NotNull

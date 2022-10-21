@@ -1,0 +1,10 @@
+
+
+dependencies {
+    implementation 'com.github.binarywang:weixin-java-pay:4.4.0'
+    implementation project(":mall-common")
+    implementation project(":mall-common-redis")
+    implementation project(":mall-common-web")
+    implementation project(":mall-order-api")
+
+}

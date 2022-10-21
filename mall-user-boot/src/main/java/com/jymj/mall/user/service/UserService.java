@@ -24,6 +24,5 @@ public interface UserService extends BaseService<MallUser, UserInfo, UserDTO> {
 
     Page<MallUser> findPage(UserPageQuery userPageQuery);
 
-    void test();
 
 }

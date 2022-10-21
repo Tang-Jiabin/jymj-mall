@@ -33,7 +33,7 @@ public class SysUserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) {
         SysUserDetails userDetails = null;
         Result<UserAuthDTO> result = userFeignClient.loadUserByOpenId(username);
-        log.info("loadUser:{}",result.toString());
+        log.info("loadUserByUsername:{}",result.toString());
         if (Result.isSuccess(result)) {
             UserAuthDTO user = result.getData();
             if (null != user) {
@@ -51,6 +51,7 @@ public class SysUserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByMobile(String mobile) {
         SysUserDetails sysUserDetails = null;
         Result<UserAuthDTO> result = userFeignClient.loadUserByOpenId(mobile);
+        log.info("loadUserByMobile:{}",result.toString());
         if (Result.isSuccess(result)) {
             UserAuthDTO member = result.getData();
             if (null != member) {
@@ -69,7 +70,7 @@ public class SysUserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByOpenId(String openId) {
         SysUserDetails sysUserDetails = null;
         Result<UserAuthDTO> result = userFeignClient.loadUserByOpenId(openId);
-
+        log.info("loadUserByOpenId:{}",result.toString());
         if (Result.isSuccess(result)) {
             UserAuthDTO member = result.getData();
             if (null != member) {

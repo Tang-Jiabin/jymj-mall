@@ -1,15 +1,26 @@
-
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
     implementation 'org.springframework.boot:spring-boot-starter-aop'
     implementation 'com.nimbusds:nimbus-jose-jwt:9.23'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation ('com.alibaba.cloud:spring-cloud-starter-alibaba-seata:2021.1'){
-        exclude group:'io.seata',module:'seata-spring-boot-starter'
+    api 'org.springframework.boot:spring-boot-starter-web'
+    api 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    api 'io.github.openfeign:feign-okhttp:11.9.1'
+    api('com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:2021.1') {
+        exclude group: 'com.alibaba.nacos', module: 'nacos:nacos-client'
     }
-    implementation 'io.seata:seata-spring-boot-starter:1.4.2'
+    api 'com.alibaba.nacos:nacos-client:2.1.1'
+    api 'com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config:2021.1'
+    api('com.alibaba.cloud:spring-cloud-starter-alibaba-seata:2021.1') {
+        exclude group: 'io.seata', module: 'seata-spring-boot-starter'
+    }
+    api 'io.seata:seata-spring-boot-starter:1.4.2'
+    api 'org.springframework.cloud:spring-cloud-starter-bootstrap:3.1.4'
+    api 'org.springframework.cloud:spring-cloud-starter-loadbalancer:3.1.4'
+    api 'org.springframework.boot:spring-boot-starter-data-redis'
+    api 'org.springframework.boot:spring-boot-starter-validation'
+    api 'org.springframework.boot:spring-boot-starter-data-jpa'
+    api 'org.springframework.boot:spring-boot-starter-actuator'
+    api 'org.postgresql:postgresql'
     implementation project(":mall-common")
     implementation project(":mall-common-redis")
 }

@@ -177,7 +177,7 @@ public class CardServiceImpl implements CardService {
             }
             CardInfo info = updateVo(entity);
 
-            redisUtils.set(key, info, 3600 * 60 * 8L);
+            redisUtils.set(key, info, 60 * 60 * 8L);
 
         }
         return null;
@@ -187,7 +187,7 @@ public class CardServiceImpl implements CardService {
     public void syncUpdateVo(String key, MdseCard entity) {
         CardInfo cardInfo = updateVo(entity);
         log.info("同步更新CardInfo : {}", cardInfo);
-        redisUtils.set(key, cardInfo, 3600 * 60 * 8L);
+        redisUtils.set(key, cardInfo, 60 * 60 * 8L);
     }
 
     @NotNull

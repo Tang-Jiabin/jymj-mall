@@ -44,6 +44,9 @@ public class MdseInfo {
     @ApiModelProperty("商品价格")
     private BigDecimal price;
 
+    @ApiModelProperty("运费")
+    private BigDecimal postage;
+
     @ApiModelProperty("库存数量")
     private Integer inventoryQuantity;
 
@@ -101,5 +104,7 @@ public class MdseInfo {
     @ApiModelProperty("库存规格")
     private List<SpecMap> specMap;
 
+    @ApiModelProperty("商城id")
+    private Long mallId;
 
 }

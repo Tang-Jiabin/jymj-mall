@@ -145,7 +145,7 @@ public class GroupServiceImpl implements GroupService {
                 return value;
             }
             GroupInfo info = getGroupInfo(entity);
-            redisUtils.set(key, info, 3600 * 60 * 8L);
+            redisUtils.set(key, info, 60 * 60 * 8L);
             return info;
         }
 
@@ -156,7 +156,7 @@ public class GroupServiceImpl implements GroupService {
     public void syncUpdateVo(String key, MdseGroup entity) {
         GroupInfo info = getGroupInfo(entity);
         log.info("同步更新GroupInfo : {}", info);
-        redisUtils.set(key, info, 3600 * 60 * 8L);
+        redisUtils.set(key, info, 60 * 60 * 8L);
     }
 
     @NotNull

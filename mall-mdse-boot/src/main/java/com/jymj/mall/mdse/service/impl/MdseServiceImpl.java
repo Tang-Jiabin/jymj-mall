@@ -79,6 +79,7 @@ public class MdseServiceImpl implements MdseService {
         mdse.setName(dto.getName());
         mdse.setNumber(dto.getNumber());
         mdse.setPrice(dto.getPrice());
+        mdse.setPostage(dto.getPostage());
         mdse.setInventoryQuantity(dto.getInventoryQuantity());
         mdse.setStartingQuantity(dto.getStartingQuantity());
         mdse.setRemainingQuantity(dto.getInventoryQuantity());
@@ -209,6 +210,10 @@ public class MdseServiceImpl implements MdseService {
         //商品参考价格
         if (!ObjectUtils.isEmpty(dto.getPrice())) {
             mallMdse.setPrice(dto.getPrice());
+        }
+        //商品运费价格
+        if (!ObjectUtils.isEmpty(dto.getPostage())) {
+            mallMdse.setPostage(dto.getPostage());
         }
         //剩余库存数量
         if (!ObjectUtils.isEmpty(dto.getInventoryQuantity())) {
@@ -389,17 +394,13 @@ public class MdseServiceImpl implements MdseService {
 
             String key = String.format("mall-mdse:mdseInfo:id:%d", entity.getMdseId());
 
-            MdseInfo value = (MdseInfo) redisUtils.get(key);
+            MdseInfo mdseInfo = (MdseInfo) redisUtils.get(key);
 
-            if (!ObjectUtils.isEmpty(value)) {
-
+            if (ObjectUtils.isEmpty(mdseInfo)) {
+                mdseInfo = getMdseInfo(entity);
+                setMdseInfoOther(entity, show, mdseInfo);
                 executor.execute(() -> syncUpdateVo(key, entity));
-                return value;
             }
-
-            MdseInfo mdseInfo = getMdseInfo(entity);
-            setMdseInfoOther(entity, show, mdseInfo);
-            redisUtils.set(key, mdseInfo, 3600 * 60 * 8L);
 
             return mdseInfo;
         }
@@ -414,7 +415,7 @@ public class MdseServiceImpl implements MdseService {
         MdseInfoShow show = MdseInfoShow.builder().picture(true).brand(true).mfg(true).group(true).label(true).shop(true).stock(true).type(true).build();
         setMdseInfoOther(entity, show, mdseInfo);
         log.info("同步更新MdseInfo : {}", mdseInfo);
-        redisUtils.set(key, mdseInfo, 3600 * 60 * 8L);
+        redisUtils.set(key, mdseInfo, 60 * 60 * 8L);
     }
 
 
@@ -461,7 +462,6 @@ public class MdseServiceImpl implements MdseService {
             }
         }
         if (show.isBrand() && !ObjectUtils.isEmpty(entity.getTypeId())) {
-
             Optional<MdseBrand> brandOptional = brandService.findById(entity.getTypeId());
             if (brandOptional.isPresent()) {
                 MdseBrand mdseBrand = brandOptional.get();
@@ -482,6 +482,7 @@ public class MdseServiceImpl implements MdseService {
         mdseInfo.setName(entity.getName());
         mdseInfo.setNumber(entity.getNumber());
         mdseInfo.setPrice(entity.getPrice());
+        mdseInfo.setPostage(entity.getPostage());
         mdseInfo.setInventoryQuantity(entity.getInventoryQuantity());
         mdseInfo.setRemainingQuantity(entity.getRemainingQuantity());
         mdseInfo.setStartingQuantity(entity.getStartingQuantity());
@@ -493,6 +494,7 @@ public class MdseServiceImpl implements MdseService {
         mdseInfo.setSalesVolume(entity.getSalesVolume());
         mdseInfo.setCreateTime(DateFormatUtils.format(entity.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
         mdseInfo.setStatus(entity.getStatus());
+        mdseInfo.setMallId(entity.getMallId());
         return mdseInfo;
     }
 
@@ -744,4 +746,10 @@ public class MdseServiceImpl implements MdseService {
         String[] keys = Arrays.stream(ids).map(id -> String.format("mall-mdse:mdseInfo:id:%d", id)).toArray(String[]::new);
         redisUtils.del(keys);
     }
+
+    @Override
+    public List<MallMdse> findAll() {
+        return mdseRepository.findAll();
+    }
+
 }

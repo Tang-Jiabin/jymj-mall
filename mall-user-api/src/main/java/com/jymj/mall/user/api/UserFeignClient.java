@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 public interface UserFeignClient {
 
 
-    @GetMapping("/api/v1/users/{openId}")
+    @GetMapping("/api/v1/users/load/{openId}")
     Result<UserAuthDTO> loadUserByOpenId(@PathVariable String openId);
 
     @PostMapping("/api/v1/users")

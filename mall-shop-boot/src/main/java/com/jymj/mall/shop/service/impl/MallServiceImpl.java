@@ -1,6 +1,7 @@
 package com.jymj.mall.shop.service.impl;
 
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.google.common.collect.Lists;
 import com.jymj.mall.admin.api.*;
@@ -86,11 +87,11 @@ public class MallServiceImpl implements MallService {
             mallDetails.setManagerName(mallDTO.getNickname());
             mallDetails.setManagerMobile(mallDTO.getMobile());
             mallDetails.setDeleted(SystemConstants.DELETED_NO);
-            mallDetails.setMallNo(generateNo(mallDTO.getDistrictId()));
+            mallDetails.setMallNo(IdUtil.getSnowflake(SystemConstants.WORK_ID, SystemConstants.MALL_ADMIN_DATACENTER_ID).nextIdStr());
             mallDetails.setType(mallDTO.getType());
             mallDetails = mallDetailsRepository.save(mallDetails);
 
-            if (mallDTO.getTagId() != null && mallDTO.getTagId().size() > 0) {
+            if (mallDTO.getTagId() != null && !mallDTO.getTagId().isEmpty()) {
                 mallTagService.addMallTag(mallDetails.getMallId(), mallDTO.getTagId());
             }
 

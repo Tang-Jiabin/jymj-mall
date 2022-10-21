@@ -2,6 +2,7 @@ package com.jymj.mall.mdse.service.impl;
 
 import com.google.common.collect.Lists;
 import com.jymj.mall.common.constants.SystemConstants;
+import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.mdse.dto.PictureDTO;
 import com.jymj.mall.mdse.dto.SpecDTO;
 import com.jymj.mall.mdse.dto.StockDTO;
@@ -106,7 +107,6 @@ public class StockServiceImpl implements StockService {
                 stock.setRemainingStock(dto.getTotalInventory());
                 stock.setTotalInventory(totalInventory);
                 update = true;
-
             }
 
             if (StringUtils.hasText(dto.getNumber()) && !Objects.equals(dto.getNumber(), stock.getNumber())) {
@@ -115,27 +115,29 @@ public class StockServiceImpl implements StockService {
             }
 
             MdseSpec mdseSpecA = updateStockSpec(stock.getMdseId(), dto.getSpecA());
-            if (!ObjectUtils.isEmpty(mdseSpecA)){
+            if (!ObjectUtils.isEmpty(mdseSpecA)) {
                 stock.setSpecA(mdseSpecA.getSpecId());
                 update = true;
             }
 
             MdseSpec mdseSpecB = updateStockSpec(stock.getMdseId(), dto.getSpecB());
-            if (!ObjectUtils.isEmpty(mdseSpecB)){
+            if (!ObjectUtils.isEmpty(mdseSpecB)) {
                 stock.setSpecB(mdseSpecB.getSpecId());
                 update = true;
             }
 
             MdseSpec mdseSpecC = updateStockSpec(stock.getMdseId(), dto.getSpecC());
-            if (!ObjectUtils.isEmpty(mdseSpecC)){
+            if (!ObjectUtils.isEmpty(mdseSpecC)) {
                 stock.setSpecC(mdseSpecC.getSpecId());
                 update = true;
             }
 
             List<PictureDTO> specPictureList = dto.getSpecPictureList();
-            pictureService.updateMdsePicture(specPictureList, dto.getMdseId(), PictureType.STOCK_SPEC);
+            if (!ObjectUtils.isEmpty(specPictureList)) {
+                pictureService.updateMdsePicture(specPictureList, dto.getMdseId(), PictureType.STOCK_SPEC);
+            }
 
-            if (update){
+            if (update) {
                 return Optional.of(save(stock));
             }
         }
@@ -175,7 +177,7 @@ public class StockServiceImpl implements StockService {
                 mdseSpec = addSpec(mdseSpec);
                 return mdseSpec;
             } else {
-                Optional<MdseSpec> specOptional =findSpecById(specA.getSpecId());
+                Optional<MdseSpec> specOptional = findSpecById(specA.getSpecId());
                 if (specOptional.isPresent()) {
                     MdseSpec mdseSpec = specOptional.get();
                     if (StringUtils.hasText(specA.getKey()) && StringUtils.hasText(specA.getValue())) {
@@ -279,5 +281,22 @@ public class StockServiceImpl implements StockService {
     @Override
     public MdseStock save(MdseStock stock) {
         return stockRepository.save(stock);
+    }
+
+    @Override
+    public synchronized void lessInventory(StockDTO stockDTO) {
+        Long stockId = stockDTO.getStockId();
+        Integer inventory = stockDTO.getTotalInventory();
+        if (ObjectUtils.isEmpty(stockId) || ObjectUtils.isEmpty(inventory)) {
+            throw new BusinessException("参数错误");
+        }
+        Optional<MdseStock> mdseStock = stockRepository.findById(stockId);
+        mdseStock.ifPresent(stock -> {
+            if (stock.getRemainingStock() - inventory < 0) {
+                throw new BusinessException("库存不足");
+            }
+            stock.setRemainingStock(stock.getRemainingStock() - inventory);
+            stockRepository.save(stock);
+        });
     }
 }

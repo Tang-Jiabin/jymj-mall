@@ -124,7 +124,7 @@ public class LabelServiceImpl implements LabelService {
             }
 
             LabelInfo labelInfo = getLabelInfo(entity);
-            redisUtils.set(key, labelInfo, 3600 * 60 * 8L);
+            redisUtils.set(key, labelInfo, 60 * 60 * 8L);
 
             return labelInfo;
 
@@ -136,7 +136,7 @@ public class LabelServiceImpl implements LabelService {
     public void syncUpdateVo(String key, MdseLabel entity) {
         LabelInfo labelInfo = getLabelInfo(entity);
         log.info("异步更新LabelInfo : {}", labelInfo);
-        redisUtils.set(key, labelInfo, 3600 * 60 * 8L);
+        redisUtils.set(key, labelInfo, 60 * 60 * 8L);
     }
 
     @Override

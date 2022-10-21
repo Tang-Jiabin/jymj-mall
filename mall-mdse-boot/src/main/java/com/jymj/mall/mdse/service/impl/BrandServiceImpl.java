@@ -127,7 +127,7 @@ public class BrandServiceImpl implements BrandService {
                 return value;
             }
             BrandInfo brandInfo = updateVo(entity);
-            redisUtils.set(key, brandInfo, 3600 * 60 * 8L);
+            redisUtils.set(key, brandInfo, 60 * 60 * 8L);
             return brandInfo;
         }
         return null;
@@ -136,7 +136,7 @@ public class BrandServiceImpl implements BrandService {
     public void syncUpdateVo(String key, MdseBrand entity) {
         BrandInfo brandInfo = updateVo(entity);
         log.info("同步更新BrandInfo : {}", brandInfo);
-        redisUtils.set(key, brandInfo, 3600 * 60 * 8L);
+        redisUtils.set(key, brandInfo, 60 * 60 * 8L);
     }
 
     @NotNull

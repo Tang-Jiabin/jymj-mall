@@ -21,7 +21,7 @@ import javax.persistence.*;
  */
 @Data
 @Entity
-@Table(name = "mdse_spec")
+@Table(name = "mdse_spec",indexes = {@Index(name = "mdse_spec_mdse_id",columnList = "mdseId")})
 @Where(clause = " deleted = 0")
 @EqualsAndHashCode(callSuper = true)
 @EntityListeners({AuditingEntityListener.class})

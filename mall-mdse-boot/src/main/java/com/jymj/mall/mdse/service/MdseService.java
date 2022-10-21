@@ -42,4 +42,7 @@ public interface MdseService extends BaseService<MallMdse, MdseInfo, MdseDTO> {
     void syncToElasticUpdateMdseInfoList(List<Long> mdseIds);
 
     void deleteCache(Long... array);
+
+    List<MallMdse> findAll();
+
 }

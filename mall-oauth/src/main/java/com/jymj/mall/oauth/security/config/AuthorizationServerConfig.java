@@ -199,7 +199,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     @Bean
     public KeyPair keyPair() {
         ClassPathResource classPathResource = new ClassPathResource("jwt.jks");
-
         KeyStoreKeyFactory factory = new KeyStoreKeyFactory(new ClassPathResource("jwt.jks"), "jymjshop".toCharArray());
         KeyPair keyPair = factory.getKeyPair("jymj", "jymjshop".toCharArray());
         return keyPair;
@@ -232,7 +231,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                     additionalInfo.put("sessionKey", sysUserDetails.getSessionKey());
                 }
                 if (StringUtils.hasText(sysUserDetails.getOpenId())) {
-                    additionalInfo.put("openid", sysUserDetails.getOpenId());
+                    additionalInfo.put("openId", sysUserDetails.getOpenId());
                 }
                 // 认证身份标识(mobile:手机号；openId:开放式认证系统唯一身份标识)
                 if (StringUtils.hasText(sysUserDetails.getAuthenticationIdentity())) {

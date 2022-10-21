@@ -29,4 +29,6 @@ public interface StockService extends BaseService<MdseStock, StockInfo, StockDTO
     MdseSpec saveSpec(MdseSpec mdseSpec);
 
     MdseStock save(MdseStock stock);
+
+    void lessInventory(StockDTO stockDTO);
 }

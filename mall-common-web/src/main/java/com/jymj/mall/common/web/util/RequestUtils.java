@@ -81,4 +81,11 @@ public class RequestUtils {
         }
         return authenticationIdentity;
     }
+
+    public static String getRealIP(HttpServletRequest request) {
+        if (request.getHeader("x-forwarded-for") == null) {
+            return request.getRemoteAddr();
+        }
+        return request.getHeader("x-forwarded-for");
+    }
 }

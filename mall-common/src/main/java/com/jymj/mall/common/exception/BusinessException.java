@@ -12,7 +12,7 @@ import lombok.Getter;
 @Getter
 public class BusinessException extends RuntimeException  {
 
-    public IResultCode resultCode;
+    public  IResultCode resultCode;
 
     public BusinessException(IResultCode errorCode) {
         super(errorCode.getMsg());

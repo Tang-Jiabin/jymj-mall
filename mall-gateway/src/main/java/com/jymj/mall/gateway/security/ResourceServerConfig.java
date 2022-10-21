@@ -93,9 +93,8 @@ public class ResourceServerConfig {
     @Bean
     ServerAccessDeniedHandler accessDeniedHandler() {
         return (exchange, denied) -> {
-            Mono<Void> mono = Mono.defer(() -> Mono.just(exchange.getResponse()))
+            return Mono.defer(() -> Mono.just(exchange.getResponse()))
                     .flatMap(response -> ResponseUtils.writeErrorInfo(response, ResultCode.ACCESS_UNAUTHORIZED));
-            return mono;
         };
     }
 
@@ -105,9 +104,8 @@ public class ResourceServerConfig {
     @Bean
     ServerAuthenticationEntryPoint authenticationEntryPoint() {
         return (exchange, e) -> {
-            Mono<Void> mono = Mono.defer(() -> Mono.just(exchange.getResponse()))
+            return Mono.defer(() -> Mono.just(exchange.getResponse()))
                     .flatMap(response -> ResponseUtils.writeErrorInfo(response, ResultCode.TOKEN_INVALID_OR_EXPIRED));
-            return mono;
         };
     }
 
@@ -140,8 +138,7 @@ public class ResourceServerConfig {
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec((Base64.decode(publicKeyData)));
 
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        RSAPublicKey rsaPublicKey = (RSAPublicKey) keyFactory.generatePublic(keySpec);
-        return rsaPublicKey;
+        return (RSAPublicKey) keyFactory.generatePublic(keySpec);
     }
 
 }

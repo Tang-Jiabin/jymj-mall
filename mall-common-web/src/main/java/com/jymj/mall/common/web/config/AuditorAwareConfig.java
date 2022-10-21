@@ -1,7 +1,5 @@
 package com.jymj.mall.common.web.config;
 
-import com.jymj.mall.common.exception.BusinessException;
-import com.jymj.mall.common.result.ResultCode;
 import com.jymj.mall.common.web.util.UserUtils;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Component;
@@ -22,7 +20,7 @@ public class AuditorAwareConfig implements AuditorAware<Long> {
     @Override
     public Optional<Long> getCurrentAuditor() {
         if (UserUtils.getAdminId() == null){
-            throw new BusinessException(ResultCode.USER_LOGIN_ERROR);
+            return Optional.of(-1L);
         }
         return Optional.of(UserUtils.getAdminId());
     }

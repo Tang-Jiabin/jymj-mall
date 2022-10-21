@@ -83,7 +83,7 @@ public class PictureServiceImpl implements PictureService {
             }
 
             PictureInfo pictureInfo = getPictureInfo(entity);
-            redisUtils.set(key, pictureInfo, 3600 * 60 * 8L);
+            redisUtils.set(key, pictureInfo, 60 * 60 * 8L);
             return pictureInfo;
 
         }
@@ -95,7 +95,7 @@ public class PictureServiceImpl implements PictureService {
     public void syncUpdateVo(String key, MallPicture entity) {
         PictureInfo pictureInfo = getPictureInfo(entity);
         log.info("同步更新PictureInfo : {}", pictureInfo);
-        redisUtils.set(key, pictureInfo, 3600 * 60 * 8L);
+        redisUtils.set(key, pictureInfo, 60 * 60 * 8L);
     }
     @NotNull
     private static PictureInfo getPictureInfo(MallPicture entity) {

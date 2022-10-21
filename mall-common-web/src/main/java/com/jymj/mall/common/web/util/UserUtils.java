@@ -1,14 +1,14 @@
 package com.jymj.mall.common.web.util;
 
-import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.json.JSONObject;
 import com.google.common.collect.Lists;
 import com.jymj.mall.common.constants.SecurityConstants;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.ResultCode;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.i18nformatter.qual.I18nFormat;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -30,14 +30,30 @@ public class UserUtils {
      */
     public static Long getUserId() {
         JSONObject jwtPayload = JwtUtils.getJwtPayload();
+
         if (ObjectUtils.isEmpty(jwtPayload)) {
-            throw new BusinessException(ResultCode.AUTHORIZED_ERROR);
+            throw new BusinessException(ResultCode.TOKEN_INVALID_OR_EXPIRED);
         }
         Long userId = jwtPayload.getLong("userId");
+
         if (ObjectUtils.isEmpty(userId)) {
-            throw new BusinessException(ResultCode.AUTHORIZED_ERROR);
+            throw new BusinessException(ResultCode.TOKEN_INVALID_OR_EXPIRED);
         }
         return userId;
+    }
+
+    public static String getOpenId() {
+        JSONObject jwtPayload = JwtUtils.getJwtPayload();
+
+        if (ObjectUtils.isEmpty(jwtPayload)) {
+            throw new BusinessException(ResultCode.TOKEN_INVALID_OR_EXPIRED);
+        }
+        String openId = jwtPayload.getStr("openId");
+
+        if (!StringUtils.hasText(openId)) {
+            throw new BusinessException(ResultCode.TOKEN_INVALID_OR_EXPIRED);
+        }
+        return openId;
     }
 
     public static Long getAdminId() {
@@ -78,7 +94,6 @@ public class UserUtils {
      * @return 角色列表
      */
     public static List<String> getRoles() {
-
         if (ObjectUtils.isEmpty(JwtUtils.getJwtPayload())) {
             throw new BusinessException(ResultCode.AUTHORIZED_ERROR);
         }
@@ -97,6 +112,6 @@ public class UserUtils {
      */
     public static boolean isRoot() {
         List<String> roles = getRoles();
-        return CollectionUtil.isNotEmpty(roles) && roles.contains("ROOT");
+        return CollUtil.isNotEmpty(roles) && roles.contains("ROOT");
     }
 }

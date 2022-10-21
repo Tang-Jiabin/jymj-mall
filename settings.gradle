@@ -17,4 +17,8 @@ include 'mall-search-boot'
 include 'mall-search-api'
 include 'mall-monitor-server'
 include 'mall-order-boot'
+include 'mall-pay-boot'
+include 'mall-pay-api'
+include 'mall-order-api'
+
 

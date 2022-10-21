@@ -3,7 +3,10 @@ package com.jymj.mall.mdse.vo;
 import com.jymj.mall.mdse.enums.PictureType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 图片信息
@@ -14,6 +17,9 @@ import lombok.Data;
  * @date 2022-09-02
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @ApiModel("图片信息")
 public class PictureInfo {
 

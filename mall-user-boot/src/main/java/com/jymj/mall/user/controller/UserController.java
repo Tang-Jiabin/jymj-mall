@@ -47,7 +47,7 @@ public class UserController {
 
 
     @ApiIgnore
-    @GetMapping("/{openid}")
+    @GetMapping("/load/{openid}")
     public Result<UserAuthDTO> loadUserByOpenid(@PathVariable String openid) {
         Optional<UserAuthDTO> userAuthOptional = userService.loadUserByOpenid(openid);
         return userAuthOptional.map(Result::success).orElse(Result.failed(ResultCode.USER_NOT_EXIST));
@@ -111,7 +111,6 @@ public class UserController {
     @ApiOperation(value = "用户来源列表")
     @GetMapping("/source/lists")
     public Result<List<EnumTypeInfo>> sourceLists() {
-        userService.test();
         return Result.success(SourceEnum.toList());
     }
 

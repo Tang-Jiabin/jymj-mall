@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * 购物车
  *
@@ -15,4 +17,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface ShoppingCartMdseRepository extends JpaRepository<ShoppingCartMdse,Long>, JpaSpecificationExecutor<ShoppingCartMdse> {
+    Optional<ShoppingCartMdse> findByUserIdAndMdseIdAndStockId(Long userId, Long mdseId, Long stockId);
 }

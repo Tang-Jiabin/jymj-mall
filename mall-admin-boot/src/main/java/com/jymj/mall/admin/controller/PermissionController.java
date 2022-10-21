@@ -11,7 +11,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -33,7 +32,7 @@ public class PermissionController {
 
     private final PermissionService permissionService;
 
-    @ApiIgnore
+
     @ApiOperation(value = "刷新权限缓存")
     @PutMapping(value = "/refresh")
     public Result refreshPermRolesRules() {

@@ -51,6 +51,12 @@ public interface SystemConstants {
 
     String SQL_LIKE = "%";
 
+    Long WORK_ID = 1L;
+
+    Long MALL_ORDER_DATACENTER_ID = 1L;
+    Long MALL_USER_DATACENTER_ID = 2L;
+    Long MALL_ADMIN_DATACENTER_ID = 3L;
+
     /**
      * 生成sqlLike语句
      *

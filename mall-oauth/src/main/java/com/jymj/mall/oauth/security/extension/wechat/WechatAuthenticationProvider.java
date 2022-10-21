@@ -21,8 +21,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-import java.util.HashSet;
-
 @Slf4j
 @Data
 public class WechatAuthenticationProvider implements AuthenticationProvider {
@@ -68,9 +66,10 @@ public class WechatAuthenticationProvider implements AuthenticationProvider {
         SysUserDetails userDetails = (SysUserDetails) ((SysUserDetailsServiceImpl) userDetailsService).loadUserByOpenId(openid);
         userDetails.setSessionKey(sessionInfo.getSessionKey());
         userDetails.setOpenId(openid);
+
         log.info("微信用户认证信息: {}",userDetails);
 
-        WechatAuthenticationToken result = new WechatAuthenticationToken(userDetails, new HashSet<>());
+        WechatAuthenticationToken result = new WechatAuthenticationToken(userDetails, userDetails.getAuthorities());
         result.setDetails(authentication.getDetails());
         log.info("微信用户凭证信息: {}",result);
         return result;

@@ -1,7 +1,7 @@
 package com.jymj.mall.order.vo;
 
-import com.jymj.mall.mdse.enums.InventoryReductionMethod;
-import com.jymj.mall.mdse.vo.*;
+import com.jymj.mall.mdse.vo.PictureInfo;
+import com.jymj.mall.mdse.vo.StockInfo;
 import com.jymj.mall.shop.vo.ShopInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

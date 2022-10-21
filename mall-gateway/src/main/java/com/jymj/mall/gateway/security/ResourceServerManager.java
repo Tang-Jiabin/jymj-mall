@@ -1,8 +1,8 @@
 package com.jymj.mall.gateway.security;
 
-import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import com.google.common.collect.Lists;
 import com.jymj.mall.common.constants.GlobalConstants;
 import com.jymj.mall.common.constants.SecurityConstants;
@@ -53,7 +53,7 @@ public class ResourceServerManager implements ReactiveAuthorizationManager<Autho
         String restfulPath = method + ":" + path;
 
         // 如果token以"bearer "为前缀，到此方法里说明JWT有效即已认证
-        String token = request.getHeaders().getFirst(SecurityConstants.AUTHORIZATION_KEY);
+//        String token = request.getHeaders().getFirst(SecurityConstants.AUTHORIZATION_KEY);
 
 //        if (StrUtil.isNotBlank(token) && StrUtil.startWithIgnoreCase(token, SecurityConstants.JWT_PREFIX)) {
 //
@@ -63,11 +63,11 @@ public class ResourceServerManager implements ReactiveAuthorizationManager<Autho
 //        }
 
 
-        /**
-         * 鉴权开始
-         *
-         * 缓存取 [URL权限-角色集合] 规则数据
-         * urlPermRolesRules = [{'key':'GET:/api/v1/users/*','value':['ADMIN','TEST']},...]
+        /*
+          鉴权开始
+
+          缓存取 [URL权限-角色集合] 规则数据
+          urlPermRolesRules = [{'key':'GET:/api/v1/users/*','value':['ADMIN','TEST']},...]
          */
         Map<Object, Object> urlPermRolesRules = redisUtils.hmget(GlobalConstants.URL_PERM_ROLES_KEY);
         // 根据请求路径获取有访问权限的角色列表
@@ -88,13 +88,12 @@ public class ResourceServerManager implements ReactiveAuthorizationManager<Autho
         }
         // 没有设置拦截规则拒绝
         if (!requireCheck) {
-            if (!restfulPath.contains("actuator")){
+            if (!restfulPath.contains("actuator")) {
                 log.info("没有设置拦截规则允许");
-                log.info("访问路径方式 : {}",restfulPath);
+                log.info("访问路径方式 : {}", restfulPath);
             }
             return Mono.just(new AuthorizationDecision(true));
         }
-
 
         // 判断JWT中携带的用户角色是否有权限访问
         return mono
@@ -102,11 +101,13 @@ public class ResourceServerManager implements ReactiveAuthorizationManager<Autho
                 .flatMapIterable(Authentication::getAuthorities)
                 .map(GrantedAuthority::getAuthority)
                 .any(authority -> {
-                    String roleCode = StrUtil.removePrefix(authority, SecurityConstants.AUTHORITY_PREFIX);// ROLE_ADMIN移除前缀ROLE_得到用户的角色编码ADMIN
+//                    StrUtil.removePrefix
+                    String roleCode = CharSequenceUtil.removePrefix(authority, SecurityConstants.AUTHORITY_PREFIX);// ROLE_ADMIN移除前缀ROLE_得到用户的角色编码ADMIN
                     if (GlobalConstants.ROOT_ROLE_CODE.equals(roleCode)) {
                         return true; // 如果是超级管理员则放行
                     }
-                    return CollectionUtil.isNotEmpty(authorizedRoles) && authorizedRoles.contains(roleCode);
+//                    CollUtil.isNotEmpty
+                    return CollUtil.isNotEmpty(authorizedRoles) && authorizedRoles.contains(roleCode);
                 })
                 .map(AuthorizationDecision::new)
                 .defaultIfEmpty(new AuthorizationDecision(false));

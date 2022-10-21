@@ -6,6 +6,7 @@ import com.jymj.mall.admin.dto.AddDeptDTO;
 import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
+import com.jymj.mall.common.redis.utils.RedisUtils;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.util.UserUtils;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -48,8 +50,9 @@ public class ShopServiceImpl implements ShopService {
 
     private final DeptFeignClient deptFeignClient;
     private final MallShopRepository shopRepository;
-
     private final MallService mallService;
+    private final ThreadPoolTaskExecutor executor;
+    private final RedisUtils redisUtils;
 
     @Override
     public MallShop add(ShopDTO dto) {
@@ -175,22 +178,31 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     public ShopInfo entity2vo(MallShop entity) {
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("HH:mm:ss");
-        ShopInfo shopInfo = new ShopInfo();
-        shopInfo.setShopId(entity.getShopId());
-        shopInfo.setName(entity.getName());
-        shopInfo.setAddress(entity.getAddress());
-        shopInfo.setDirector(entity.getDirector());
-        shopInfo.setMobile(entity.getMobile());
-        shopInfo.setStatus(entity.getStatus());
-        shopInfo.setInBusiness(entity.getInBusiness());
-        shopInfo.setBusinessStartTime(df.format(entity.getBusinessStartTime()));
-        shopInfo.setBusinessEndTime(df.format(entity.getBusinessEndTime()));
-        shopInfo.setLongitude(entity.getLongitude());
-        shopInfo.setLatitude(entity.getLatitude());
 
 
-        return shopInfo;
+        if (!ObjectUtils.isEmpty(entity)) {
+
+            String key = String.format("mall-shop:shopInfo:id:%d", entity.getShopId());
+
+            ShopInfo value = (ShopInfo) redisUtils.get(key);
+
+            if (!ObjectUtils.isEmpty(value)) {
+                executor.execute(() -> syncUpdateVo(key, entity));
+                return value;
+            }
+
+            ShopInfo shopInfo = getShopInfo(entity);
+            redisUtils.set(key, shopInfo, 60 * 60 * 8L);
+
+            return shopInfo;
+        }
+
+        return null;
+    }
+
+    private void syncUpdateVo(String key, MallShop entity) {
+        ShopInfo shopInfo = getShopInfo(entity);
+        redisUtils.set(key, shopInfo, 60 * 60 * 8L);
     }
 
     @Override
@@ -270,4 +282,23 @@ public class ShopServiceImpl implements ShopService {
 
 
     }
+
+    private ShopInfo getShopInfo(MallShop entity) {
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("HH:mm:ss");
+        ShopInfo shopInfo = new ShopInfo();
+        shopInfo.setShopId(entity.getShopId());
+        shopInfo.setName(entity.getName());
+        shopInfo.setAddress(entity.getAddress());
+        shopInfo.setDirector(entity.getDirector());
+        shopInfo.setMobile(entity.getMobile());
+        shopInfo.setStatus(entity.getStatus());
+        shopInfo.setInBusiness(entity.getInBusiness());
+        shopInfo.setBusinessStartTime(df.format(entity.getBusinessStartTime()));
+        shopInfo.setBusinessEndTime(df.format(entity.getBusinessEndTime()));
+        shopInfo.setLongitude(entity.getLongitude());
+        shopInfo.setLatitude(entity.getLatitude());
+        return shopInfo;
+    }
 }
+
+

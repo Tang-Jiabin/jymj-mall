@@ -120,7 +120,7 @@ public class TypeServiceImpl implements TypeService {
             }
 
             TypeInfo typeInfo = getTypeInfo(entity);
-            redisUtils.set(key, typeInfo, 3600 * 60 * 8L);
+            redisUtils.set(key, typeInfo, 60 * 60 * 8L);
             return typeInfo;
         }
         return null;
@@ -130,7 +130,7 @@ public class TypeServiceImpl implements TypeService {
     public void syncUpdateVo(String key, MdseType entity) {
         TypeInfo typeInfo = getTypeInfo(entity);
         log.info("同步更新TypeInfo : {}", typeInfo);
-        redisUtils.set(key, typeInfo, 3600 * 60 * 8L);
+        redisUtils.set(key, typeInfo, 60 * 60 * 8L);
     }
 
     @NotNull

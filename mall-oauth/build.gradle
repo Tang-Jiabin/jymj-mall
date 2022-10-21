@@ -1,6 +1,6 @@
 
 dependencies {
-//    implementation 'org.springframework.security.oauth:spring-security-oauth2:2.5.2.RELEASE'
+
     implementation 'org.springframework.cloud:spring-cloud-starter-oauth2:2.2.5.RELEASE'
     implementation 'org.springframework.security:spring-security-oauth2-jose:5.7.3'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'

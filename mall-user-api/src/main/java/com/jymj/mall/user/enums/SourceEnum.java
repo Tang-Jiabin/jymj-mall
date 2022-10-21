@@ -2,6 +2,7 @@ package com.jymj.mall.user.enums;
 
 import com.jymj.mall.common.enums.BaseEnum;
 import com.jymj.mall.common.enums.EnumTypeInfo;
+import lombok.Getter;
 import org.assertj.core.util.Lists;
 
 import java.util.List;
@@ -25,16 +26,10 @@ public enum SourceEnum implements BaseEnum<Integer>{
     APP(2, "APP");
 
 
-    public Integer getValue() {
-        return value;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
+    @Getter
     private final Integer value;
 
+    @Getter
     private final String label;
 
 

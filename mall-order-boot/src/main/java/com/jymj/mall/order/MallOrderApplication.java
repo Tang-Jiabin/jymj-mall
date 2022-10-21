@@ -1,8 +1,9 @@
 package com.jymj.mall.order;
 
 import com.jymj.mall.mdse.api.MdseFeignClient;
-import com.jymj.mall.search.api.MdseSearchFeignClient;
+import com.jymj.mall.mdse.api.MdseStockFeignClient;
 import com.jymj.mall.shop.api.ShopFeignClient;
+import com.jymj.mall.user.api.UserAddressFeignClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -22,7 +23,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableJpaAuditing
 @EnableDiscoveryClient
 @SpringBootApplication(scanBasePackages = {"com.jymj.mall.*"})
-@EnableFeignClients(clients = {ShopFeignClient.class, MdseSearchFeignClient.class, MdseFeignClient.class})
+@EnableFeignClients(clients = {ShopFeignClient.class, MdseFeignClient.class, MdseStockFeignClient.class, UserAddressFeignClient.class})
 public class MallOrderApplication {
 
     public static void main(String[] args) {

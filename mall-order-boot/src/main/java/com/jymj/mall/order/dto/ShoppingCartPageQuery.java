@@ -1,10 +1,9 @@
 package com.jymj.mall.order.dto;
 
 import com.jymj.mall.common.web.dto.BasePageQueryDTO;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import javax.annotation.processing.SupportedOptions;
 
 /**
  * 购物车分页
@@ -18,5 +17,6 @@ import javax.annotation.processing.SupportedOptions;
 @EqualsAndHashCode(callSuper = true)
 public class ShoppingCartPageQuery extends BasePageQueryDTO {
 
+    @ApiModelProperty("用户id")
     private Long userId;
 }

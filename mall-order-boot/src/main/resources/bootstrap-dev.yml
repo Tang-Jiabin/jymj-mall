@@ -26,4 +26,5 @@ spring:
           - data-id: mall-zipkin-config.yaml
           - data-id: mall-monitor-client.yaml
           - data-id: mall-elastic.yaml
+          - data-id: mall-rabbitmq.config.yaml
 

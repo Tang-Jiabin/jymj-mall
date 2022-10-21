@@ -1,7 +1,5 @@
 package com.jymj.mall.user.service.impl;
 
-import java.time.LocalDate;
-
 import com.google.common.collect.Lists;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.web.util.PageUtils;
@@ -14,7 +12,6 @@ import com.jymj.mall.user.enums.SourceEnum;
 import com.jymj.mall.user.repository.UserRepository;
 import com.jymj.mall.user.service.UserService;
 import com.jymj.mall.user.vo.UserInfo;
-import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,7 +53,7 @@ public class UserServiceImpl implements UserService {
             MallUser user = userOptional.get();
             UserAuthDTO userAuthDTO = new UserAuthDTO();
             userAuthDTO.setUserId(user.getUserId());
-            userAuthDTO.setUsername(user.getUsername());
+            userAuthDTO.setUsername(user.getOpenid());
             userAuthDTO.setNickname(user.getNickName());
             userAuthDTO.setPassword(user.getPassword());
             userAuthDTO.setStatus(user.getStatus());
@@ -275,51 +272,5 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll(spec, pageable);
     }
 
-    @Override
-    @GlobalTransactional(rollbackFor = Exception.class)
-    public void test() {
-        MallUser user = new MallUser();
 
-        user.setUsername("test");
-        user.setNickName("test");
-        user.setPassword("test");
-        user.setMobile("test");
-        user.setGender(0);
-        user.setBirthday(LocalDate.now());
-        user.setAvatarUrl("");
-        user.setOpenid("");
-        user.setCity("");
-        user.setCountry("");
-        user.setLanguage("");
-        user.setProvince("");
-        user.setMemberType(MemberEnum.ORDINARY_USER);
-        user.setSourceType(SourceEnum.WEB);
-        user.setPurchaseCount(0);
-        user.setLoginTime(new Date());
-        user.setStatus(1);
-        user.setDeleted(0);
-        user.setCreateTime(new Date());
-        user.setUpdateTime(new Date());
-        user.setCreateUserId(0L);
-        user.setUpdateUserId(0L);
-
-        userRepository.save(user);
-        if (true) {
-            try {
-                Thread.sleep(9000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            throw new RuntimeException("test exc");
-        }
-        user = new MallUser();
-
-        user.setUsername("test2");
-        user.setNickName("test2");
-        user.setPassword("test2");
-        user.setMobile("test2");
-
-        userRepository.save(user);
-
-    }
 }
