@@ -33,6 +33,7 @@ import java.util.Optional;
 public class AddressController {
     
     private final AddressService addressService;
+
     
     @ApiOperation(value = "添加地址")
     @PostMapping
@@ -77,4 +78,5 @@ public class AddressController {
         List<UserAddress> addressList = addressService.findAllByUserId(UserUtils.getUserId());
         return Result.success(addressService.list2vo(addressList));
     }
+
 }

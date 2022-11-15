@@ -67,4 +67,7 @@ public class SysAdmin extends BaseEntity {
     @ApiModelProperty("商场ID")
     private Long mallId;
 
+    @ApiModelProperty("核销人员")
+    private Integer verifyPerson;
+
 }

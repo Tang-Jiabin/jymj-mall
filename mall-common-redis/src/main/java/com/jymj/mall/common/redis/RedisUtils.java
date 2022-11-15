@@ -1,4 +1,4 @@
-package com.jymj.mall.common.redis.utils;
+package com.jymj.mall.common.redis;
 
 
 import org.springframework.data.redis.core.RedisTemplate;

@@ -50,7 +50,7 @@ public class MallUser extends BaseEntity {
     private String username;
 
     @ApiModelProperty(value = "昵称")
-    private String nickName;
+    private String nickname;
 
     @ApiModelProperty(value = "密码")
     private String password;
@@ -100,4 +100,10 @@ public class MallUser extends BaseEntity {
 
     @ApiModelProperty(value = "状态")
     private Integer status;
+
+    @ApiModelProperty(value = "核销人员 1-是 2-不是")
+    private Integer verifyPerson;
+
+    @ApiModelProperty(value = "会员等级")
+    private Integer memberLevel;
 }

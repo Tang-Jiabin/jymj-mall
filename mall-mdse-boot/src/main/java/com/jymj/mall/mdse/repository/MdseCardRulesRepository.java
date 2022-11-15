@@ -4,6 +4,8 @@ import com.jymj.mall.mdse.entity.MdseCardRules;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * 卡
  *
@@ -14,4 +16,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface MdseCardRulesRepository extends JpaRepository<MdseCardRules, Long> {
+    Optional<MdseCardRules> findByCardId(Long mdseId);
 }

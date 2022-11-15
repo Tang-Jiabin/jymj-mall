@@ -18,19 +18,18 @@ import com.jymj.mall.admin.vo.PermInfo;
 import com.jymj.mall.common.constants.GlobalConstants;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
-import com.jymj.mall.common.redis.utils.RedisUtils;
+import com.jymj.mall.common.redis.RedisUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.util.Lists;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +46,7 @@ public class PermissionServiceImpl implements PermissionService {
     private final RedisUtils redisUtils;
     private final AdminService adminService;
     private final RoleService roleService;
+    private final ThreadPoolTaskExecutor executor;
     private final SysPermissionRepository permissionRepository;
     private final SysRolePermissionRepository rolePermissionRepository;
 
@@ -177,10 +177,15 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public List<PermInfo> list2vo(List<SysPermission> entityList) {
-        return Optional.of(entityList)
+        List<CompletableFuture<PermInfo>> futureList = Optional.of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream().filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo).collect(Collectors.toList());
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity),executor))
+                .collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     private List<PermissionDTO> allPermRoles() {

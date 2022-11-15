@@ -31,7 +31,6 @@ public class StockController {
     @PutMapping("/less")
     public Result<Object> lessMdseStock(@RequestBody StockDTO stockDTO) {
         stockService.lessInventory(stockDTO);
-
         return Result.success();
     }
 }

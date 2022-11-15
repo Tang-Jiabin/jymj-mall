@@ -89,6 +89,10 @@ public class MdseServiceImpl implements MdseService {
 
     private BoolQueryBuilder buildBasicQuery(MdsePageQuery mdsePageQuery) {
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+
+        if (!ObjectUtils.isEmpty(mdsePageQuery.getClassify())) {
+            boolQueryBuilder.filter(QueryBuilders.termQuery("classify", mdsePageQuery.getClassify()));
+        }
         if (StringUtils.hasText(mdsePageQuery.getName())) {
             boolQueryBuilder.filter(QueryBuilders.matchQuery("name", mdsePageQuery.getName()));
         }

@@ -22,10 +22,13 @@ import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.ResultCode;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.util.UserUtils;
+import com.jymj.mall.shop.api.VerifyFeignClient;
+import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +42,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -58,6 +62,8 @@ public class AdminServiceImpl implements AdminService {
     private final RoleService roleService;
     private final DeptService deptService;
     private final MenuService menuService;
+    private final VerifyFeignClient verifyFeignClient;
+    private final ThreadPoolTaskExecutor executor;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -111,12 +117,15 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @GlobalTransactional(name = "mall-admin-delete", rollbackFor = Exception.class)
     public void delete(String ids) {
         List<Long> adminIdList = Arrays.stream(ids.split(",")).map(Long::parseLong).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(adminIdList)) {
             List<SysAdmin> adminList = adminRepository.findAllById(adminIdList);
             adminRepository.deleteAll(adminList);
+            verifyFeignClient.deleteVerifyPersonByAdminIds(ids);
         }
+
     }
 
     @Override
@@ -132,7 +141,7 @@ public class AdminServiceImpl implements AdminService {
             }
             admin.setUsername(updateAdminDTO.getUsername());
         }
-        if (StringUtils.hasText(updateAdminDTO.getMobile())&& !updateAdminDTO.getMobile().equals(admin.getMobile())) {
+        if (StringUtils.hasText(updateAdminDTO.getMobile()) && !updateAdminDTO.getMobile().equals(admin.getMobile())) {
             Optional<SysAdmin> byUsername = adminRepository.findByMobile(updateAdminDTO.getMobile());
             if (byUsername.isPresent()) {
                 throw new BusinessException("手机号已注册");
@@ -167,6 +176,11 @@ public class AdminServiceImpl implements AdminService {
             roleService.deleteAdminRole(admin.getAdminId(), deleteRoleList);
             roleService.addAdminRole(admin.getAdminId(), addRoleList);
         }
+
+        if (!ObjectUtils.isEmpty(updateAdminDTO.getVerifyPerson())) {
+            admin.setVerifyPerson(updateAdminDTO.getVerifyPerson());
+        }
+
         return Optional.of(adminRepository.save(admin));
     }
 
@@ -214,6 +228,7 @@ public class AdminServiceImpl implements AdminService {
             adminInfo.setStatus(admin.getStatus());
             adminInfo.setNumber(admin.getNumber());
             adminInfo.setOperationTime(admin.getUpdateTime());
+            adminInfo.setVerifyPerson(admin.getVerifyPerson());
 
             Optional<SysAdmin> adminOptional = findById(admin.getUpdateUserId());
             adminOptional.ifPresent(operator -> adminInfo.setOperator(operator.getNickname()));
@@ -236,10 +251,14 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public List<AdminInfo> list2vo(List<SysAdmin> entityList) {
-        return Optional.of(entityList)
+        List<CompletableFuture<AdminInfo>> futureList = Optional.of(entityList)
                 .orElse(org.assertj.core.util.Lists.newArrayList())
                 .stream().filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo).collect(Collectors.toList());
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity), executor)).collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
 
@@ -289,7 +308,7 @@ public class AdminServiceImpl implements AdminService {
 
             list.add(criteriaBuilder.equal(root.get("deleted").as(Integer.class), SystemConstants.DELETED_NO));
             Predicate[] p = new Predicate[list.size()];
-            return criteriaBuilder.and( list.toArray(p));
+            return criteriaBuilder.and(list.toArray(p));
         };
 
         return adminRepository.findAll(spec, pageable);

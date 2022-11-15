@@ -8,6 +8,7 @@ dependencies {
     implementation project(":mall-shop-api")
     implementation project(":mall-mdse-api")
     implementation project(":mall-search-api")
+    implementation project(":mall-user-api")
 }
 
 test {

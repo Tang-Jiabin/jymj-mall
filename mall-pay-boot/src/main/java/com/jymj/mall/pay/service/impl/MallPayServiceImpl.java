@@ -1,14 +1,17 @@
 package com.jymj.mall.pay.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
+import cn.hutool.core.util.RandomUtil;
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
 import com.github.binarywang.wxpay.bean.request.BaseWxPayRequest;
+import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
 import com.jymj.mall.common.constants.PayConstants;
 import com.jymj.mall.common.enums.OrderPayMethodEnum;
 import com.jymj.mall.common.enums.OrderStatusEnum;
 import com.jymj.mall.common.exception.BusinessException;
-import com.jymj.mall.common.redis.utils.RedisUtils;
+import com.jymj.mall.common.redis.RedisUtils;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.order.api.OrderFeignClient;
@@ -24,7 +27,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,8 +44,8 @@ public class MallPayServiceImpl implements MallPayService {
 
     private final OrderFeignClient orderFeignClient;
     private final MallWeChatPayInfoRepository payInfoRepository;
-
     private final RedisUtils redisUtils;
+
 
     @Override
     public WxPayUnifiedOrderRequest createWeChatPayOrder(String ip, String orderNo) {
@@ -84,19 +86,19 @@ public class MallPayServiceImpl implements MallPayService {
                 return;
             }
 
-            String key = String.format("mall-pay:no:%s",orderInfo.getOrderNo());
+            String key = "mall-pay:no:" + orderInfo.getOrderNo();
 
             boolean existence = redisUtils.hasKey(key);
-            if (!existence){
+            if (!existence) {
                 OrderPaySuccess orderPaySuccess = new OrderPaySuccess();
                 orderPaySuccess.setOrderId(orderInfo.getOrderId());
                 BigDecimal totalFree = new BigDecimal(String.valueOf(notifyResult.getTotalFee())).divide(new BigDecimal("100"), 2, RoundingMode.HALF_EVEN);
                 orderPaySuccess.setAmountActuallyPaid(totalFree);
                 orderPaySuccess.setOrderPayMethod(OrderPayMethodEnum.WEI_XIN_PAY);
-                orderPaySuccess.setPayTime(LocalDateTimeUtil.parse(notifyResult.getTimeEnd(), DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+                orderPaySuccess.setPayTime(DateUtil.parse(notifyResult.getTimeEnd()));
 
                 orderFeignClient.paySuccess(orderPaySuccess);
-                redisUtils.set(key,1,30, TimeUnit.MINUTES);
+                redisUtils.set(key, 1, 30, TimeUnit.MINUTES);
 
                 MallWeChatPayInfo weChatPayInfo = new MallWeChatPayInfo();
                 weChatPayInfo.setOrderId(orderInfo.getOrderId());
@@ -119,7 +121,21 @@ public class MallPayServiceImpl implements MallPayService {
                 weChatPayInfo.setXmlString(notifyResult.getXmlString());
                 payInfoRepository.save(weChatPayInfo);
 
+
             }
         }
+    }
+
+    @Override
+    public WxPayRefundRequest refund(String orderNo) {
+        Result<MallOrderInfo> orderInfoResult = orderFeignClient.getOrderByNo(orderNo);
+        if (!Result.isSuccess(orderInfoResult)) {
+            throw new BusinessException("订单不存在");
+        }
+        MallOrderInfo orderInfo = orderInfoResult.getData();
+        return WxPayRefundRequest.newBuilder()
+                .outTradeNo(orderInfo.getOrderNo())
+                .outRefundNo(orderInfo.getOrderNo() + "-" + RandomUtil.randomNumbers(4))
+                .refundFee(BaseWxPayRequest.yuanToFen(orderInfo.getAmountActuallyPaid().toString())).build();
     }
 }

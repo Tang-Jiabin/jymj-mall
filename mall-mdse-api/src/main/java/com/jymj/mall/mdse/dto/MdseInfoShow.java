@@ -21,12 +21,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MdseInfoShow {
 
-    private boolean group;
-    private boolean stock;
-    private boolean label;
-    private boolean mfg;
-    private boolean type;
-    private boolean brand;
-    private boolean shop;
-    private boolean picture;
+    private Integer group;
+    private Integer stock;
+    private Integer label;
+    private Integer mfg;
+    private Integer type;
+    private Integer brand;
+    private Integer shop;
+    private Integer picture;
 }

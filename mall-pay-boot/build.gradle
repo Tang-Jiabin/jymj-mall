@@ -1,4 +1,7 @@
 
+configurations.implementation {
+    exclude group:'org.springframework.boot', module: 'spring-boot-starter-data-elasticsearch'
+}
 
 dependencies {
     implementation 'com.github.binarywang:weixin-java-pay:4.4.0'
@@ -6,5 +9,6 @@ dependencies {
     implementation project(":mall-common-redis")
     implementation project(":mall-common-web")
     implementation project(":mall-order-api")
+
 
 }

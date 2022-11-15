@@ -6,7 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.jymj.mall.common.constants.SecurityConstants;
-import com.jymj.mall.common.redis.utils.RedisUtils;
+import com.jymj.mall.common.redis.RedisUtils;
 import com.jymj.mall.common.result.ResultCode;
 import com.jymj.mall.gateway.util.ResponseUtils;
 import com.nimbusds.jose.JWSObject;

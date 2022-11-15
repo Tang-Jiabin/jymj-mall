@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * 订单支付成功
@@ -30,5 +30,5 @@ public class OrderPaySuccess {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty("支付时间")
-    private LocalDateTime payTime;
+    private Date payTime;
 }

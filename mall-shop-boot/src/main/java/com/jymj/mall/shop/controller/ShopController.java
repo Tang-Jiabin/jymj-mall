@@ -12,6 +12,7 @@ import com.jymj.mall.shop.vo.ShopInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,6 +60,7 @@ public class ShopController {
 
     @ApiOperation(value = "店铺信息")
     @GetMapping("/{shopId}/info")
+    @Cacheable(cacheNames = "mall-shop:shop-info:", key = "'shop-id:'+#shopId")
     public Result<ShopInfo> getShopById(@Valid @PathVariable Long shopId) {
         Optional<MallShop> mallShopOptional = shopService.findById(shopId);
         return mallShopOptional.map(shop -> Result.success(shopService.entity2vo(shop))).orElse(Result.failed("店铺不存在"));

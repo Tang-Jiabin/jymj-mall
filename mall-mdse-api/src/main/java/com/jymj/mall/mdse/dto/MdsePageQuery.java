@@ -81,6 +81,10 @@ public class MdsePageQuery extends BasePageQueryDTO {
     @ApiModelProperty("厂家id")
     private Long mfgId;
 
+    @ApiModelProperty("商品分类  1-商品 2-卡")
+    private Integer classify;
 
+    @ApiModelProperty("用户id")
+    private Long userId;
 
 }

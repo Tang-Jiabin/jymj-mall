@@ -24,12 +24,19 @@ public class SyncConfiguration  {
     @Bean(name = "asyncPoolTaskExecutor")
     public ThreadPoolTaskExecutor executor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        //- tasks ：每秒的任务数，假设为300~500
+        //- taskcost：每个任务花费时间，假设为0.1s
+        //- responsetime：系统允许容忍的最大响应时间，假设为1s
+        //- threadcount = tasks/(1/taskcost) =tasks*taskcout
+        //- queueCapacity = (coreSizePool/taskcost)*responsetime
+        //- maxPoolSize = (max(tasks)- queueCapacity)/(1/taskcost)
         //核心线程数
-        taskExecutor.setCorePoolSize(10);
+        taskExecutor.setCorePoolSize(50);
+//        taskExecutor.setCorePoolSize(500);
         //线程池维护线程的最大数量,只有在缓冲队列满了之后才会申请超过核心线程数的线程
-        taskExecutor.setMaxPoolSize(100);
+        taskExecutor.setMaxPoolSize(1500);
         //缓存队列
-        taskExecutor.setQueueCapacity(50);
+        taskExecutor.setQueueCapacity(200);
         //许的空闲时间,当超过了核心线程出之外的线程在空闲时间到达之后会被销毁
         taskExecutor.setKeepAliveSeconds(200);
         //异步方法内部线程名称

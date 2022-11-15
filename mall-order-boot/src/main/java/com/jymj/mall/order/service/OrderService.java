@@ -6,6 +6,7 @@ import com.jymj.mall.order.dto.OrderPageQuery;
 import com.jymj.mall.order.dto.OrderPaySuccess;
 import com.jymj.mall.order.entity.MallOrder;
 import com.jymj.mall.order.vo.MallOrderInfo;
+import com.jymj.mall.shop.dto.VerifyOrderMdse;
 import org.springframework.data.domain.Page;
 
 import java.util.Optional;
@@ -24,4 +25,6 @@ public interface OrderService extends BaseService<MallOrder, MallOrderInfo,Order
     Optional<MallOrder> findByOrderNo(String orderNo);
 
     void paySuccess(OrderPaySuccess orderPaySuccess);
+
+    void verify(VerifyOrderMdse verifyOrderMdse);
 }

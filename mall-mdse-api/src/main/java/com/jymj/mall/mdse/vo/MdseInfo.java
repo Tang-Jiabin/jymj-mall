@@ -34,7 +34,6 @@ public class MdseInfo {
     @ApiModelProperty("商品视频")
     private List<PictureInfo> videoList;
 
-
     @ApiModelProperty("商品名称")
     private String name;
 
@@ -106,5 +105,14 @@ public class MdseInfo {
 
     @ApiModelProperty("商城id")
     private Long mallId;
+
+    @ApiModelProperty("生效规则")
+    private EffectiveRulesInfo effectiveRules;
+
+    @ApiModelProperty("商品列表")
+    private List<MdseInfo> mdseInfoList;
+
+    @ApiModelProperty("商品分类  1-商品 2-卡")
+    private Integer classify;
 
 }

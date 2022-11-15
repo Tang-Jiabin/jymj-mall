@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.jymj.mall.admin.api.DeptFeignClient;
 import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.constants.SystemConstants;
-import com.jymj.mall.common.redis.utils.RedisUtils;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.mdse.dto.LabelDTO;
@@ -18,6 +17,8 @@ import com.jymj.mall.shop.api.MallFeignClient;
 import com.jymj.mall.shop.vo.MallInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -26,7 +27,9 @@ import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -44,16 +47,12 @@ public class LabelServiceImpl implements LabelService {
 
     private final MallFeignClient mallFeignClient;
     private final DeptFeignClient deptFeignClient;
-
     private final MdseLabelRepository labelRepository;
     private final MdseLabelMapRepository labelMapRepository;
-    private final RedisUtils redisUtils;
-
     private final ThreadPoolTaskExecutor executor;
 
     @Override
     public MdseLabel add(LabelDTO dto) {
-
 
 
         MdseLabel label = new MdseLabel();
@@ -67,6 +66,7 @@ public class LabelServiceImpl implements LabelService {
     }
 
     @Override
+    @CacheEvict(cacheNames = {"mall-mdse:label-info:", "mall-mdse:label-entity:"}, key = "'label-id:'+#dto.labelId")
     public Optional<MdseLabel> update(LabelDTO dto) {
         if (!ObjectUtils.isEmpty(dto.getLabelId())) {
             Optional<MdseLabel> labelOptional = labelRepository.findById(dto.getLabelId());
@@ -97,6 +97,7 @@ public class LabelServiceImpl implements LabelService {
     }
 
     @Override
+    @CacheEvict(value = {"mall-mdse:label-info:", "mall-mdse:label-entity:"}, allEntries = true)
     public void delete(String ids) {
         List<Long> idList = Arrays.stream(ids.split(",")).filter(id -> !ObjectUtils.isEmpty(id)).map(Long::parseLong).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(idList)) {
@@ -106,41 +107,24 @@ public class LabelServiceImpl implements LabelService {
     }
 
     @Override
+    @Cacheable(cacheNames = "mall-mdse:label-entity:", key = "'label-id:'+#id")
     public Optional<MdseLabel> findById(Long id) {
         return labelRepository.findById(id);
     }
 
     @Override
+    @Cacheable(cacheNames = "mall-mdse:label-info:", key = "'label-id:'+#entity.labelId")
     public LabelInfo entity2vo(MdseLabel entity) {
 
         if (!ObjectUtils.isEmpty(entity)) {
-
-            String key = String.format("mall-mdse:labelInfo:id:%d", entity.getLabelId());
-            LabelInfo value = (LabelInfo) redisUtils.get(key);
-
-            if (!ObjectUtils.isEmpty(value)) {
-                executor.execute(()->syncUpdateVo(key, entity));
-                return value;
-            }
-
-            LabelInfo labelInfo = getLabelInfo(entity);
-            redisUtils.set(key, labelInfo, 60 * 60 * 8L);
-
-            return labelInfo;
-
+            return getLabelInfo(entity);
         }
         return null;
     }
 
 
-    public void syncUpdateVo(String key, MdseLabel entity) {
-        LabelInfo labelInfo = getLabelInfo(entity);
-        log.info("异步更新LabelInfo : {}", labelInfo);
-        redisUtils.set(key, labelInfo, 60 * 60 * 8L);
-    }
-
     @Override
-    public  LabelInfo getLabelInfo(MdseLabel entity) {
+    public LabelInfo getLabelInfo(MdseLabel entity) {
         LabelInfo labelInfo = new LabelInfo();
         labelInfo.setLabelId(entity.getLabelId());
         labelInfo.setName(entity.getName());
@@ -151,14 +135,17 @@ public class LabelServiceImpl implements LabelService {
 
     @Override
     public List<LabelInfo> list2vo(List<MdseLabel> entityList) {
-        return Optional.of(entityList)
+        List<CompletableFuture<LabelInfo>> futureList = Optional.of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream()
                 .filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo)
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity), executor))
+                .collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
-
 
 
     @Override
@@ -194,7 +181,7 @@ public class LabelServiceImpl implements LabelService {
             List<DeptInfo> deptInfoList = deptListResult.getData();
             List<Long> deptIdList = deptInfoList.stream().map(DeptInfo::getDeptId).collect(Collectors.toList());
             Result<List<MallInfo>> mallInfoListResult = mallFeignClient.getMallByDeptIdIn(StringUtils.collectionToCommaDelimitedString(deptIdList));
-            if (Result.isSuccess(mallInfoListResult)){
+            if (Result.isSuccess(mallInfoListResult)) {
                 List<MallInfo> mallInfoList = mallInfoListResult.getData();
                 List<Long> mallIdList = mallInfoList.stream().map(MallInfo::getMallId).collect(Collectors.toList());
                 return labelRepository.findAllByMallIdIn(mallIdList);
@@ -223,7 +210,7 @@ public class LabelServiceImpl implements LabelService {
     @Override
     public List<MdseLabel> findAllByMallId(Long mallId) {
 
-        if (mallId!=null){
+        if (mallId != null) {
             return labelRepository.findAllByMallId(mallId);
         }
         return labelRepository.findAll();

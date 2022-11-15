@@ -19,8 +19,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 角色
@@ -37,7 +39,6 @@ import java.util.Optional;
 public class RoleController {
 
     private final RoleService sysRoleService;
-
 
 
     @ApiOperation(value = "新增角色")
@@ -63,11 +64,19 @@ public class RoleController {
     }
 
     @ApiOperation(value = "角色详情")
-    @GetMapping("/{roleId}")
+    @GetMapping("/id/{roleId}")
     public Result<RoleInfo> getRoleDetail(@ApiParam("角色ID") @PathVariable Long roleId) {
         Optional<SysRole> roleOptional = sysRoleService.getById(roleId);
+        return roleOptional.map(role -> Result.success(sysRoleService.entity2vo(role))).orElseGet(() -> Result.failed("角色不存在"));
+    }
 
-        return roleOptional.map(role->Result.success(sysRoleService.entity2vo(role))).orElseGet(() -> Result.failed("角色不存在"));
+    @ApiOperation(value = "角色详情")
+    @GetMapping("/ids/{ids}")
+    public Result<List<RoleInfo>> getRoleDetailList(@ApiParam("角色ID") @PathVariable String ids) {
+        List<Long> idList = Arrays.stream(ids.split(",")).map(Long::parseLong).collect(Collectors.toList());
+        List<SysRole> sysRoleList = sysRoleService.findAllById(idList);
+        List<RoleInfo> roleInfoList = sysRoleService.list2vo(sysRoleList);
+        return Result.success(roleInfoList);
     }
 
     @ApiOperation(value = "角色下拉列表")

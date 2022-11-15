@@ -6,12 +6,15 @@ import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.enums.OrderDeliveryMethodEnum;
 import com.jymj.mall.common.enums.OrderStatusEnum;
 import com.jymj.mall.common.exception.BusinessException;
+import com.jymj.mall.common.redis.RedissonLockUtil;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.mdse.api.MdseFeignClient;
 import com.jymj.mall.mdse.api.MdseStockFeignClient;
+import com.jymj.mall.mdse.dto.MdseDTO;
 import com.jymj.mall.mdse.dto.MdseInfoShow;
+import com.jymj.mall.mdse.dto.MdsePurchaseRecordDTO;
 import com.jymj.mall.mdse.dto.StockDTO;
 import com.jymj.mall.mdse.enums.InventoryReductionMethod;
 import com.jymj.mall.mdse.vo.MdseInfo;
@@ -31,26 +34,32 @@ import com.jymj.mall.order.service.OrderService;
 import com.jymj.mall.order.vo.MallOrderDeliveryDetailsInfo;
 import com.jymj.mall.order.vo.MallOrderInfo;
 import com.jymj.mall.order.vo.MallOrderMdseDetailsInfo;
+import com.jymj.mall.shop.dto.VerifyOrderMdse;
 import com.jymj.mall.shop.vo.ShopInfo;
 import com.jymj.mall.user.api.UserAddressFeignClient;
+import com.jymj.mall.user.api.UserFeignClient;
 import com.jymj.mall.user.vo.AddressInfo;
+import com.jymj.mall.user.vo.MemberInfo;
+import com.jymj.mall.user.vo.UserInfo;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.util.Sets;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,14 +78,21 @@ public class MallOrderServiceImpl implements OrderService {
 
 
     private final MdseFeignClient mdseFeignClient;
-
-    //    private final RedissonClient redissonClient;
+    private final UserFeignClient userFeignClient;
+    private final RedissonLockUtil redissonLockUtil;
     private final MdseStockFeignClient mdseStockFeignClient;
     private final UserAddressFeignClient addressFeignClient;
     private final MallOrderRepository orderRepository;
+    private final ThreadPoolTaskExecutor executor;
     private final MallOrderMdseDetailsRepository orderMdseDetailsRepository;
     private final MallOrderDeliveryDetailsRepository orderDeliveryDetailsRepository;
 
+    /**
+     * 创建订单
+     *
+     * @param dto 添加参数
+     * @return 订单信息
+     */
     @Override
     @GlobalTransactional(name = "mall-order-add", rollbackFor = Exception.class)
     public MallOrder add(OrderDTO dto) {
@@ -93,6 +109,13 @@ public class MallOrderServiceImpl implements OrderService {
         OrderDeliveryMethodEnum orderDeliveryMethod = dto.getOrderDeliveryMethod();
 
         MallOrder mallOrder = new MallOrder();
+        mallOrder.setOrderDeliveryMethod(orderDeliveryMethod);
+        mallOrder.setOrderNo(IdUtil.getSnowflake(SystemConstants.WORK_ID, SystemConstants.MALL_ORDER_DATACENTER_ID).nextIdStr());
+        mallOrder.setOrderStatus(OrderStatusEnum.UNPAID);
+        mallOrder.setUserId(userId);
+        mallOrder.setDeleted(SystemConstants.DELETED_NO);
+        mallOrder.setRemarks(dto.getRemarks());
+        mallOrder = orderRepository.save(mallOrder);
 
         if (orderDeliveryMethod == OrderDeliveryMethodEnum.EXPRESS) {
             if (ObjectUtils.isEmpty(addressId)) {
@@ -109,18 +132,11 @@ public class MallOrderServiceImpl implements OrderService {
             orderDeliveryDetails.setAddressee(addressInfo.getName());
             orderDeliveryDetails.setMobile(addressInfo.getMobile());
             orderDeliveryDetails.setDetailedAddress(addressInfo.getRegion() + "" + addressInfo.getDetailedAddress());
+            orderDeliveryDetails.setOrderId(mallOrder.getOrderId());
             orderDeliveryDetails.setDeleted(SystemConstants.DELETED_NO);
             orderDeliveryDetails = orderDeliveryDetailsRepository.save(orderDeliveryDetails);
             mallOrder.setOrderDeliveryDetailsId(orderDeliveryDetails.getOrderDeliveryDetailsId());
         }
-        mallOrder.setOrderDeliveryMethod(orderDeliveryMethod);
-        mallOrder.setOrderNo(IdUtil.getSnowflake(SystemConstants.WORK_ID, SystemConstants.MALL_ORDER_DATACENTER_ID).nextIdStr());
-        mallOrder.setOrderStatus(OrderStatusEnum.UNPAID);
-        mallOrder.setUserId(userId);
-        mallOrder.setDeleted(SystemConstants.DELETED_NO);
-        mallOrder.setRemarks(dto.getRemarks());
-        mallOrder = orderRepository.save(mallOrder);
-
 
         List<MallOrderMdseDetails> orderMdseDetailsList = saveOrderMdseDetailsList(orderMdseList, mallOrder.getOrderId());
 
@@ -144,36 +160,42 @@ public class MallOrderServiceImpl implements OrderService {
      */
     private List<MallOrderMdseDetails> saveOrderMdseDetailsList(List<OrderMdseDTO> orderMdseList, Long orderId) {
         List<MallOrderMdseDetails> orderMdseDetailsList = Lists.newArrayList();
-
-        MdseInfoShow show = MdseInfoShow.builder().stock(true).shop(true).picture(true).build();
+        Result<MemberInfo> memberInfoResult = null;
+        MdseInfoShow show = MdseInfoShow.builder().stock(1).shop(1).picture(1).build();
         for (OrderMdseDTO orderMdseDTO : orderMdseList) {
             Integer type = orderMdseDTO.getType();
-            if (type == 1) {
-                String key = String.format("lock:order:mdse:%d:stock:%d", orderMdseDTO.getMdseId(), orderMdseDTO.getStockId());
-//                RLock lock = redissonClient.getLock(key);
 
-                try {
-//                    boolean tryLock = lock.tryLock(5, TimeUnit.SECONDS);
-//                    if (!tryLock) {
-//                        throw new BusinessException("请稍后再试");
-//                    }
-                    Result<MdseInfo> mdseInfoResult = mdseFeignClient.getMdseOptionalById(orderMdseDTO.getMdseId(), show);
-                    if (!Result.isSuccess(mdseInfoResult)) {
-                        throw new BusinessException("商品信息错误");
+            String key = String.format("mall-order:order:mdse:%d:stock:%d", orderMdseDTO.getMdseId(), orderMdseDTO.getStockId());
+            Boolean lock = redissonLockUtil.lock(key);
+            if (Boolean.TRUE.equals(lock)) {
+
+                if (type.equals(2)) {
+                    if (memberInfoResult == null) {
+                        memberInfoResult = userFeignClient.getMemberByUserId(UserUtils.getUserId());
                     }
-                    MdseInfo mdseInfo = mdseInfoResult.getData();
-                    MallOrderMdseDetails mdseDetailsList = saveMdseDetails(orderId, mdseInfo, orderMdseDTO);
-                    orderMdseDetailsList.add(mdseDetailsList);
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    throw new BusinessException("请稍后再试");
-                } finally {
-//                    lock.unlock();
+                    if (!Result.isSuccess(memberInfoResult)) {
+                        throw new BusinessException("请先填写会员基本信息");
+                    }
+
                 }
 
+                Result<MdseInfo> mdseInfoResult = mdseFeignClient.getMdseOptionalById(orderMdseDTO.getMdseId(), show);
 
+                if (!Result.isSuccess(mdseInfoResult)) {
+                    redissonLockUtil.unlock(key);
+                    throw new BusinessException("商品信息错误");
+                }
+
+                MdseInfo mdseInfo = mdseInfoResult.getData();
+                MallOrderMdseDetails mdseDetailsList = saveMdseDetails(orderId, 0L, mdseInfo, orderMdseDTO);
+                orderMdseDetailsList.add(mdseDetailsList);
+
+                redissonLockUtil.unlock(key);
+            } else {
+                throw new BusinessException("创建订单失败");
             }
+
         }
 
         return orderMdseDetailsList;
@@ -182,17 +204,18 @@ public class MallOrderServiceImpl implements OrderService {
     /**
      * 保存订单商品详情
      *
-     * @param orderId      订单id
-     * @param mdseInfo     商品信息
-     * @param orderMdseDTO 商品id信息
+     * @param orderId            订单id
+     * @param orderMdseDetailsId
+     * @param mdseInfo           商品信息
+     * @param orderMdseDTO       商品id信息
      * @return 订单商品详情
      */
-    private MallOrderMdseDetails saveMdseDetails(Long orderId, MdseInfo mdseInfo, OrderMdseDTO orderMdseDTO) {
+    private MallOrderMdseDetails saveMdseDetails(Long orderId, Long orderMdseDetailsId, MdseInfo mdseInfo, OrderMdseDTO orderMdseDTO) {
 
         MallOrderMdseDetails orderMdseDetails = new MallOrderMdseDetails();
         orderMdseDetails.setOrderId(orderId);
         orderMdseDetails.setMdseId(mdseInfo.getMdseId());
-
+        orderMdseDetails.setUsageStatus(SystemConstants.STATUS_CLOSE);
         StockInfo stockInfo = mdseInfo.getStockList()
                 .stream()
                 .filter(info -> info.getStockId().equals(orderMdseDTO.getStockId()))
@@ -209,13 +232,20 @@ public class MallOrderServiceImpl implements OrderService {
             stockDTO.setStockId(stockInfo.getStockId());
             stockDTO.setTotalInventory(orderMdseDTO.getQuantity());
             mdseStockFeignClient.lessMdseStock(stockDTO);
+
+            mdseFeignClient.updateMdseSalesVolume(MdseDTO.builder().mdseId(orderMdseDetails.getMdseId()).salesVolume(orderMdseDTO.getQuantity()).build());
         }
 
-        ShopInfo shopInfo = mdseInfo.getShopInfoList()
-                .stream()
-                .filter(info -> info.getShopId().equals(orderMdseDTO.getShopId()))
-                .findFirst()
-                .orElseThrow(() -> new BusinessException("店铺信息错误"));
+        if (mdseInfo.getClassify() == 1) {
+            ShopInfo shopInfo = mdseInfo.getShopInfoList()
+                    .stream()
+                    .filter(info -> info.getShopId().equals(orderMdseDTO.getShopId()))
+                    .findFirst()
+                    .orElseThrow(() -> new BusinessException("店铺信息错误"));
+            orderMdseDetails.setShopId(shopInfo.getShopId());
+            orderMdseDetails.setShopName(shopInfo.getName());
+        }
+
 
         String pictureUrl = mdseInfo.getPictureList()
                 .stream()
@@ -248,23 +278,41 @@ public class MallOrderServiceImpl implements OrderService {
 
         BigDecimal price = stockInfo.getPrice();
         BigDecimal mdsePrice = price.multiply(new BigDecimal(String.valueOf(orderMdseDTO.getQuantity())));
-
         orderMdseDetails.setStockId(stockInfo.getStockId());
-        orderMdseDetails.setShopId(shopInfo.getShopId());
         orderMdseDetails.setQuantity(orderMdseDTO.getQuantity());
-        orderMdseDetails.setType(orderMdseDTO.getType());
-        orderMdseDetails.setShopName(shopInfo.getName());
+        orderMdseDetails.setType(mdseInfo.getClassify());
         orderMdseDetails.setMdseName(mdseInfo.getName());
         orderMdseDetails.setMdseStockSpec(stockSpec);
         orderMdseDetails.setMdsePicture(pictureUrl);
         orderMdseDetails.setMdsePrice(mdsePrice);
+        orderMdseDetails.setCardId(orderMdseDetailsId);
         orderMdseDetails.setDeleted(SystemConstants.DELETED_NO);
+        orderMdseDetails = orderMdseDetailsRepository.save(orderMdseDetails);
+        if (mdseInfo.getClassify() == 2) {
+            List<MdseInfo> mdseInfoList = mdseInfo.getMdseInfoList();
+            for (MdseInfo info : mdseInfoList) {
+                saveMdseDetails(orderId, orderMdseDetails.getOrderMdseDetailsId(), info, OrderMdseDTO.builder()
+                        .mdseId(info.getMdseId())
+                        .quantity(1)
+                        .shopId(info.getShopInfoList().get(0).getShopId())
+                        .stockId(info.getStockList().get(0).getStockId())
+                        .build());
+            }
+        }
 
-        return orderMdseDetailsRepository.save(orderMdseDetails);
+        return orderMdseDetails;
     }
 
+
+    /**
+     * 修改订单
+     *
+     * @param dto 修改dto
+     * @return 订单信息
+     */
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @GlobalTransactional(name = "mall-order-update", rollbackFor = Exception.class)
+    @CacheEvict(value = "mall-order:order-info:", key = "'order-id:'+#dto.orderId")
     public Optional<MallOrder> update(OrderDTO dto) {
         if (!ObjectUtils.isEmpty(dto)) {
             if (ObjectUtils.isEmpty(dto.getOrderId()) && ObjectUtils.isEmpty(dto.getOrderNo())) {
@@ -294,6 +342,12 @@ public class MallOrderServiceImpl implements OrderService {
         return Optional.empty();
     }
 
+    /**
+     * 更新订单地址
+     *
+     * @param addressId 用户地址id
+     * @param mallOrder 订单信息
+     */
     private void updateOrderAddress(Long addressId, MallOrder mallOrder) {
         Result<AddressInfo> addressInfoResult = addressFeignClient.getAddressById(addressId);
         if (!Result.isSuccess(addressInfoResult)) {
@@ -310,6 +364,12 @@ public class MallOrderServiceImpl implements OrderService {
         orderDeliveryDetailsRepository.save(orderDeliveryDetails);
     }
 
+    /**
+     * 更新订单状态
+     *
+     * @param statusEnum 订单状态
+     * @param mallOrder  订单信息
+     */
     private void updateOrderStatus(OrderStatusEnum statusEnum, MallOrder mallOrder) {
         switch (statusEnum) {
             case UNPAID:
@@ -339,6 +399,12 @@ public class MallOrderServiceImpl implements OrderService {
         mallOrder.setOrderStatus(statusEnum);
     }
 
+    /**
+     * 更新订单状态到关闭或取消（恢复库存用）
+     *
+     * @param statusEnum 订单状态
+     * @param mallOrder  订单信息
+     */
     private void updateOrderStatusClosedOrCanceled(OrderStatusEnum statusEnum, MallOrder mallOrder) {
         if (statusEnum == OrderStatusEnum.CANCELED || statusEnum == OrderStatusEnum.CLOSED) {
             List<MallOrderMdseDetails> mdseDetailsList = orderMdseDetailsRepository.findAllByOrderId(mallOrder.getOrderId());
@@ -347,17 +413,29 @@ public class MallOrderServiceImpl implements OrderService {
                     Long stockId = orderMdseDetails.getStockId();
                     Integer quantity = orderMdseDetails.getQuantity();
                     mdseStockFeignClient.lessMdseStock(StockDTO.builder().stockId(stockId).totalInventory(-quantity).build());
+                    mdseFeignClient.updateMdseSalesVolume(MdseDTO.builder().mdseId(orderMdseDetails.getMdseId()).salesVolume(-quantity).build());
                 }
                 if (mallOrder.getOrderStatus() == OrderStatusEnum.UNSHIPPED && orderMdseDetails.getType() == 1) {
                     Long stockId = orderMdseDetails.getStockId();
                     Integer quantity = orderMdseDetails.getQuantity();
                     mdseStockFeignClient.lessMdseStock(StockDTO.builder().stockId(stockId).totalInventory(-quantity).build());
+                    mdseFeignClient.updateMdseSalesVolume(MdseDTO.builder().mdseId(orderMdseDetails.getMdseId()).salesVolume(-quantity).build());
+                    //退款
+                    executor.execute(() -> {
+
+                    });
                 }
             }
         }
     }
 
+    /**
+     * 删除订单
+     *
+     * @param ids id集合 字符串类型 英文,分割
+     */
     @Override
+    @CacheEvict(value = "mall-order:order-info:", allEntries = true)
     public void delete(String ids) {
         List<Long> idList = Arrays.stream(ids.split(",")).filter(id -> !ObjectUtils.isEmpty(id)).map(Long::parseLong).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(idList)) {
@@ -367,11 +445,23 @@ public class MallOrderServiceImpl implements OrderService {
         }
     }
 
+    /**
+     * 根据id查询订单
+     *
+     * @param id id
+     * @return 订单信息
+     */
     @Override
     public Optional<MallOrder> findById(Long id) {
         return orderRepository.findById(id);
     }
 
+    /**
+     * 实体转VO
+     *
+     * @param entity 实体
+     * @return 订单vo信息
+     */
     @Override
     public MallOrderInfo entity2vo(MallOrder entity) {
         if (!ObjectUtils.isEmpty(entity)) {
@@ -389,11 +479,15 @@ public class MallOrderServiceImpl implements OrderService {
             orderInfo.setDeliveryTime(entity.getDeliveryTime());
             orderInfo.setReceivingTime(entity.getReceivingTime());
             orderInfo.setRemarks(entity.getRemarks());
+            //订单商品详情
             List<MallOrderMdseDetails> orderMdseDetailsList = orderMdseDetailsRepository.findAllByOrderId(entity.getOrderId());
-            List<MallOrderMdseDetailsInfo> orderMdseDetailsInfoList = orderMdseDetailsList2vo(orderMdseDetailsList);
-            orderInfo.setOrderMdseDetailsInfoList(orderMdseDetailsInfoList);
-            if (!ObjectUtils.isEmpty(entity.getOrderDeliveryDetailsId())) {
+            if (!CollectionUtils.isEmpty(orderMdseDetailsList)) {
+                List<MallOrderMdseDetailsInfo> orderMdseDetailsInfoList = orderMdseDetailsList2vo(orderMdseDetailsList, Boolean.FALSE);
+                orderInfo.setOrderMdseDetailsInfoList(orderMdseDetailsInfoList);
+            }
 
+            //订单收货地址信息
+            if (!ObjectUtils.isEmpty(entity.getOrderDeliveryDetailsId())) {
                 Optional<MallOrderDeliveryDetails> orderDeliveryDetailsOptional = orderDeliveryDetailsRepository.findById(entity.getOrderDeliveryDetailsId());
                 orderDeliveryDetailsOptional.ifPresent(orderDeliveryDetails -> {
                     MallOrderDeliveryDetailsInfo orderDeliveryDetailsInfo = new MallOrderDeliveryDetailsInfo();
@@ -404,7 +498,13 @@ public class MallOrderServiceImpl implements OrderService {
                     orderDeliveryDetailsInfo.setDetailedAddress(orderDeliveryDetails.getDetailedAddress());
                     orderInfo.setOrderDeliveryDetailsInfo(orderDeliveryDetailsInfo);
                 });
+            }
+            //订单用户信息
+            Result<UserInfo> userInfoResult = userFeignClient.getUserById(entity.getUserId());
 
+            if (Result.isSuccess(userInfoResult)) {
+                UserInfo userInfo = userInfoResult.getData();
+                orderInfo.setUserInfo(userInfo);
             }
 
             return orderInfo;
@@ -412,46 +512,96 @@ public class MallOrderServiceImpl implements OrderService {
         return null;
     }
 
-    private List<MallOrderMdseDetailsInfo> orderMdseDetailsList2vo(List<MallOrderMdseDetails> orderMdseDetailsList) {
+    /**
+     * 订单商品实体集合转VO
+     *
+     * @param orderMdseDetailsList 订单商品实体集合
+     * @return 视图对象集合
+     */
+    private List<MallOrderMdseDetailsInfo> orderMdseDetailsList2vo(List<MallOrderMdseDetails> orderMdseDetailsList, boolean carded) {
 
-        return Optional.of(orderMdseDetailsList)
+        List<CompletableFuture<MallOrderMdseDetailsInfo>> futureList = Optional.of(orderMdseDetailsList)
                 .orElse(Lists.newArrayList())
                 .stream()
-                .filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::orderMdseDetails2vo)
+                .filter(Objects::nonNull)
+                .filter(entity -> Boolean.FALSE.equals(carded) ? entity.getCardId() == 0 : Boolean.TRUE)
+                .map(entity -> CompletableFuture.supplyAsync(() -> orderCardDetails2vo(entity, orderMdseDetailsList), executor))
                 .collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+
     }
 
-    private MallOrderMdseDetailsInfo orderMdseDetails2vo(MallOrderMdseDetails mallOrderMdseDetails) {
-        MallOrderMdseDetailsInfo info = new MallOrderMdseDetailsInfo();
-        info.setMdseId(mallOrderMdseDetails.getMdseId());
-        info.setStockId(mallOrderMdseDetails.getStockId());
-        info.setShopId(mallOrderMdseDetails.getShopId());
-        info.setQuantity(mallOrderMdseDetails.getQuantity());
-        info.setType(mallOrderMdseDetails.getType());
-        info.setShopName(mallOrderMdseDetails.getShopName());
-        info.setMdseName(mallOrderMdseDetails.getMdseName());
-        info.setMdseStockSpec(mallOrderMdseDetails.getMdseStockSpec());
-        info.setMdsePicture(mallOrderMdseDetails.getMdsePicture());
-        info.setMdsePrice(mallOrderMdseDetails.getMdsePrice());
+    private MallOrderMdseDetailsInfo orderCardDetails2vo(MallOrderMdseDetails orderMdseDetails, List<MallOrderMdseDetails> orderMdseDetailsList) {
+        MallOrderMdseDetailsInfo info = orderMdseDetails2vo(orderMdseDetails);
+        info.setCardMdseInfoList(orderMdseDetailsList2vo(
+                orderMdseDetailsList
+                        .stream()
+                        .filter(details -> details.getCardId().equals(orderMdseDetails.getOrderMdseDetailsId()))
+                        .collect(Collectors.toList()), Boolean.TRUE));
         return info;
     }
 
+    /**
+     * 订单商品实体转VO
+     *
+     * @param mallOrderMdseDetails 订单商品实体
+     * @return 视图对象
+     */
+    private MallOrderMdseDetailsInfo orderMdseDetails2vo(MallOrderMdseDetails mallOrderMdseDetails) {
+        MallOrderMdseDetailsInfo info = new MallOrderMdseDetailsInfo();
+        if (Objects.nonNull(mallOrderMdseDetails)) {
+            info.setMdseId(mallOrderMdseDetails.getMdseId());
+            info.setStockId(mallOrderMdseDetails.getStockId());
+            info.setShopId(mallOrderMdseDetails.getShopId());
+            info.setQuantity(mallOrderMdseDetails.getQuantity());
+            info.setType(mallOrderMdseDetails.getType());
+            info.setShopName(mallOrderMdseDetails.getShopName());
+            info.setMdseName(mallOrderMdseDetails.getMdseName());
+            info.setMdseStockSpec(mallOrderMdseDetails.getMdseStockSpec());
+            info.setUsageStatus(mallOrderMdseDetails.getUsageStatus());
+            info.setMdsePicture(mallOrderMdseDetails.getMdsePicture());
+            info.setMdsePrice(mallOrderMdseDetails.getMdsePrice());
+        }
+
+        return info;
+    }
+
+    /**
+     * 订单集合转VO
+     *
+     * @param entityList 实体列表
+     * @return VO
+     */
     @Override
     public List<MallOrderInfo> list2vo(List<MallOrder> entityList) {
-        return Optional.of(entityList)
+        List<CompletableFuture<MallOrderInfo>> futureList = Optional.of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream()
-                .filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo)
+                .filter(Objects::nonNull)
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity), executor))
+                .collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 订单分页
+     *
+     * @param orderPageQuery 分页参数
+     * @return 分页数据
+     */
     @Override
     public Page<MallOrder> findPage(OrderPageQuery orderPageQuery) {
         Pageable pageable = PageUtils.getPageable(orderPageQuery);
         Specification<MallOrder> specification = (root, query, criteriaBuilder) -> {
             List<Predicate> list = Lists.newArrayList();
+            Set<Long> orderIdList = Sets.newHashSet();
 
             if (!ObjectUtils.isEmpty(orderPageQuery.getUserId())) {
                 list.add(criteriaBuilder.equal(root.get("userId").as(Long.class), orderPageQuery.getUserId()));
@@ -461,7 +611,73 @@ public class MallOrderServiceImpl implements OrderService {
                 list.add(criteriaBuilder.equal(root.get("orderStatus").as(OrderStatusEnum.class), orderPageQuery.getOrderStatus()));
             }
 
-            list.add(criteriaBuilder.equal(root.get("deleted").as(Integer.class), SystemConstants.DELETED_NO));
+            if (!ObjectUtils.isEmpty(orderPageQuery.getShopIdList())) {
+                List<MallOrderMdseDetails> orderMdseDetailsList = orderMdseDetailsRepository.findAllByShopIdIn(orderPageQuery.getShopIdList());
+                orderIdList.addAll(orderMdseDetailsList.stream().map(MallOrderMdseDetails::getOrderId).filter(orderId -> !ObjectUtils.isEmpty(orderId)).collect(Collectors.toList()));
+                orderIdList.add(0L);
+            }
+
+            if (!ObjectUtils.isEmpty(orderPageQuery.getStartDate()) && !ObjectUtils.isEmpty(orderPageQuery.getEndDate())) {
+                list.add(criteriaBuilder.between(root.get("createTime").as(Date.class), orderPageQuery.getStartDate(), orderPageQuery.getEndDate()));
+            }
+
+            if (StringUtils.hasText(orderPageQuery.getOrderNo())) {
+                list.add(criteriaBuilder.like(root.get("orderNo").as(String.class), SystemConstants.generateSqlLike(orderPageQuery.getOrderNo())));
+            }
+
+            if (StringUtils.hasText(orderPageQuery.getMdseName())) {
+                List<MallOrderMdseDetails> orderMdseDetailsList = orderMdseDetailsRepository.findAllByMdseNameIsLike(SystemConstants.generateSqlLike(orderPageQuery.getMdseName()));
+                orderIdList.addAll(orderMdseDetailsList.stream().map(MallOrderMdseDetails::getOrderId).filter(orderId -> !ObjectUtils.isEmpty(orderId)).collect(Collectors.toList()));
+                orderIdList.add(0L);
+            }
+
+            if (!ObjectUtils.isEmpty(orderPageQuery.getMdseId())) {
+                Result<List<MdsePurchaseRecordDTO>> purchaseRecordListResult = mdseFeignClient.getPurchaseRecordByMdseId(orderPageQuery.getMdseId());
+               if (Result.isSuccess(purchaseRecordListResult)){
+                   orderIdList = Sets.newHashSet();
+                   orderIdList.addAll(purchaseRecordListResult.getData().stream().map(MdsePurchaseRecordDTO::getOrderId).filter(Objects::nonNull).collect(Collectors.toList()));
+                   orderIdList.add(0L);
+               }else {
+                   throw new BusinessException("服务异常");
+               }
+            }
+
+            if (StringUtils.hasText(orderPageQuery.getAddressee())) {
+                List<MallOrderDeliveryDetails> orderDeliveryDetailsList = orderDeliveryDetailsRepository.findAllByAddresseeIsLike(SystemConstants.generateSqlLike(orderPageQuery.getAddressee()));
+                orderIdList.addAll(orderDeliveryDetailsList.stream().map(MallOrderDeliveryDetails::getOrderId).filter(orderId -> !ObjectUtils.isEmpty(orderId)).collect(Collectors.toList()));
+                orderIdList.add(0L);
+            }
+
+            if (StringUtils.hasText(orderPageQuery.getMobile())) {
+                List<MallOrderDeliveryDetails> orderDeliveryDetailsList = orderDeliveryDetailsRepository.findAllByMobileLike(SystemConstants.generateSqlLike(orderPageQuery.getMobile()));
+                orderIdList.addAll(orderDeliveryDetailsList.stream().map(MallOrderDeliveryDetails::getOrderId).filter(orderId -> !ObjectUtils.isEmpty(orderId)).collect(Collectors.toList()));
+                orderIdList.add(0L);
+            }
+
+            if (Objects.nonNull(orderPageQuery.getType())) {
+                Result<List<MdsePurchaseRecordDTO>> purchaseRecordListResult = mdseFeignClient.getPurchaseRecordByType(orderPageQuery.getType());
+
+                if (Result.isSuccess(purchaseRecordListResult)) {
+                    if (orderPageQuery.getType().equals(1)) {
+                        orderIdList.retainAll(purchaseRecordListResult.getData().stream().map(MdsePurchaseRecordDTO::getOrderId).filter(Objects::nonNull).collect(Collectors.toList()));
+                    }
+                    if (orderPageQuery.getType().equals(2)) {
+                        orderIdList = Sets.newHashSet();
+                        orderIdList.addAll(purchaseRecordListResult.getData().stream().map(MdsePurchaseRecordDTO::getOrderId).filter(Objects::nonNull).collect(Collectors.toList()));
+                        orderIdList.add(0L);
+                    }
+
+                } else {
+                    throw new BusinessException("服务异常");
+                }
+            }
+
+            if (!ObjectUtils.isEmpty(orderIdList)) {
+                CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("orderId").as(Long.class));
+                orderIdList.forEach(in::value);
+                list.add(in);
+            }
+
             Predicate[] p = new Predicate[list.size()];
             return criteriaBuilder.and(list.toArray(p));
         };
@@ -469,36 +685,79 @@ public class MallOrderServiceImpl implements OrderService {
         return orderRepository.findAll(specification, pageable);
     }
 
+    /**
+     * 根据订单号查询订单
+     *
+     * @param orderNo 订单号
+     * @return 订单信息
+     */
     @Override
     public Optional<MallOrder> findByOrderNo(String orderNo) {
         return orderRepository.findByOrderNo(orderNo);
     }
 
+    /**
+     * 支付成功回调
+     *
+     * @param orderPaySuccess 支付信息
+     */
     @Override
     @GlobalTransactional(name = "mall-order-pay-success", rollbackFor = Exception.class)
     public void paySuccess(OrderPaySuccess orderPaySuccess) {
-        Optional<MallOrder> orderOptional = findById(orderPaySuccess.getOrderId());
-        MallOrder mallOrder = orderOptional.orElseThrow(() -> new BusinessException("支付成功订单不存在"));
+        String key = String.format("mall-order:order:pay-success:%d", orderPaySuccess.getOrderId());
+        Boolean lock = redissonLockUtil.lock(key);
+        if (Boolean.TRUE.equals(lock)) {
+            Optional<MallOrder> orderOptional = findById(orderPaySuccess.getOrderId());
+            MallOrder mallOrder = orderOptional.orElseThrow(() -> {
+                redissonLockUtil.unlock(key);
+                return new BusinessException("支付成功订单不存在");
+            });
+            if (mallOrder.getOrderStatus() == OrderStatusEnum.UNPAID) {
+                mallOrder.setOrderStatus(OrderStatusEnum.UNSHIPPED);
+                if (mallOrder.getOrderDeliveryMethod() == OrderDeliveryMethodEnum.PICK_UP) {
+                    mallOrder.setOrderStatus(OrderStatusEnum.COMPLETED);
+                }
 
-        mallOrder.setOrderStatus(OrderStatusEnum.UNSHIPPED);
-        if (mallOrder.getOrderDeliveryMethod() == OrderDeliveryMethodEnum.PICK_UP) {
-            mallOrder.setOrderStatus(OrderStatusEnum.COMPLETED);
-        }
+                mallOrder.setOrderPayMethod(orderPaySuccess.getOrderPayMethod());
+                mallOrder.setPayTime(orderPaySuccess.getPayTime());
+                mallOrder.setAmountActuallyPaid(orderPaySuccess.getAmountActuallyPaid());
+                mallOrder = orderRepository.save(mallOrder);
+                Long userId = mallOrder.getUserId();
 
-        mallOrder.setOrderPayMethod(orderPaySuccess.getOrderPayMethod());
-        mallOrder.setPayTime(orderPaySuccess.getPayTime());
-        mallOrder.setAmountActuallyPaid(orderPaySuccess.getAmountActuallyPaid());
-        orderRepository.save(mallOrder);
-
-        //付款减库存
-        List<MallOrderMdseDetails> orderMdseDetailsList = orderMdseDetailsRepository.findAllByOrderId(mallOrder.getOrderId());
-        for (MallOrderMdseDetails orderMdseDetails : orderMdseDetailsList) {
-            if (orderMdseDetails.getInventoryReductionMethod() == InventoryReductionMethod.PAYMENT && orderMdseDetails.getType() == 1) {
-                Long stockId = orderMdseDetails.getStockId();
-                Integer quantity = orderMdseDetails.getQuantity();
-                mdseStockFeignClient.lessMdseStock(StockDTO.builder().stockId(stockId).totalInventory(-quantity).build());
+                //付款减库存
+                List<MallOrderMdseDetails> orderMdseDetailsList = orderMdseDetailsRepository.findAllByOrderId(mallOrder.getOrderId());
+                for (MallOrderMdseDetails orderMdseDetails : orderMdseDetailsList) {
+                    if (orderMdseDetails.getInventoryReductionMethod() == InventoryReductionMethod.PAYMENT && orderMdseDetails.getType() == 1) {
+                        Long stockId = orderMdseDetails.getStockId();
+                        Integer quantity = orderMdseDetails.getQuantity();
+                        mdseStockFeignClient.lessMdseStock(StockDTO.builder().stockId(stockId).totalInventory(quantity).build());
+                    }
+                    MallOrder finalMallOrder = mallOrder;
+                    executor.execute(() -> mdseFeignClient.addMdsePurchaseRecord(MdsePurchaseRecordDTO.builder().orderId(finalMallOrder.getOrderId()).userId(userId).mdseId(orderMdseDetails.getMdseId()).type(orderMdseDetails.getType()).build()));
+                }
             }
+            redissonLockUtil.unlock(key);
         }
+
+    }
+
+    @Override
+    @CacheEvict(value = "mall-order:order-info:", key = "'order-id:'+#verifyOrderMdse.orderId")
+    public void verify(VerifyOrderMdse verifyOrderMdse) {
+        List<MallOrderMdseDetails> mallOrderMdseDetails = orderMdseDetailsRepository.findAllByOrderId(verifyOrderMdse.getOrderId());
+
+        Optional<MallOrderMdseDetails> mdseDetailsOptional = mallOrderMdseDetails.stream()
+                .filter(orderMdse -> verifyOrderMdse.getMdseId().equals(orderMdse.getMdseId())
+                        && verifyOrderMdse.getStockId().equals(orderMdse.getStockId())
+                        && SystemConstants.STATUS_CLOSE.equals(orderMdse.getUsageStatus())).findFirst();
+
+        if (!mdseDetailsOptional.isPresent()) {
+            throw new BusinessException("核销失败");
+        }
+
+        MallOrderMdseDetails orderMdseDetails = mdseDetailsOptional.get();
+        orderMdseDetails.setUsageStatus(SystemConstants.STATUS_OPEN);
+        orderMdseDetailsRepository.save(orderMdseDetails);
     }
 
 }

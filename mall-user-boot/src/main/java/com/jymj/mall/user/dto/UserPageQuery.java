@@ -38,4 +38,7 @@ public class UserPageQuery extends BasePageQueryDTO {
 
     @ApiModelProperty(value = "购买次数")
     private Integer endPurchaseCount;
+
+    @ApiModelProperty(value = "商品id")
+    private Long mdseId;
 }

@@ -14,7 +14,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * 订单
@@ -62,13 +62,13 @@ public class MallOrder extends BaseEntity {
     private OrderPayMethodEnum orderPayMethod;
 
     @ApiModelProperty("支付时间")
-    private LocalDateTime payTime;
+    private Date payTime;
 
     @ApiModelProperty("发货时间")
-    private LocalDateTime deliveryTime;
+    private Date deliveryTime;
 
     @ApiModelProperty("收货时间")
-    private LocalDateTime receivingTime;
+    private Date receivingTime;
 
     @ApiModelProperty("订单配送详情id")
     private Long orderDeliveryDetailsId;

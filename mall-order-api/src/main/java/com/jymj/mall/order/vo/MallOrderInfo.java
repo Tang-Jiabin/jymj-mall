@@ -1,13 +1,15 @@
 package com.jymj.mall.order.vo;
 
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jymj.mall.common.enums.OrderDeliveryMethodEnum;
 import com.jymj.mall.common.enums.OrderPayMethodEnum;
 import com.jymj.mall.common.enums.OrderStatusEnum;
+import com.jymj.mall.user.vo.UserInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -21,7 +23,6 @@ import java.util.List;
  */
 @Data
 public class MallOrderInfo {
-
 
     @ApiModelProperty("订单id")
     private Long orderId;
@@ -47,14 +48,17 @@ public class MallOrderInfo {
     @ApiModelProperty("创建时间")
     private Date createTime;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty("支付时间")
-    private LocalDateTime payTime;
+    private Date payTime;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty("发货时间")
-    private LocalDateTime deliveryTime;
+    private Date deliveryTime;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty("收货时间")
-    private LocalDateTime receivingTime;
+    private Date receivingTime;
 
     @ApiModelProperty("订单商品信息")
     private List<MallOrderMdseDetailsInfo> orderMdseDetailsInfoList;
@@ -67,4 +71,7 @@ public class MallOrderInfo {
 
     @ApiModelProperty("配送方式")
     private OrderDeliveryMethodEnum orderDeliveryMethod;
+
+    @ApiModelProperty("用户信息")
+    private UserInfo userInfo;
 }

@@ -61,4 +61,9 @@ public class AdminInfo {
 
     @ApiModelProperty("操作时间")
     private Date operationTime;
+
+    @ApiModelProperty("核销人员")
+    private Integer verifyPerson;
+
+
 }

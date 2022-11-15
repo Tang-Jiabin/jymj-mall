@@ -22,3 +22,5 @@ spring:
           - data-id: mall-log-config.yaml
           - data-id: mall-zipkin-config.yaml
           - data-id: mall-monitor-client.yaml
+          - data-id: mall-sentinel-config.yaml
+

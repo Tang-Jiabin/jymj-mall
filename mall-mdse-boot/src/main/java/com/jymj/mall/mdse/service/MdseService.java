@@ -1,13 +1,12 @@
 package com.jymj.mall.mdse.service;
 
 import com.jymj.mall.common.web.service.BaseService;
-import com.jymj.mall.mdse.dto.MdseDTO;
-import com.jymj.mall.mdse.dto.MdseInfoShow;
-import com.jymj.mall.mdse.dto.MdsePageQuery;
-import com.jymj.mall.mdse.dto.MdseStatusDTO;
+import com.jymj.mall.mdse.dto.*;
 import com.jymj.mall.mdse.entity.MallMdse;
+import com.jymj.mall.mdse.entity.MdsePurchaseRecord;
 import com.jymj.mall.mdse.vo.GroupInfo;
 import com.jymj.mall.mdse.vo.MdseInfo;
+import com.jymj.mall.mdse.vo.MdsePurchaseRecordInfo;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -41,8 +40,18 @@ public interface MdseService extends BaseService<MallMdse, MdseInfo, MdseDTO> {
 
     void syncToElasticUpdateMdseInfoList(List<Long> mdseIds);
 
-    void deleteCache(Long... array);
 
     List<MallMdse> findAll();
 
+    List<MallMdse> findAllByShopIds(List<Long> lids);
+
+    Page<MdsePurchaseRecord> findBuyerPage(BuyerPageQuery buyerPageQuery);
+
+    List<MdsePurchaseRecordInfo> purchaseRecordList2vo(List<MdsePurchaseRecord> content);
+
+    void addMdsePurchaseRecord(MdsePurchaseRecordDTO recordDTO);
+
+    List<MdsePurchaseRecord> getAllPurchaseRecordByMdseId(Long mdseId);
+
+    List<MdsePurchaseRecord> getAllPurchaseRecordByType(Integer type);
 }

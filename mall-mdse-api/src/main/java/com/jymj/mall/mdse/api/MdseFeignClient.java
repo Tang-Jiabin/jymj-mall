@@ -1,12 +1,13 @@
 package com.jymj.mall.mdse.api;
 
 import com.jymj.mall.common.result.Result;
+import com.jymj.mall.mdse.dto.MdseDTO;
 import com.jymj.mall.mdse.dto.MdseInfoShow;
+import com.jymj.mall.mdse.dto.MdsePurchaseRecordDTO;
 import com.jymj.mall.mdse.vo.MdseInfo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -27,4 +28,16 @@ public interface MdseFeignClient {
 
     @GetMapping("/api/v1/mdse/all/optional/{ids}")
     Result<List<MdseInfo>> getAllMdseOptionalByIds(@Valid @PathVariable String ids, @SpringQueryMap MdseInfoShow show);
+
+    @PutMapping("/api/v1/mdse/salesVolume")
+     Result<MdseInfo> updateMdseSalesVolume(@RequestBody MdseDTO mdseDTO);
+
+    @PostMapping("/api/v1/mdse/mdsePurchaseRecord")
+    Result<MdseInfo> addMdsePurchaseRecord(@RequestBody MdsePurchaseRecordDTO recordDTO);
+
+    @GetMapping("/api/v1/mdse/purchaseRecord/mdseId/{mdseId}")
+    Result<List<MdsePurchaseRecordDTO>> getPurchaseRecordByMdseId( @PathVariable Long mdseId);
+
+    @GetMapping("/api/v1/mdse/purchaseRecord/type/{type}")
+    Result<List<MdsePurchaseRecordDTO>> getPurchaseRecordByType( @PathVariable Integer type);
 }

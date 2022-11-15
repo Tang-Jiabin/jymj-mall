@@ -61,7 +61,7 @@ public class AdminController {
 
     @ApiOperation(value = "修改管理员")
     @PutMapping
-    public Result<AdminInfo> updateAdmin( @RequestBody UpdateAdminDTO updateAdminDTO) {
+    public Result<AdminInfo> updateAdmin(@RequestBody UpdateAdminDTO updateAdminDTO) {
         Optional<SysAdmin> adminOptional = adminService.update(updateAdminDTO);
         return adminOptional.map(admin -> Result.success(adminService.entity2vo(admin))).orElse(Result.failed());
     }
@@ -70,8 +70,12 @@ public class AdminController {
     @GetMapping("/id/{adminId}/info")
     public Result<AdminInfo> getAdminById(@PathVariable Long adminId) {
         Optional<SysAdmin> adminOptional = adminService.findById(adminId);
-        SysAdmin admin = adminOptional.orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_EXIST));
-        AdminInfo adminInfo = adminService.entity2vo(admin);
+//        SysAdmin admin = adminOptional.orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_EXIST));
+        if (!adminOptional.isPresent()) {
+            return Result.failed(ResultCode.USER_NOT_EXIST);
+        }
+
+        AdminInfo adminInfo = adminService.entity2vo(adminOptional.get());
         return Result.success(adminInfo);
     }
 
@@ -92,5 +96,6 @@ public class AdminController {
         PageVO<AdminInfo> adminInfoPage = PageUtils.toPageVO(adminPage, adminInfoList);
         return Result.success(adminInfoPage);
     }
+
 
 }

@@ -13,7 +13,7 @@
             </DockerPortBindingImpl>
           </list>
         </option>
-        <option name="commandLineOptions" value="-d -it --restart always --net jymj-mall-network" />
+        <option name="commandLineOptions" value="-d -it --restart always --net jymj-mall-network -v /root/jymj-mall/logs:/logs" />
         <option name="showCommandPreview" value="true" />
         <option name="sourceFilePath" value="mall-mdse-boot/Dockerfile" />
       </settings>

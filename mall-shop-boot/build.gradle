@@ -5,8 +5,10 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     implementation project(":mall-common")
-    implementation project(":mall-admin-api")
-    implementation project(":mall-common-redis")
     implementation project(":mall-common-web")
+    implementation project(":mall-common-redis")
+    implementation project(":mall-admin-api")
     implementation project(":mall-shop-api")
+    implementation project(":mall-user-api")
+    implementation project(":mall-order-api")
 }

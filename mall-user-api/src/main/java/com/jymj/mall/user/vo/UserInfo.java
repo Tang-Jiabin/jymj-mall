@@ -79,4 +79,13 @@ public class UserInfo {
 
     @ApiModelProperty(value = "登录时间")
     private Date loginTime;
+
+    @ApiModelProperty(value = "核销人员 1-是 2-不是")
+    private Integer verifyPerson;
+
+    @ApiModelProperty(value = "会员等级")
+    private Integer memberLevel;
+
+    @ApiModelProperty("会员信息")
+    private MemberInfo memberInfo;
 }

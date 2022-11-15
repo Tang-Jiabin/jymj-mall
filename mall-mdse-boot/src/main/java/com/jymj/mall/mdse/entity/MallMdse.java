@@ -89,4 +89,7 @@ public class MallMdse extends BaseEntity {
 
     @ApiModelProperty("商品状态 1-上架 2-下架")
     private Integer status;
+
+    @ApiModelProperty("商品分类  1-商品 2-卡")
+    private Integer classify;
 }

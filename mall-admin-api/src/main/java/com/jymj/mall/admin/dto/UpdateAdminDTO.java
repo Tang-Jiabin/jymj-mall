@@ -1,7 +1,10 @@
 package com.jymj.mall.admin.dto;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
@@ -18,7 +21,9 @@ import java.util.List;
  * @date 2022-08-25
  */
 @Data
-
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UpdateAdminDTO {
 
     @ApiModelProperty("管理员Id")
@@ -67,4 +72,7 @@ public class UpdateAdminDTO {
     @NotEmpty(message = "用户角色不能为空")
     @ApiModelProperty("角色Id集合")
     private List<Long> roleIdList;
+
+    @ApiModelProperty("核销人员")
+    private Integer verifyPerson;
 }

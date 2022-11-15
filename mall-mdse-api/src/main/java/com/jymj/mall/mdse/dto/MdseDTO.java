@@ -3,7 +3,10 @@ package com.jymj.mall.mdse.dto;
 import com.jymj.mall.mdse.enums.InventoryReductionMethod;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -18,6 +21,9 @@ import java.util.Set;
  * @date 2022-08-31
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @ApiModel("商品")
 public class MdseDTO {
 
@@ -32,6 +38,9 @@ public class MdseDTO {
 
     @ApiModelProperty("商品名称")
     private String name;
+
+    @ApiModelProperty("销售数量")
+    private Integer salesVolume;
 
     @ApiModelProperty("商品编号")
     private String number;
@@ -90,4 +99,12 @@ public class MdseDTO {
     @ApiModelProperty("商品状态 1-上架 2-下架")
     private Integer status;
 
+    @ApiModelProperty("卡商品集合")
+    private Set<CardMdseDTO> cardMdseList;
+
+    @ApiModelProperty("生效规则")
+    private EffectiveRulesDTO effectiveRules;
+
+    @ApiModelProperty("商品分类  1-商品 2-卡")
+    private Integer classify;
 }

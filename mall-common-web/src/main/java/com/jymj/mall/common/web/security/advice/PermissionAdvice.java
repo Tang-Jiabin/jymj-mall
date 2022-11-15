@@ -3,7 +3,7 @@ package com.jymj.mall.common.web.security.advice;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import com.jymj.mall.common.constants.GlobalConstants;
-import com.jymj.mall.common.redis.utils.RedisUtils;
+import com.jymj.mall.common.redis.RedisUtils;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.result.ResultCode;
 import com.jymj.mall.common.web.security.annotation.RequirePerms;

@@ -1,7 +1,6 @@
 package com.jymj.mall.mdse.service.impl;
 
 import com.jymj.mall.common.constants.SystemConstants;
-import com.jymj.mall.common.redis.utils.RedisUtils;
 import com.jymj.mall.mdse.dto.PictureDTO;
 import com.jymj.mall.mdse.entity.MallPicture;
 import com.jymj.mall.mdse.enums.PictureType;
@@ -12,7 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.util.Lists;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -20,7 +20,9 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -37,8 +39,9 @@ import java.util.stream.Collectors;
 public class PictureServiceImpl implements PictureService {
 
     private final MallPictureRepository pictureRepository;
-    private final RedisUtils redisUtils;
+
     private final ThreadPoolTaskExecutor executor;
+
     @Override
     public MallPicture add(PictureDTO dto) {
 
@@ -53,11 +56,13 @@ public class PictureServiceImpl implements PictureService {
     }
 
     @Override
+    @CacheEvict(value = {"mall-mdse:picture-info:", "mall-mdse:picture-entity:"}, key = "'picture-id:'+#dto.pictureId")
     public Optional<MallPicture> update(PictureDTO dto) {
         return Optional.empty();
     }
 
     @Override
+    @CacheEvict(value = {"mall-mdse:picture-info:", "mall-mdse:picture-entity:"}, allEntries = true)
     public void delete(String ids) {
         List<Long> idList = Arrays.stream(ids.split(",")).map(Long::parseLong).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(idList)) {
@@ -67,36 +72,22 @@ public class PictureServiceImpl implements PictureService {
     }
 
     @Override
+    @Cacheable(cacheNames = "mall-mdse:picture-entity:", key = "'picture-id:'+#id")
     public Optional<MallPicture> findById(Long id) {
-        return Optional.empty();
+        return pictureRepository.findById(id);
     }
 
     @Override
+    @Cacheable(cacheNames = "mall-mdse:picture-info:", key = "'picture-id:'+#entity.pictureId")
     public PictureInfo entity2vo(MallPicture entity) {
         if (!ObjectUtils.isEmpty(entity)) {
-
-            String key = String.format("mall-mdse:pictureInfo:id:%d", entity.getPictureId());
-            PictureInfo value = (PictureInfo) redisUtils.get(key);
-            if (!ObjectUtils.isEmpty(value)) {
-                executor.execute(()->syncUpdateVo(key, entity));
-                return value;
-            }
-
-            PictureInfo pictureInfo = getPictureInfo(entity);
-            redisUtils.set(key, pictureInfo, 60 * 60 * 8L);
-            return pictureInfo;
-
+            return getPictureInfo(entity);
         }
         return null;
 
     }
 
-    @Async
-    public void syncUpdateVo(String key, MallPicture entity) {
-        PictureInfo pictureInfo = getPictureInfo(entity);
-        log.info("同步更新PictureInfo : {}", pictureInfo);
-        redisUtils.set(key, pictureInfo, 60 * 60 * 8L);
-    }
+
     @NotNull
     private static PictureInfo getPictureInfo(MallPicture entity) {
         PictureInfo pictureInfo = new PictureInfo();
@@ -109,11 +100,15 @@ public class PictureServiceImpl implements PictureService {
 
     @Override
     public List<PictureInfo> list2vo(List<MallPicture> entityList) {
-        return Optional.of(entityList)
+        List<CompletableFuture<PictureInfo>> futureList = Optional.of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream()
                 .filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo)
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity), executor))
+                .collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -154,7 +149,7 @@ public class PictureServiceImpl implements PictureService {
         //需要添加的商品图片
         List<PictureDTO> addPicList = dtoDataList.stream()
                 .filter(pic -> !dbDataList.stream().map(MallPicture::getUrl).collect(Collectors.toList()).contains(pic.getUrl()))
-                .map(pic->{
+                .map(pic -> {
                     pic.setMdseId(mdseId);
                     pic.setType(type);
                     return pic;

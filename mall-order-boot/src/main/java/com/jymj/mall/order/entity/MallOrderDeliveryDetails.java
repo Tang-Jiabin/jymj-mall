@@ -39,6 +39,9 @@ public class MallOrderDeliveryDetails extends BaseEntity {
     @ApiModelProperty("配送方式")
     private OrderDeliveryMethodEnum orderDeliveryMethod;
 
+    @ApiModelProperty("订单id")
+    private Long orderId;
+
     @ApiModelProperty("地址id")
     private Long addressId;
 

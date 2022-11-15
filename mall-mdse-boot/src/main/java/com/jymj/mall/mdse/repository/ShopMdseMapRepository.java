@@ -19,4 +19,6 @@ public interface ShopMdseMapRepository extends JpaRepository<ShopMdseMap,Long> {
     List<ShopMdseMap> findAllByMdseId(Long mdseId);
 
     List<ShopMdseMap> findAllByShopId(Long shopId);
+
+    List<ShopMdseMap> findAllByShopIdIn(List<Long> idList);
 }

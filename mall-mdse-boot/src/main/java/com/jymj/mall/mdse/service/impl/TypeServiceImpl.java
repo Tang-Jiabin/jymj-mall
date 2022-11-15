@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.jymj.mall.admin.api.DeptFeignClient;
 import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.constants.SystemConstants;
-import com.jymj.mall.common.redis.utils.RedisUtils;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.mdse.dto.TypeDTO;
@@ -17,7 +16,8 @@ import com.jymj.mall.shop.vo.MallInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -26,7 +26,9 @@ import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -45,7 +47,6 @@ public class TypeServiceImpl implements TypeService {
     private final MdseTypeRepository typeRepository;
     private final MallFeignClient mallFeignClient;
     private final DeptFeignClient deptFeignClient;
-    private final RedisUtils redisUtils;
     private final ThreadPoolTaskExecutor executor;
     @Override
     public MdseType add(TypeDTO dto) {
@@ -61,6 +62,7 @@ public class TypeServiceImpl implements TypeService {
     }
 
     @Override
+    @CacheEvict(cacheNames = {"mall-mdse:type-info:", "mall-mdse:type-entity:"}, key = "'type-id:'+#dto.typeId")
     public Optional<MdseType> update(TypeDTO dto) {
         if (!ObjectUtils.isEmpty(dto.getTypeId())) {
             Optional<MdseType> typeOptional = typeRepository.findById(dto.getTypeId());
@@ -96,6 +98,7 @@ public class TypeServiceImpl implements TypeService {
     }
 
     @Override
+    @CacheEvict(value = {"mall-mdse:type-info:", "mall-mdse:type-entity:"}, allEntries = true)
     public void delete(String ids) {
         List<Long> idList = Arrays.stream(ids.split(",")).filter(id -> !ObjectUtils.isEmpty(id)).map(Long::parseLong).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(idList)) {
@@ -105,33 +108,21 @@ public class TypeServiceImpl implements TypeService {
     }
 
     @Override
+    @Cacheable(cacheNames = "mall-mdse:type-entity:", key = "'label-id:'+#id")
     public Optional<MdseType> findById(Long id) {
         return typeRepository.findById(id);
     }
 
     @Override
+    @Cacheable(cacheNames = "mall-mdse:type-info:", key = "'label-id:'+#entity.typeId")
     public TypeInfo entity2vo(MdseType entity) {
         if (!ObjectUtils.isEmpty(entity)) {
-            String key = String.format("mall-mdse:typeInfo:id:%d", entity.getTypeId());
-            TypeInfo value = (TypeInfo) redisUtils.get(key);
-            if (!ObjectUtils.isEmpty(value)) {
-                executor.execute(()->syncUpdateVo(key, entity));
-                return value;
-            }
-
-            TypeInfo typeInfo = getTypeInfo(entity);
-            redisUtils.set(key, typeInfo, 60 * 60 * 8L);
-            return typeInfo;
+            return getTypeInfo(entity);
         }
         return null;
     }
 
-    @Async
-    public void syncUpdateVo(String key, MdseType entity) {
-        TypeInfo typeInfo = getTypeInfo(entity);
-        log.info("同步更新TypeInfo : {}", typeInfo);
-        redisUtils.set(key, typeInfo, 60 * 60 * 8L);
-    }
+
 
     @NotNull
     private static TypeInfo getTypeInfo(MdseType entity) {
@@ -145,11 +136,15 @@ public class TypeServiceImpl implements TypeService {
 
     @Override
     public List<TypeInfo> list2vo(List<MdseType> entityList) {
-        return Optional.of(entityList)
+        List<CompletableFuture<TypeInfo>> futureList = Optional.of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream()
                 .filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo)
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity), executor))
+                .collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 

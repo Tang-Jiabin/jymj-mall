@@ -29,10 +29,11 @@ import com.jymj.mall.shop.vo.TagInfo;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -40,6 +41,7 @@ import org.springframework.util.StringUtils;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -63,6 +65,8 @@ public class MallServiceImpl implements MallService {
     private final MallDetailsRepository mallDetailsRepository;
     private final MallAuthService authService;
     private final RoleFeignClient roleFeignClient;
+
+    private final ThreadPoolTaskExecutor executor;
 
     @Override
     @GlobalTransactional(name = "mall-shop-add-mall", rollbackFor = Exception.class)
@@ -139,10 +143,9 @@ public class MallServiceImpl implements MallService {
     @Override
     public Page<MallDetails> findPage(MallPageQueryDTO mallPageQuery) {
 
-        Sort.Direction direction = PageUtils.getPageDirection(mallPageQuery);
-        String properties = PageUtils.getPageProperties(mallPageQuery);
 
-        Pageable pageable = PageRequest.of(mallPageQuery.getPage(), mallPageQuery.getSize(), direction, properties);
+        Pageable pageable = PageUtils.getPageable(mallPageQuery);
+
         return mallDetailsRepository.findAll((root, query, criteriaBuilder) -> {
             List<Predicate> list = Lists.newArrayList();
 
@@ -183,17 +186,16 @@ public class MallServiceImpl implements MallService {
 
     @Override
     public List<MallInfo> list2vo(List<MallDetails> content) {
-        List<MallInfo> mallVOList = Lists.newArrayList();
-        Optional.ofNullable(content)
+
+        List<CompletableFuture<MallInfo>> futureList = Optional.ofNullable(content)
                 .orElse(Lists.newArrayList())
-                .forEach(mall -> {
-                    MallInfo mallVO = mall2vo(mall);
-                    mallVOList.add(mallVO);
-                });
-        return mallVOList;
+                .stream().map(entity -> CompletableFuture.supplyAsync(() -> mall2vo(entity),executor))
+                .collect(Collectors.toList());
+        return futureList.stream().map(CompletableFuture::join).collect(Collectors.toList());
     }
 
     @Override
+    @CacheEvict(value="mall-shop:mall-info:",allEntries = true)
     public void deleteMall(String ids) {
         List<Long> mallIds = Arrays.stream(ids.split(",")).map(Long::parseLong).collect(Collectors.toList());
         Optional.of(mallIds)
@@ -216,6 +218,7 @@ public class MallServiceImpl implements MallService {
 
     @Override
     @GlobalTransactional(name = "mall-shop-update-mall", rollbackFor = Exception.class)
+    @CacheEvict(value="mall-shop:mall-info:",key = "'mall-id:'+#updateMallDTO.mallId")
     public void updateMall(UpdateMallDTO updateMallDTO) {
         Optional<MallDetails> mallDetailsOptional = mallDetailsRepository.findById(updateMallDTO.getMallId());
 
@@ -248,6 +251,8 @@ public class MallServiceImpl implements MallService {
     }
 
 
+    @Override
+    @Cacheable(cacheNames = "mall-shop:mall-info:", key = "'mall-id:'+#mall.mallId")
     public MallInfo mall2vo(MallDetails mall) {
         MallInfo mallVO = new MallInfo();
         mallVO.setMallId(mall.getMallId());

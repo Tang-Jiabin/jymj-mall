@@ -1,21 +1,33 @@
 package com.jymj.mall.user.service.impl;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.jymj.mall.admin.api.RoleFeignClient;
+import com.jymj.mall.admin.vo.RoleInfo;
 import com.jymj.mall.common.constants.SystemConstants;
+import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
+import com.jymj.mall.mdse.api.MdseFeignClient;
+import com.jymj.mall.mdse.dto.MdsePurchaseRecordDTO;
 import com.jymj.mall.user.dto.UserAuthDTO;
 import com.jymj.mall.user.dto.UserDTO;
 import com.jymj.mall.user.dto.UserPageQuery;
+import com.jymj.mall.user.entity.MallMember;
 import com.jymj.mall.user.entity.MallUser;
+import com.jymj.mall.user.entity.MallUserRole;
 import com.jymj.mall.user.enums.MemberEnum;
 import com.jymj.mall.user.enums.SourceEnum;
+import com.jymj.mall.user.repository.MallUserRoleRepository;
 import com.jymj.mall.user.repository.UserRepository;
+import com.jymj.mall.user.service.MemberService;
 import com.jymj.mall.user.service.UserService;
 import com.jymj.mall.user.vo.UserInfo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,11 +35,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -41,8 +52,13 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-
+    private final MallUserRoleRepository userRoleRepository;
+    private final RoleFeignClient roleFeignClient;
+    private final ThreadPoolTaskExecutor executor;
+    private final MdseFeignClient mdseFeignClient;
     private final PasswordEncoder passwordEncoder;
+
+    private final MemberService memberService;
 
 
     @Override
@@ -54,10 +70,20 @@ public class UserServiceImpl implements UserService {
             UserAuthDTO userAuthDTO = new UserAuthDTO();
             userAuthDTO.setUserId(user.getUserId());
             userAuthDTO.setUsername(user.getOpenid());
-            userAuthDTO.setNickname(user.getNickName());
+            userAuthDTO.setNickname(user.getNickname());
             userAuthDTO.setPassword(user.getPassword());
             userAuthDTO.setStatus(user.getStatus());
             userAuthDTO.setRoles(Lists.newArrayList("USER"));
+            List<MallUserRole> userRoleList = userRoleRepository.findAllByUserId(user.getUserId());
+            if (!ObjectUtils.isEmpty(userRoleList)) {
+                Result<List<RoleInfo>> roleInfoResult = roleFeignClient.getRoleDetailList(userRoleList.stream().map(MallUserRole::getRoleId).map(String::valueOf).collect(Collectors.joining(",")));
+                if (Result.isSuccess(roleInfoResult)) {
+                    List<RoleInfo> roleInfoList = roleInfoResult.getData();
+                    List<String> roleCodeList = roleInfoList.stream().map(RoleInfo::getCode).collect(Collectors.toList());
+                    userAuthDTO.setRoles(roleCodeList);
+                }
+            }
+
             user.setLoginTime(new Date());
             userRepository.save(user);
             return Optional.of(userAuthDTO);
@@ -76,7 +102,7 @@ public class UserServiceImpl implements UserService {
         }
         MallUser user = new MallUser();
         user.setUsername(dto.getUsername());
-        user.setNickName(dto.getNickName());
+        user.setNickname(dto.getNickName());
         if (StringUtils.hasText(dto.getPassword())) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
@@ -95,12 +121,21 @@ public class UserServiceImpl implements UserService {
         user.setLoginTime(new Date());
         user.setSourceType(dto.getSourceType());
         user.setPurchaseCount(0);
+        user.setMemberLevel(0);
+        user = userRepository.save(user);
 
-        return userRepository.save(user);
+        MallUserRole userRole = new MallUserRole();
+        userRole.setRoleId(14L);
+        userRole.setUserId(user.getUserId());
+        userRole.setDeleted(SystemConstants.DELETED_NO);
+        userRoleRepository.save(userRole);
+
+        return user;
     }
 
 
     @Override
+    @CacheEvict(value = "mall-user:user-info:", allEntries = true)
     public void delete(String ids) {
         List<Long> idList = Arrays.stream(ids.split(",")).filter(id -> !ObjectUtils.isEmpty(id)).map(Long::parseLong).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(idList)) {
@@ -111,6 +146,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @CacheEvict(value = "mall-user:user-info:", key = "'user-id:'+#dto.userId")
     public Optional<MallUser> update(UserDTO dto) {
         if (!ObjectUtils.isEmpty(dto) && !ObjectUtils.isEmpty(dto.getUserId())) {
             Optional<MallUser> userOptional = userRepository.findById(dto.getUserId());
@@ -129,7 +165,7 @@ public class UserServiceImpl implements UserService {
     private static boolean baseUpdate(UserDTO dto, MallUser user) {
         boolean update = false;
         if (StringUtils.hasText(dto.getNickName())) {
-            user.setNickName(dto.getNickName());
+            user.setNickname(dto.getNickName());
             update = true;
         }
         if (StringUtils.hasText(dto.getPassword())) {
@@ -189,6 +225,17 @@ public class UserServiceImpl implements UserService {
             update = true;
         }
 
+        if (!ObjectUtils.isEmpty(dto.getVerifyPerson())) {
+            user.setVerifyPerson(dto.getVerifyPerson());
+            update = true;
+        }
+
+        if (!ObjectUtils.isEmpty(dto.getMemberLevel())) {
+            user.setMemberLevel(dto.getMemberLevel());
+            update = true;
+        }
+
+
         return update;
     }
 
@@ -203,7 +250,7 @@ public class UserServiceImpl implements UserService {
             UserInfo userInfo = new UserInfo();
             userInfo.setUserId(entity.getUserId());
             userInfo.setUsername(entity.getUsername());
-            userInfo.setNickName(entity.getNickName());
+            userInfo.setNickName(entity.getNickname());
             userInfo.setMobile(entity.getMobile());
             userInfo.setGender(entity.getGender());
             userInfo.setBirthday(entity.getBirthday());
@@ -218,6 +265,10 @@ public class UserServiceImpl implements UserService {
             userInfo.setSourceType(entity.getSourceType());
             userInfo.setMemberType(entity.getMemberType());
             userInfo.setPurchaseCount(entity.getPurchaseCount());
+            userInfo.setVerifyPerson(entity.getVerifyPerson());
+            userInfo.setMemberLevel(entity.getMemberLevel());
+            Optional<MallMember> memberOptional = memberService.findByUserId(entity.getUserId());
+            memberOptional.ifPresent(member -> userInfo.setMemberInfo(memberService.entity2vo(member)));
             return userInfo;
         }
         return null;
@@ -225,11 +276,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserInfo> list2vo(List<MallUser> entityList) {
-        return Optional.of(entityList)
+        List<CompletableFuture<UserInfo>> futureList = Optional.of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream()
                 .filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo)
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity), executor))
+                .collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -240,6 +295,9 @@ public class UserServiceImpl implements UserService {
 
         Specification<MallUser> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> list = Lists.newArrayList();
+
+            CriteriaBuilder.In<Long> userIdIn = criteriaBuilder.in(root.get("userId").as(Long.class));
+            Set<Long> userIdSet = Sets.newHashSet();
 
             String mobile = userPageQuery.getMobile();
             if (StringUtils.hasText(mobile)) {
@@ -264,7 +322,19 @@ public class UserServiceImpl implements UserService {
                 list.add(criteriaBuilder.between(root.get("purchaseCount").as(Integer.class), startPurchaseCount, endPurchaseCount));
             }
 
-            list.add(criteriaBuilder.equal(root.get("deleted").as(Integer.class), SystemConstants.DELETED_NO));
+            if (Objects.nonNull(userPageQuery.getMdseId())) {
+                Result<List<MdsePurchaseRecordDTO>> purchaseRecordListResult = mdseFeignClient.getPurchaseRecordByMdseId(userPageQuery.getMdseId());
+                if (Result.isSuccess(purchaseRecordListResult)) {
+                    purchaseRecordListResult.getData().forEach(purchaseRecord -> userIdSet.add(purchaseRecord.getUserId()));
+                }
+                userIdSet.add(0L);
+            }
+
+            if (!CollectionUtils.isEmpty(userIdSet)) {
+                userIdSet.forEach(userIdIn::value);
+                list.add(userIdIn);
+            }
+
             Predicate[] p = new Predicate[list.size()];
             return criteriaBuilder.and(list.toArray(p));
         };

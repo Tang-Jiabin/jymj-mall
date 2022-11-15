@@ -40,6 +40,9 @@ public class MallOrderMdseDetails extends BaseEntity {
     @ApiModelProperty("订单id")
     private Long orderId;
 
+    @ApiModelProperty("卡id")
+    private Long cardId;
+
     @ApiModelProperty("商品id")
     private Long mdseId;
 
@@ -69,6 +72,9 @@ public class MallOrderMdseDetails extends BaseEntity {
 
     @ApiModelProperty("商品价格")
     private BigDecimal mdsePrice;
+
+    @ApiModelProperty("使用状态 1-已使用 2-未使用")
+    private Integer usageStatus;
 
     @ApiModelProperty("库存减少方式")
     private InventoryReductionMethod inventoryReductionMethod;

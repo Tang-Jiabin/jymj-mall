@@ -1,18 +1,17 @@
 package com.jymj.mall.mdse.service.impl;
 
 import com.google.common.collect.Lists;
-import com.jymj.mall.admin.api.DeptFeignClient;
 import com.jymj.mall.common.constants.SystemConstants;
-import com.jymj.mall.common.redis.utils.RedisUtils;
 import com.jymj.mall.mdse.dto.BrandDTO;
 import com.jymj.mall.mdse.entity.MdseBrand;
 import com.jymj.mall.mdse.repository.MdseBrandRepository;
 import com.jymj.mall.mdse.service.BrandService;
 import com.jymj.mall.mdse.vo.BrandInfo;
-import com.jymj.mall.shop.api.MallFeignClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +21,9 @@ import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -39,9 +40,6 @@ import java.util.stream.Collectors;
 public class BrandServiceImpl implements BrandService {
 
     private final MdseBrandRepository mdseBrandRepository;
-    private final MallFeignClient mallFeignClient;
-    private final DeptFeignClient deptFeignClient;
-    private final RedisUtils redisUtils;
 
     private final ThreadPoolTaskExecutor executor;
 
@@ -63,6 +61,7 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"mall-mdse:brand-info:", "mall-mdse:brand-entity:"}, key = "'brand-id:'+#dto.brandId")
     public Optional<MdseBrand> update(BrandDTO dto) {
         if (!ObjectUtils.isEmpty(dto.getBrandId())) {
             Optional<MdseBrand> brandOptional = mdseBrandRepository.findById(dto.getBrandId());
@@ -103,6 +102,7 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
+    @CacheEvict(value = {"mall-mdse:brand-info:", "mall-mdse:brand-entity:"}, allEntries = true)
     public void delete(String ids) {
         List<Long> idList = Arrays.stream(ids.split(",")).filter(id -> !ObjectUtils.isEmpty(id)).map(Long::parseLong).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(idList)) {
@@ -112,36 +112,24 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
+    @Cacheable(cacheNames = "mall-mdse:brand-entity:", key = "'brand-id:'+#id")
     public Optional<MdseBrand> findById(Long id) {
         return mdseBrandRepository.findById(id);
     }
 
     @Override
+    @Cacheable(cacheNames = "mall-mdse:brand-info:", key = "'brand-id:'+#entity.brandId")
     public BrandInfo entity2vo(MdseBrand entity) {
         if (entity != null) {
-            String key = String.format("mall-mdse:brandInfo:id:%d", entity.getBrandId());
-            BrandInfo value = (BrandInfo) redisUtils.get(key);
-
-            if (!ObjectUtils.isEmpty(value)) {
-                executor.execute(()->syncUpdateVo(key, entity));
-                return value;
-            }
-            BrandInfo brandInfo = updateVo(entity);
-            redisUtils.set(key, brandInfo, 60 * 60 * 8L);
-            return brandInfo;
+            return getBrandInfo(entity);
         }
         return null;
     }
 
-    public void syncUpdateVo(String key, MdseBrand entity) {
-        BrandInfo brandInfo = updateVo(entity);
-        log.info("同步更新BrandInfo : {}", brandInfo);
-        redisUtils.set(key, brandInfo, 60 * 60 * 8L);
-    }
 
     @NotNull
     @Override
-    public  BrandInfo updateVo(MdseBrand entity) {
+    public BrandInfo getBrandInfo(MdseBrand entity) {
         BrandInfo brandInfo = new BrandInfo();
         brandInfo.setBrandId(entity.getBrandId());
         brandInfo.setName(entity.getName());
@@ -153,11 +141,15 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public List<BrandInfo> list2vo(List<MdseBrand> entityList) {
-        return Optional.of(entityList)
+        List<CompletableFuture<BrandInfo>> futureList = Optional.of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream()
                 .filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo)
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity), executor))
+                .collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 

@@ -1,6 +1,7 @@
 package com.jymj.mall.pay.service;
 
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
+import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
 
 /**
@@ -16,4 +17,6 @@ public interface MallPayService {
     WxPayUnifiedOrderRequest createWeChatPayOrder(String ip ,String orderNo);
 
     void WeChatPayNotify(WxPayOrderNotifyResult notifyResult);
+
+    WxPayRefundRequest refund(String orderNo);
 }

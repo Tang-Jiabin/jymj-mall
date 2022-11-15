@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.jymj.mall.admin.api.DeptFeignClient;
 import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.constants.SystemConstants;
-import com.jymj.mall.common.redis.utils.RedisUtils;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.mdse.dto.MfgDTO;
@@ -17,7 +16,8 @@ import com.jymj.mall.shop.vo.MallInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -26,7 +26,9 @@ import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -46,7 +48,6 @@ public class MfgServiceImpl implements MfgService {
     private final MallFeignClient mallFeignClient;
     private final DeptFeignClient deptFeignClient;
     private final ThreadPoolTaskExecutor executor;
-    private final RedisUtils redisUtils;
 
     @Override
     public MdseMfg add(MfgDTO dto) {
@@ -66,6 +67,7 @@ public class MfgServiceImpl implements MfgService {
 
 
     @Override
+    @CacheEvict(cacheNames = {"mall-mdse:mfg-info:", "mall-mdse:mfg-entity:"}, key = "'mfg-id:'+#dto.mfgId")
     public Optional<MdseMfg> update(MfgDTO dto) {
         if (!ObjectUtils.isEmpty(dto.getMfgId())) {
             Optional<MdseMfg> mfgOptional = mdseMfgRepository.findById(dto.getMfgId());
@@ -107,6 +109,7 @@ public class MfgServiceImpl implements MfgService {
     }
 
     @Override
+    @CacheEvict(value = {"mall-mdse:mfg-info:", "mall-mdse:mfg-entity:"}, allEntries = true)
     public void delete(String ids) {
         List<Long> idList = Arrays.stream(ids.split(",")).filter(id -> !ObjectUtils.isEmpty(id)).map(Long::parseLong).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(idList)) {
@@ -116,36 +119,25 @@ public class MfgServiceImpl implements MfgService {
     }
 
     @Override
+    @Cacheable(cacheNames = "mall-mdse:mfg-entity:", key = "'mfg-id:'+#id")
     public Optional<MdseMfg> findById(Long id) {
         return mdseMfgRepository.findById(id);
     }
 
     @Override
+    @Cacheable(cacheNames = "mall-mdse:mfg-info:", key = "'mfg-id:'+#entity.mfgId")
     public MfgInfo entity2vo(MdseMfg entity) {
         if (entity != null) {
 
-            String key = String.format("mall-mdse:mfgInfo:id:%d", entity.getMfgId());
-            MfgInfo value = (MfgInfo) redisUtils.get(key);
-            if (!ObjectUtils.isEmpty(value)) {
-                executor.execute(()->syncUpdateVo(key, entity));
-                return value;
-            }
 
-            MfgInfo mfgInfo = getMfgInfo(entity);
-            redisUtils.set(key, mfgInfo, 60 * 60 * 8L);
-            return mfgInfo;
+            return getMfgInfo(entity);
 
         }
 
         return null;
     }
 
-    @Async
-    public void syncUpdateVo(String key, MdseMfg entity) {
-        MfgInfo mfgInfo = getMfgInfo(entity);
-        log.info("同步更新MfgInfo : {}", mfgInfo);
-        redisUtils.set(key, mfgInfo, 60 * 60 * 8L);
-    }
+
 
     @NotNull
     private static MfgInfo getMfgInfo(MdseMfg entity) {
@@ -160,11 +152,15 @@ public class MfgServiceImpl implements MfgService {
 
     @Override
     public List<MfgInfo> list2vo(List<MdseMfg> entityList) {
-        return Optional.of(entityList)
+        List<CompletableFuture<MfgInfo>> futureList = Optional.of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream()
                 .filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo)
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity), executor))
+                .collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 

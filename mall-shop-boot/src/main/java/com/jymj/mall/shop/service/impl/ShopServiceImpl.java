@@ -6,7 +6,7 @@ import com.jymj.mall.admin.dto.AddDeptDTO;
 import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
-import com.jymj.mall.common.redis.utils.RedisUtils;
+import com.jymj.mall.common.redis.RedisUtils;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.util.UserUtils;
@@ -19,6 +19,7 @@ import com.jymj.mall.shop.service.MallService;
 import com.jymj.mall.shop.service.ShopService;
 import com.jymj.mall.shop.vo.ShopInfo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -33,7 +34,9 @@ import javax.persistence.criteria.Predicate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -94,6 +97,7 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
+    @CacheEvict(value="mall-shop:shop-info:",key = "'shop-id:'+#dto.shopId")
     public Optional<MallShop> update(ShopDTO dto) {
         if (!ObjectUtils.isEmpty(dto.getShopId())) {
             Optional<MallShop> shopOptional = findById(dto.getShopId());
@@ -163,6 +167,7 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
+    @CacheEvict(value="mall-shop:shop-info:",allEntries = true)
     public void delete(String ids) {
         List<Long> shopIdList = Arrays.stream(ids.split(",")).map(Long::parseLong).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(shopIdList)) {
@@ -178,41 +183,26 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     public ShopInfo entity2vo(MallShop entity) {
-
-
         if (!ObjectUtils.isEmpty(entity)) {
-
-            String key = String.format("mall-shop:shopInfo:id:%d", entity.getShopId());
-
-            ShopInfo value = (ShopInfo) redisUtils.get(key);
-
-            if (!ObjectUtils.isEmpty(value)) {
-                executor.execute(() -> syncUpdateVo(key, entity));
-                return value;
-            }
-
-            ShopInfo shopInfo = getShopInfo(entity);
-            redisUtils.set(key, shopInfo, 60 * 60 * 8L);
-
-            return shopInfo;
+            return getShopInfo(entity);
         }
-
         return null;
     }
 
-    private void syncUpdateVo(String key, MallShop entity) {
-        ShopInfo shopInfo = getShopInfo(entity);
-        redisUtils.set(key, shopInfo, 60 * 60 * 8L);
-    }
+
 
     @Override
     public List<ShopInfo> list2vo(List<MallShop> entityList) {
-        return Optional
+        List<CompletableFuture<ShopInfo>> futureList = Optional
                 .of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream()
                 .filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo)
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity), executor))
+                .collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 

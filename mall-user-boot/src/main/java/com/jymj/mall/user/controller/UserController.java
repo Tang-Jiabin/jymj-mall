@@ -21,6 +21,7 @@ import com.jymj.mall.user.vo.UserInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
@@ -43,7 +44,6 @@ public class UserController {
 
     private final UserService userService;
     private final WxMaService wxMaService;
-
 
 
     @ApiIgnore
@@ -74,7 +74,7 @@ public class UserController {
     @PutMapping
     public Result<UserInfo> updateUser(@RequestBody UserDTO userDTO) {
         Optional<MallUser> userOptional = userService.update(userDTO);
-        return userOptional.map(entity -> Result.success(userService.entity2vo(entity))).orElse(Result.failed("更新失败"));
+        return userOptional.map(user->Result.success(userService.entity2vo(user))).orElseGet(() -> Result.failed("更新失败"));
     }
 
 
@@ -94,9 +94,12 @@ public class UserController {
 
     @ApiOperation(value = "用户信息")
     @GetMapping("/{userId}/info")
+    @Cacheable(value="mall-user:user-info:",key="'user-id:'+#userId")
     public Result<UserInfo> getUserById(@Valid @PathVariable Long userId) {
+
         Optional<MallUser> userOptional = userService.findById(userId);
-        return userOptional.map(entity -> Result.success(userService.entity2vo(entity))).orElse(Result.failed("用户信息不存在"));
+
+        return userOptional.map(mallUser -> Result.success(userService.entity2vo(mallUser))).orElseGet(() -> Result.failed(ResultCode.USER_NOT_EXIST));
     }
 
     @ApiOperation(value = "用户分页")

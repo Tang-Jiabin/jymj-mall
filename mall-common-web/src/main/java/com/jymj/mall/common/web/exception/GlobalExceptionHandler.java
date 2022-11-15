@@ -14,9 +14,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
@@ -38,8 +36,9 @@ import java.util.stream.Collectors;
  * @email seven_tjb@163.com
  * @date 2022-08-12
  */
-@RestControllerAdvice
 @Slf4j
+@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
 
@@ -180,8 +179,8 @@ public class GlobalExceptionHandler {
         log.info("微服务feign调用异常:{}", e.getMessage());
         return Result.failed(e.getMessage());
     }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.OK)
     @ExceptionHandler(BusinessException.class)
     public <T> Result<T> handleBizException(BusinessException e) {
         log.error("业务异常，异常原因：{}", e.getMessage(), e);
@@ -212,8 +211,8 @@ public class GlobalExceptionHandler {
         String group = "";
         if (matcher.find()) {
             String matchString = matcher.group();
-            matchString = matchString.replace("[", "").replace("]", "");
-            matchString = matchString.replaceAll("\"", "") + "字段类型错误";
+            matchString = matchString.replace("[", "").replace("]", "").replaceAll("\"", "");
+            matchString = String.format("%s字段类型错误", matchString);
             group += matchString;
         }
         return group;

@@ -2,6 +2,7 @@ package com.jymj.mall.file;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -15,7 +16,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
  * @email seven_tjb@163.com
  * @date 2022-08-31
  */
-
+@EnableCaching
 @EnableJpaAuditing
 @EnableDiscoveryClient
 @SpringBootApplication(scanBasePackages = {"com.jymj.mall.*"})

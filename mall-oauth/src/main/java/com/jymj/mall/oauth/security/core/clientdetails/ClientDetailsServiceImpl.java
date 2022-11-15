@@ -32,7 +32,7 @@ public class ClientDetailsServiceImpl implements ClientDetailsService {
     private final OauthClientDetailsRepository oauthClientDetailsRepository;
 
     @Override
-    @Cacheable(cacheNames = "auth", key = "'oauth-client:'+#clientId")
+    @Cacheable(cacheNames = "mall-oauth:auth:", key = "'oauth-client:'+#clientId")
     public ClientDetails loadClientByClientId(String clientId) {
         try {
             Optional<OauthClientDetails> oauthClientDetails = oauthClientDetailsRepository.findByClientId(clientId);

@@ -14,6 +14,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -64,10 +65,15 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     public List<DeptInfo> list2vo(List<SysDept> entityList) {
-        return Optional.of(entityList)
+        List<CompletableFuture<DeptInfo>> futureList = Optional.of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream().filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo).collect(Collectors.toList());
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity)))
+                .collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @Override

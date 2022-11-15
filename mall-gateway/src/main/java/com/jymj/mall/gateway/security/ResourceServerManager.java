@@ -6,7 +6,7 @@ import cn.hutool.core.text.CharSequenceUtil;
 import com.google.common.collect.Lists;
 import com.jymj.mall.common.constants.GlobalConstants;
 import com.jymj.mall.common.constants.SecurityConstants;
-import com.jymj.mall.common.redis.utils.RedisUtils;
+import com.jymj.mall.common.redis.RedisUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;

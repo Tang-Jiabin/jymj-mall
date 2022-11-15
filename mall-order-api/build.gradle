@@ -3,5 +3,7 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation project(":mall-common")
+    implementation project(":mall-user-api")
+    implementation project(":mall-shop-api")
 }
 

@@ -4,8 +4,6 @@ import com.google.common.collect.Lists;
 import com.jymj.mall.admin.api.DeptFeignClient;
 import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.constants.SystemConstants;
-import com.jymj.mall.common.exception.BusinessException;
-import com.jymj.mall.common.redis.utils.RedisUtils;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.util.UserUtils;
@@ -23,10 +21,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -36,7 +35,9 @@ import org.springframework.util.StringUtils;
 import javax.persistence.criteria.Predicate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -56,7 +57,6 @@ public class GroupServiceImpl implements GroupService {
     private final MdseGroupMapRepository mdseGroupMapRepository;
     private final MallFeignClient mallFeignClient;
     private final DeptFeignClient deptFeignClient;
-    private final RedisUtils redisUtils;
     private final ThreadPoolTaskExecutor executor;
     @Override
     public MdseGroup add(GroupDTO dto) {
@@ -73,15 +73,8 @@ public class GroupServiceImpl implements GroupService {
     }
 
 
-    private void verifyGroupName(String name) {
-        Optional<MdseGroup> groupOptional = mdseGroupRepository.findByName(name);
-
-        if (groupOptional.isPresent()) {
-            throw new BusinessException("分组 【" + name + "】 已存在");
-        }
-    }
-
     @Override
+    @CacheEvict(value = {"mall-mdse:group-info:", "mall-mdse:group-entity:"}, key = "'group-id:'+#dto.groupId")
     public Optional<MdseGroup> update(GroupDTO dto) {
 
         if (!ObjectUtils.isEmpty(dto.getGroupId())) {
@@ -98,7 +91,7 @@ public class GroupServiceImpl implements GroupService {
                     group.setName(dto.getName());
                     update = true;
                 }
-                if (!ObjectUtils.isEmpty(dto.getShow()) && group.getShow() != dto.getShow()) {
+                if (!ObjectUtils.isEmpty(dto.getShow()) && !group.getShow().equals(dto.getShow())) {
                     group.setShow(dto.getShow());
                     update = true;
                 }
@@ -121,6 +114,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @CacheEvict(value = {"mall-mdse:group-info:", "mall-mdse:group-entity:"},allEntries = true)
     public void delete(String ids) {
         List<Long> idList = Arrays.stream(ids.split(",")).filter(id -> !ObjectUtils.isEmpty(id)).map(Long::parseLong).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(idList)) {
@@ -130,34 +124,24 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Cacheable(cacheNames = "mall-mdse:group-entity:", key = "'group-id:'+#id")
     public Optional<MdseGroup> findById(Long id) {
         return mdseGroupRepository.findById(id);
     }
 
     @Override
+    @Cacheable(cacheNames = "mall-mdse:group-info:", key = "'group-id:'+#entity.groupId")
     public GroupInfo entity2vo(MdseGroup entity) {
 
         if (entity != null) {
-            String key = String.format("mall-mdse:groupInfo:id:%d", entity.getGroupId());
-            GroupInfo value = (GroupInfo) redisUtils.get(key);
-            if (!ObjectUtils.isEmpty(value)) {
-                executor.execute(()->syncUpdateVo(key, entity));
-                return value;
-            }
-            GroupInfo info = getGroupInfo(entity);
-            redisUtils.set(key, info, 60 * 60 * 8L);
-            return info;
+
+            return getGroupInfo(entity);
         }
 
         return null;
     }
 
-    @Async
-    public void syncUpdateVo(String key, MdseGroup entity) {
-        GroupInfo info = getGroupInfo(entity);
-        log.info("同步更新GroupInfo : {}", info);
-        redisUtils.set(key, info, 60 * 60 * 8L);
-    }
+
 
     @NotNull
     private GroupInfo getGroupInfo(MdseGroup entity) {
@@ -175,11 +159,15 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public List<GroupInfo> list2vo(List<MdseGroup> entityList) {
-        return Optional.of(entityList)
+        List<CompletableFuture<GroupInfo>> futureList = Optional.of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream()
                 .filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo)
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity), executor))
+                .collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -201,21 +189,6 @@ public class GroupServiceImpl implements GroupService {
         return Lists.newArrayList();
     }
 
-    private List<Long> findMallIdList() {
-        Long deptId = UserUtils.getDeptId();
-        Result<List<DeptInfo>> deptListResult = deptFeignClient.tree(deptId);
-
-        if (Result.isSuccess(deptListResult)) {
-            List<DeptInfo> deptInfoList = deptListResult.getData();
-            List<Long> deptIdList = deptInfoList.stream().map(DeptInfo::getDeptId).collect(Collectors.toList());
-            Result<List<MallInfo>> mallInfoListResult = mallFeignClient.getMallByDeptIdIn(StringUtils.collectionToCommaDelimitedString(deptIdList));
-            if (Result.isSuccess(mallInfoListResult)) {
-                List<MallInfo> mallInfoList = mallInfoListResult.getData();
-                return mallInfoList.stream().map(MallInfo::getMallId).collect(Collectors.toList());
-            }
-        }
-        return Lists.newArrayList();
-    }
 
     @Override
     public Page<MdseGroup> findPage(GroupPageQuery groupPageQuery) {

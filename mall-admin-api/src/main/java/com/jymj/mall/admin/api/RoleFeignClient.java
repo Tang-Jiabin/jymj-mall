@@ -5,12 +5,10 @@ import com.jymj.mall.admin.dto.RoleResource;
 import com.jymj.mall.admin.vo.RoleInfo;
 import com.jymj.mall.common.result.Result;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * 角色
@@ -27,4 +25,7 @@ public interface RoleFeignClient {
 
     @PutMapping("/api/v1/role/{roleId}/resources")
     Result updateRoleResource(@PathVariable Long roleId, @RequestBody RoleResource roleResourceForm);
+
+    @GetMapping("/api/v1/role/ids/{ids}")
+     Result<List<RoleInfo>> getRoleDetailList( @PathVariable String ids);
 }

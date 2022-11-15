@@ -17,4 +17,8 @@ import java.util.List;
 @Repository
 public interface MallOrderMdseDetailsRepository extends JpaRepository<MallOrderMdseDetails,Long> {
     List<MallOrderMdseDetails> findAllByOrderId(Long orderId);
+
+    List<MallOrderMdseDetails> findAllByShopIdIn(List<Long> shopIdList);
+
+    List<MallOrderMdseDetails> findAllByMdseNameIsLike(String generateSqlLike);
 }

@@ -3,6 +3,7 @@ package com.jymj.mall.mdse.service.impl;
 import com.google.common.collect.Lists;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
+import com.jymj.mall.common.redis.RedissonLockUtil;
 import com.jymj.mall.mdse.dto.PictureDTO;
 import com.jymj.mall.mdse.dto.SpecDTO;
 import com.jymj.mall.mdse.dto.StockDTO;
@@ -18,6 +19,7 @@ import com.jymj.mall.mdse.vo.PictureInfo;
 import com.jymj.mall.mdse.vo.SpecInfo;
 import com.jymj.mall.mdse.vo.StockInfo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -28,6 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -38,12 +41,13 @@ import java.util.stream.Collectors;
  * @email seven_tjb@163.com
  * @date 2022-09-01
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StockServiceImpl implements StockService {
 
     private final PictureService pictureService;
-
+    private final RedissonLockUtil redissonLockUtil;
     private final MdseSpecRepository mdseSpecRepository;
     private final ThreadPoolTaskExecutor executor;
     private final MdseStockRepository stockRepository;
@@ -239,11 +243,15 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public List<StockInfo> list2vo(List<MdseStock> entityList) {
-        return Optional.of(entityList)
+        List<CompletableFuture<StockInfo>> futureList = Optional.of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream()
                 .filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo)
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity), executor))
+                .collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -284,19 +292,28 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public synchronized void lessInventory(StockDTO stockDTO) {
+    public void lessInventory(StockDTO stockDTO) {
         Long stockId = stockDTO.getStockId();
-        Integer inventory = stockDTO.getTotalInventory();
-        if (ObjectUtils.isEmpty(stockId) || ObjectUtils.isEmpty(inventory)) {
-            throw new BusinessException("参数错误");
-        }
-        Optional<MdseStock> mdseStock = stockRepository.findById(stockId);
-        mdseStock.ifPresent(stock -> {
-            if (stock.getRemainingStock() - inventory < 0) {
-                throw new BusinessException("库存不足");
+        String key = String.format("mall-mdse:stock:less:%d",stockId);
+        Boolean lock = redissonLockUtil.lock(key);
+        if (Boolean.TRUE.equals(lock)){
+            Integer inventory = stockDTO.getTotalInventory();
+            if (ObjectUtils.isEmpty(stockId) || ObjectUtils.isEmpty(inventory)) {
+                redissonLockUtil.unlock(key);
+                throw new BusinessException("参数错误");
             }
-            stock.setRemainingStock(stock.getRemainingStock() - inventory);
-            stockRepository.save(stock);
-        });
+            Optional<MdseStock> mdseStock = stockRepository.findById(stockId);
+            mdseStock.ifPresent(stock -> {
+                if (stock.getRemainingStock() - inventory < 0) {
+                    redissonLockUtil.unlock(key);
+                    throw new BusinessException("库存不足");
+                }
+                stock.setRemainingStock(stock.getRemainingStock() - inventory);
+                stockRepository.save(stock);
+            });
+            redissonLockUtil.unlock(key);
+        }
+
+
     }
 }

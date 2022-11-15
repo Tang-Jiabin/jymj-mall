@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -31,7 +32,9 @@ import org.springframework.util.ObjectUtils;
 import javax.persistence.criteria.Predicate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -49,6 +52,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     private final ShoppingCartMdseRepository cartMdseRepository;
     private final MdseFeignClient mdseFeignClient;
+    private final ThreadPoolTaskExecutor executor;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -60,7 +64,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         Long shopId = dto.getShopId();
         Integer quantity = dto.getQuantity();
 
-        MdseInfoShow mdseInfoShow = MdseInfoShow.builder().stock(true).shop(true).build();
+        MdseInfoShow mdseInfoShow = MdseInfoShow.builder().stock(1).shop(1).build();
 
         Result<MdseInfo> mdseInfoResult = mdseFeignClient.getMdseOptionalById(mdseId, mdseInfoShow);
         if (!Result.isSuccess(mdseInfoResult)) {
@@ -139,7 +143,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     public ShoppingCartMdseInfo entity2vo(ShoppingCartMdse entity) {
         if (!ObjectUtils.isEmpty(entity)) {
 
-            MdseInfoShow mdseInfoShow = MdseInfoShow.builder().shop(true).stock(true).picture(true).build();
+            MdseInfoShow mdseInfoShow = MdseInfoShow.builder().shop(1).stock(1).picture(1).build();
             Result<MdseInfo> mdseInfoResult = mdseFeignClient.getMdseOptionalById(entity.getMdseId(), mdseInfoShow);
 
             if (Result.isSuccess(mdseInfoResult)) {
@@ -183,11 +187,15 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     public List<ShoppingCartMdseInfo> list2vo(List<ShoppingCartMdse> entityList) {
-        return Optional.of(entityList)
+        List<CompletableFuture<ShoppingCartMdseInfo>> futureList = Optional.of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream()
                 .filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo)
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity),executor))
+                .collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 

@@ -2,7 +2,10 @@ package com.jymj.mall.order.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 
@@ -15,6 +18,9 @@ import javax.validation.constraints.NotNull;
  * @date 2022-10-13
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @ApiModel("订单商品集合")
 public class OrderMdseDTO {
 

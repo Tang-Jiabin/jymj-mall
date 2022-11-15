@@ -1,8 +1,15 @@
+
+configurations.implementation {
+    exclude group:'org.springframework.boot', module: 'spring-boot-starter-data-elasticsearch'
+}
+
 dependencies {
 
     implementation 'com.github.binarywang:weixin-java-miniapp:4.4.2.B'
-
+    implementation project(":mall-common-redis")
     implementation project(":mall-common")
     implementation project(":mall-common-web")
     implementation project(":mall-user-api")
+    implementation project(":mall-admin-api")
+    implementation project(":mall-mdse-api")
 }

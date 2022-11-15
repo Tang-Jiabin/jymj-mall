@@ -4,7 +4,6 @@ import com.jymj.mall.common.enums.EnumTypeInfo;
 import com.jymj.mall.common.enums.OrderDeliveryMethodEnum;
 import com.jymj.mall.common.enums.OrderPayMethodEnum;
 import com.jymj.mall.common.enums.OrderStatusEnum;
-import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.util.UserUtils;
@@ -20,6 +19,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.*;
@@ -45,12 +45,13 @@ public class UserOrderController {
     private final OrderService orderService;
     private final RabbitTemplate rabbitTemplate;
     private final ThreadPoolTaskExecutor executor;
+
     @ApiOperation(value = "创建订单")
     @PostMapping
     public Result<MallOrderInfo> addOrder(@Valid @RequestBody OrderDTO orderDTO) {
         MallOrder mallOrder = orderService.add(orderDTO);
         MallOrderInfo mallOrderInfo = orderService.entity2vo(mallOrder);
-        executor.execute(()->rabbitTemplate.convertAndSend(MQConfig.EXCHANGE_DELAY, MQConfig.ROUTING_KEY_QUEUE_ORDER, mallOrderInfo));
+        executor.execute(() -> rabbitTemplate.convertAndSend(MQConfig.EXCHANGE_DELAY, MQConfig.ROUTING_KEY_QUEUE_ORDER, mallOrderInfo));
         return Result.success(mallOrderInfo);
     }
 
@@ -71,16 +72,16 @@ public class UserOrderController {
 
     @ApiOperation(value = "订单信息")
     @GetMapping("/id/{orderId}/info")
+    @Cacheable(cacheNames = "mall-order:order-info:", key = "'order-id:'+#orderId")
     public Result<MallOrderInfo> getOrderById(@PathVariable Long orderId) {
         Optional<MallOrder> orderOptional = orderService.findById(orderId);
-        MallOrder mallOrder = orderOptional.orElseThrow(() -> new BusinessException("订单不存在"));
-        if (!mallOrder.getUserId().equals(UserUtils.getUserId())) {
-            throw new BusinessException("订单不存在");
-        }
-        MallOrderInfo orderInfo = orderService.entity2vo(mallOrder);
-        return Result.success(orderInfo);
-    }
 
+        return orderOptional
+                .filter(orderInfo -> orderInfo.getUserId().equals(UserUtils.getUserId()))
+                .map(orderInfo -> Result.success(orderService.entity2vo(orderInfo)))
+                .orElse(Result.failed("订单不存在"));
+
+    }
 
 
     @ApiOperation(value = "订单分页")

@@ -1,4 +1,8 @@
 spring:
+  cache:
+    type: REDIS
+    redis:
+      time-to-live: 360000
   application:
     name: mall-oauth
   cloud:

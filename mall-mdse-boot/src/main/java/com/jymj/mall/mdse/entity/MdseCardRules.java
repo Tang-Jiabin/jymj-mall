@@ -58,6 +58,6 @@ public class MdseCardRules extends BaseEntity {
     @ApiModelProperty("可用结束时间")
     private LocalDate endDate;
 
-    @ApiModelProperty("卡id")
+    @ApiModelProperty("商品id")
     private Long cardId;
 }

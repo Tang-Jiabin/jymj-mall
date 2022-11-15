@@ -4,6 +4,7 @@ package com.jymj.mall.order.api;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.order.dto.OrderPaySuccess;
 import com.jymj.mall.order.vo.MallOrderInfo;
+import com.jymj.mall.shop.dto.VerifyOrderMdse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,4 +25,10 @@ public interface OrderFeignClient {
 
     @PutMapping("/api/v1/admin/order/pay/success")
     Result<Object> paySuccess(@RequestBody OrderPaySuccess orderPaySuccess);
+
+    @GetMapping("/api/v1/admin/order/id/{orderId}/info")
+    Result<MallOrderInfo> getOrderById(@PathVariable Long orderId);
+
+    @PutMapping("/api/v1/admin/order/verify")
+    Result<Object> verify(@RequestBody VerifyOrderMdse verifyOrderMdse);
 }

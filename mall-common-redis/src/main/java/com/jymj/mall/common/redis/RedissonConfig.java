@@ -1,46 +1,41 @@
 package com.jymj.mall.common.redis;
 
-import cn.hutool.core.util.StrUtil;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
-import org.redisson.config.SingleServerConfig;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * 分布式锁 Redisson 配置
-
  */
-@ConditionalOnProperty(prefix = "redisson",name = "address")
-@ConfigurationProperties(prefix = "redisson")
+@Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class RedissonConfig {
 
-    @Setter
-    private String address;
-    @Setter
-    private String password;
-    @Setter
-    private Integer database;
-    /** 默认最小空闲连接数*/
-    @Setter
-    private Integer minIdle;
+    private final RedisProperties redisProperties;
 
     @Bean
     public RedissonClient redissonClient() {
+        RedissonClient redissonClient;
         Config config = new Config();
-        SingleServerConfig singleServerConfig = config.useSingleServer();
-        singleServerConfig.setAddress(address);
-        singleServerConfig.setDatabase(database);
-        singleServerConfig.setConnectionMinimumIdleSize(minIdle);
-        if (StrUtil.isNotBlank(password)) {
-            singleServerConfig.setPassword(password);
-        }
-        return Redisson.create(config);
+        //密码可以单独配置
+        String url = "redis://" + redisProperties.getHost() + ":" + redisProperties.getPort();
+        config.useSingleServer().setAddress(url) //单机
+                .setPassword(redisProperties.getPassword())
+                .setDatabase(redisProperties.getDatabase())
+                .setConnectTimeout(5000)
+                .setTimeout(5000)
+                .setConnectionPoolSize(64)
+                .setConnectionMinimumIdleSize(10)
+                .setPingConnectionInterval(10000);
+
+        redissonClient = Redisson.create(config);
+        return redissonClient;
+
     }
 
 }

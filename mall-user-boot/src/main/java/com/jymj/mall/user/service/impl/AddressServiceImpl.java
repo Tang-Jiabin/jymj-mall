@@ -11,13 +11,16 @@ import com.jymj.mall.user.vo.AddressInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.util.Lists;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -34,6 +37,7 @@ import java.util.stream.Collectors;
 public class AddressServiceImpl implements AddressService {
 
     private final UserAddressRepository addressRepository;
+    private final ThreadPoolTaskExecutor executor;
 
     @Override
     public UserAddress add(AddressDTO dto) {
@@ -127,11 +131,15 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public List<AddressInfo> list2vo(List<UserAddress> entityList) {
-
-        return Optional.of(entityList)
+        List<CompletableFuture<AddressInfo>> futureList = Optional.of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream().filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(this::entity2vo).collect(Collectors.toList());
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity), executor))
+                .collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @Override

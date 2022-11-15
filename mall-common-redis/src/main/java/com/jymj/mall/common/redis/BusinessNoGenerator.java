@@ -19,7 +19,7 @@ import java.time.format.DateTimeFormatter;
 public class BusinessNoGenerator {
 
 
-    private final RedisTemplate redisTemplate;
+    private final RedisTemplate<String,Object> redisTemplate;
 
     /**
      * @param businessType 业务类型枚举

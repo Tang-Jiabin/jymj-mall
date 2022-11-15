@@ -4,6 +4,8 @@ import com.jymj.mall.order.entity.MallOrderDeliveryDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * 订单配送信息
  *
@@ -14,4 +16,7 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface MallOrderDeliveryDetailsRepository extends JpaRepository<MallOrderDeliveryDetails,Long> {
+    List<MallOrderDeliveryDetails> findAllByAddresseeIsLike(String generateSqlLike);
+
+    List<MallOrderDeliveryDetails> findAllByMobileLike(String generateSqlLike);
 }

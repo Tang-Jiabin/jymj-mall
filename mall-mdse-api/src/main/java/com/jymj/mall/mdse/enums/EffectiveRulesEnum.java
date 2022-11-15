@@ -27,11 +27,12 @@ public enum EffectiveRulesEnum implements BaseEnum<Integer> {
 
     HOURS_LATER(2,"几小时后生效");
 
-
+    @Override
     public Integer getValue() {
         return value;
     }
 
+    @Override
     public String getLabel() {
         return label;
     }
