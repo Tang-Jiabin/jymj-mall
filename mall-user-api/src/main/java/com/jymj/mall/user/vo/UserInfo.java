@@ -74,9 +74,11 @@ public class UserInfo {
     @ApiModelProperty(value = "购买次数")
     private Integer purchaseCount;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @ApiModelProperty(value = "登录时间")
     private Date loginTime;
 
@@ -86,6 +88,12 @@ public class UserInfo {
     @ApiModelProperty(value = "会员等级")
     private Integer memberLevel;
 
-    @ApiModelProperty("会员信息")
-    private MemberInfo memberInfo;
+    @ApiModelProperty("姓名")
+    private String memberName;
+
+    @ApiModelProperty("手机号")
+    private String memberMobile;
+
+//    @ApiModelProperty("会员信息")
+//    private MemberInfo memberInfo;
 }

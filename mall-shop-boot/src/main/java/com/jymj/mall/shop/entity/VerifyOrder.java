@@ -50,4 +50,7 @@ public class VerifyOrder extends BaseEntity {
     @ApiModelProperty("库存id")
     private Long stockId;
 
+    @ApiModelProperty("核销数量")
+    private Integer quantity;
+
 }

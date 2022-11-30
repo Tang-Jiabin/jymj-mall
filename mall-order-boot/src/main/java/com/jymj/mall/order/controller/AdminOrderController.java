@@ -111,6 +111,7 @@ public class AdminOrderController {
 
 
 
+    @ApiIgnore
     @ApiOperation(value = "订单核销")
     @PutMapping("/verify")
     public Result<Object> verify(@RequestBody VerifyOrderMdse verifyOrderMdse){

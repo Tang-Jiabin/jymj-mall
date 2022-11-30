@@ -3,6 +3,7 @@ package com.jymj.mall.pay.service;
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
 import com.github.binarywang.wxpay.bean.request.WxPayRefundRequest;
 import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
+import com.jymj.mall.pay.vo.StatisticsInfo;
 
 /**
  * 微信支付
@@ -19,4 +20,6 @@ public interface MallPayService {
     void WeChatPayNotify(WxPayOrderNotifyResult notifyResult);
 
     WxPayRefundRequest refund(String orderNo);
+
+    StatisticsInfo getStatisticsByUserId(Long userId);
 }

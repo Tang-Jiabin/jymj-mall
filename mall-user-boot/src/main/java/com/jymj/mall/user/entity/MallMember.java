@@ -9,6 +9,7 @@ import org.hibernate.annotations.Where;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 /**
  * 会员
@@ -45,11 +46,19 @@ public class MallMember extends BaseEntity {
     @ApiModelProperty("手机号")
     private String mobile;
 
+    @ApiModelProperty(value = "会员等级")
+    private Integer level;
+
     @ApiModelProperty("详细地址")
     private String address;
 
     @ApiModelProperty("身份证号")
     private String idNumber;
 
+    @NotNull(message = "邮箱不能为空")
+    @ApiModelProperty("邮箱")
+    private String email;
 
+    @ApiModelProperty(value = "状态")
+    private Integer state;
 }

@@ -63,7 +63,6 @@ public class MemberController {
 
     @ApiOperation(value = "会员信息")
     @GetMapping("/{memberId}/info")
-
     public Result<MemberInfo> getMemberById(@Valid @PathVariable Long memberId) {
 
         Optional<MallMember> memberOptional = memberService.findById(memberId);
@@ -73,7 +72,6 @@ public class MemberController {
 
     @ApiOperation(value = "会员信息")
     @GetMapping("/user/{userId}/info")
-
     public Result<MemberInfo> getMemberByUserId(@Valid @PathVariable Long userId) {
 
         Optional<MallMember> memberOptional = memberService.findByUserId(userId);

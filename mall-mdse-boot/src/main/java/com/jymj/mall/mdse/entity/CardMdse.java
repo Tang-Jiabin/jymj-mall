@@ -44,4 +44,7 @@ public class CardMdse extends BaseEntity {
 
     @ApiModelProperty("卡id")
     private Long cardId;
+
+    @ApiModelProperty("数量")
+    private Integer quantity;
 }

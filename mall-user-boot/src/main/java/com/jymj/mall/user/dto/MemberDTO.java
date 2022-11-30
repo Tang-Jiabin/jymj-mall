@@ -24,7 +24,7 @@ import javax.validation.constraints.NotNull;
 @ApiModel("会员信息")
 public class MemberDTO {
 
-
+    @ApiModelProperty("会员id")
     private Long memberId;
 
     @NotNull(message = "姓名不能为空")
@@ -42,4 +42,14 @@ public class MemberDTO {
     @NotNull(message = "身份证号不能为空")
     @ApiModelProperty("身份证号")
     private String idNumber;
+
+    @NotNull(message = "邮箱不能为空")
+    @ApiModelProperty("邮箱")
+    private String email;
+
+    @ApiModelProperty(value = "状态")
+    private Integer state;
+
+    @ApiModelProperty(value = "会员等级")
+    private Integer level;
 }

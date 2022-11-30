@@ -21,4 +21,8 @@ public class CardMdseDTO {
 
     @ApiModelProperty("库存id")
     private Long stockId;
+
+    @ApiModelProperty("数量")
+    private Integer quantity;
+
 }

@@ -1,5 +1,6 @@
 package com.jymj.mall.user.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdcardUtil;
 import cn.hutool.core.util.PhoneUtil;
 import com.google.common.collect.Lists;
@@ -13,9 +14,11 @@ import com.jymj.mall.mdse.api.MdseFeignClient;
 import com.jymj.mall.mdse.dto.MdsePurchaseRecordDTO;
 import com.jymj.mall.user.dto.MemberDTO;
 import com.jymj.mall.user.dto.MemberPageQuery;
+import com.jymj.mall.user.dto.UserDTO;
 import com.jymj.mall.user.entity.MallMember;
 import com.jymj.mall.user.repository.MallMemberRepository;
 import com.jymj.mall.user.service.MemberService;
+import com.jymj.mall.user.service.UserService;
 import com.jymj.mall.user.vo.MemberInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +56,7 @@ public class MemberServiceImpl implements MemberService {
     private final MallMemberRepository memberRepository;
     private final ThreadPoolTaskExecutor executor;
     private final MdseFeignClient mdseFeignClient;
+    private final UserService userService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -63,13 +67,19 @@ public class MemberServiceImpl implements MemberService {
         memberOptional.ifPresent(mallMember -> {
             throw new BusinessException("已存在会员信息");
         });
+
+        userService.update(UserDTO.builder().userId(userId).memberName(dto.getName()).memberMobile(dto.getMobile()).build());
+
         MallMember mallMember = MallMember.builder()
                 .userId(userId)
                 .name(dto.getName())
                 .mobile(dto.getMobile())
                 .address(dto.getAddress())
                 .idNumber(dto.getIdNumber())
+                .email(dto.getEmail())
+                .state(SystemConstants.STATUS_CLOSE)
                 .build();
+
         mallMember.setDeleted(SystemConstants.DELETED_NO);
 
         return memberRepository.save(mallMember);
@@ -83,11 +93,27 @@ public class MemberServiceImpl implements MemberService {
         Long userId = UserUtils.getUserId();
         Optional<MallMember> memberOptional = memberRepository.findByUserId(userId);
         MallMember mallMember = memberOptional.orElseThrow(() -> new BusinessException("会员信息不存在"));
-
-        mallMember.setName(dto.getName());
-        mallMember.setMobile(dto.getMobile());
-        mallMember.setAddress(dto.getAddress());
-        mallMember.setIdNumber(dto.getIdNumber());
+        if (StringUtils.hasText(dto.getName())) {
+            mallMember.setName(dto.getName());
+        }
+        if (StringUtils.hasText(dto.getMobile())) {
+            mallMember.setMobile(dto.getMobile());
+        }
+        if (StringUtils.hasText(dto.getAddress())) {
+            mallMember.setAddress(dto.getAddress());
+        }
+        if (StringUtils.hasText(dto.getIdNumber())) {
+            mallMember.setIdNumber(dto.getIdNumber());
+        }
+        if (!ObjectUtils.isEmpty(dto.getLevel())) {
+            mallMember.setLevel(dto.getLevel());
+        }
+        if (!ObjectUtils.isEmpty(dto.getState())) {
+            mallMember.setState(dto.getState());
+        }
+        if (StringUtils.hasText(dto.getEmail())) {
+            mallMember.setEmail(dto.getEmail());
+        }
         mallMember.setDeleted(SystemConstants.DELETED_NO);
 
         return Optional.of(memberRepository.save(mallMember));
@@ -123,7 +149,7 @@ public class MemberServiceImpl implements MemberService {
     @Cacheable(cacheNames = "mall-user:member-info:", key = "'member-id:'+#entity.memberId")
     public MemberInfo entity2vo(MallMember entity) {
         if (!ObjectUtils.isEmpty(entity)) {
-            return MemberInfo.builder()
+            MemberInfo memberInfo = MemberInfo.builder()
                     .memberId(entity.getMemberId())
                     .name(entity.getName())
                     .mobile(entity.getMobile())
@@ -131,7 +157,15 @@ public class MemberServiceImpl implements MemberService {
                     .idNumber(entity.getIdNumber())
                     .userId(entity.getUserId())
                     .createTime(entity.getCreateTime())
+                    .email(entity.getEmail())
                     .build();
+            if (StringUtils.hasText(entity.getIdNumber())) {
+                memberInfo.setBirth(DateUtil.format(IdcardUtil.getBirthDate(entity.getIdNumber()), "yyyy-MM-dd"));
+                memberInfo.setAge(IdcardUtil.getAgeByIdCard(entity.getIdNumber()));
+                memberInfo.setGender(IdcardUtil.getGenderByIdCard(entity.getIdNumber()));
+                memberInfo.setCityCode(IdcardUtil.getCityCodeByIdCard(entity.getIdNumber()));
+            }
+            return memberInfo;
         }
         return null;
     }
@@ -152,7 +186,6 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Page<MallMember> findPage(MemberPageQuery memberPageQuery) {
         Pageable pageable = PageUtils.getPageable(memberPageQuery);
-
 
         Specification<MallMember> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> list = Lists.newArrayList();

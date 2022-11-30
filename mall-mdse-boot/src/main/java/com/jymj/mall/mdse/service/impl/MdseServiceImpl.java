@@ -199,6 +199,7 @@ public class MdseServiceImpl implements MdseService {
                 cardMdse.setCardId(mdseId);
                 cardMdse.setMdseId(cardMdseDTO.getMdseId());
                 cardMdse.setStockId(cardMdseDTO.getStockId());
+                cardMdse.setQuantity(cardMdseDTO.getQuantity());
                 cardMdse.setDeleted(SystemConstants.DELETED_NO);
                 cardMdseList.add(cardMdse);
             }
@@ -404,15 +405,16 @@ public class MdseServiceImpl implements MdseService {
             List<ShopMdseMap> deleteShopMdseList = shopMdseMapList.stream().filter(shopMdse -> !shopIdList.contains(shopMdse.getShopId())).collect(Collectors.toList());
             shopMdseMapRepository.deleteAll(deleteShopMdseList);
             //需要添加的店铺
-            List<Long> addShopIdList = shopIdList.stream().filter(shopId -> !shopMdseMapList.stream().map(ShopMdseMap::getShopId).collect(Collectors.toList()).contains(shopId)).collect(Collectors.toList());
-            List<ShopMdseMap> shopMdseMaps = Lists.newArrayList();
-            for (Long shopId : addShopIdList) {
-                ShopMdseMap shopMdseMap = new ShopMdseMap();
-                shopMdseMap.setMdseId(dto.getMdseId());
-                shopMdseMap.setShopId(shopId);
-                shopMdseMap.setDeleted(SystemConstants.DELETED_NO);
-                shopMdseMaps.add(shopMdseMap);
-            }
+            List<ShopMdseMap> shopMdseMaps = shopIdList.stream()
+                    .filter(shopId -> !shopMdseMapList.stream().map(ShopMdseMap::getShopId).collect(Collectors.toList()).contains(shopId))
+                    .map(shopId -> {
+                        ShopMdseMap shopMdseMap = new ShopMdseMap();
+                        shopMdseMap.setMdseId(dto.getMdseId());
+                        shopMdseMap.setShopId(shopId);
+                        shopMdseMap.setDeleted(SystemConstants.DELETED_NO);
+                        return shopMdseMap;
+                    }).collect(Collectors.toList());
+
             shopMdseMapRepository.saveAll(shopMdseMaps);
         }
 
@@ -449,17 +451,16 @@ public class MdseServiceImpl implements MdseService {
 
     @Override
     public MdseInfo entity2vo(MallMdse entity) {
-        MdseInfoShow show = new MdseInfoShow();
-        show.setGroup(1);
-        show.setStock(1);
-        show.setLabel(1);
-        show.setMfg(1);
-        show.setType(1);
-        show.setBrand(1);
-        show.setShop(1);
-        show.setPicture(1);
-
-        return entity2vo(entity, show);
+        return entity2vo(entity, MdseInfoShow.builder()
+                .group(SystemConstants.STATUS_OPEN)
+                .stock(SystemConstants.STATUS_OPEN)
+                .label(SystemConstants.STATUS_OPEN)
+                .mfg(SystemConstants.STATUS_OPEN)
+                .type(SystemConstants.STATUS_OPEN)
+                .brand(SystemConstants.STATUS_OPEN)
+                .shop(SystemConstants.STATUS_OPEN)
+                .picture(SystemConstants.STATUS_OPEN)
+                .build());
     }
 
     @Override
@@ -467,7 +468,7 @@ public class MdseServiceImpl implements MdseService {
         List<CompletableFuture<MdseInfo>> futureList = Optional.of(entityList)
                 .orElse(Lists.newArrayList())
                 .stream()
-                .filter(entity -> !ObjectUtils.isEmpty(entity))
+                .filter(Objects::nonNull)
                 .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity), executor))
                 .collect(Collectors.toList());
         return futureList.stream()
@@ -498,6 +499,11 @@ public class MdseServiceImpl implements MdseService {
             mdseInfoList = mdseInfoList.stream().map(mdseInfo2 -> {
                 List<StockInfo> stockList = mdseInfo2.getStockList();
                 List<StockInfo> stockInfoList = stockList.stream().filter(stockInfo -> cardMdseList.stream().map(CardMdse::getStockId).collect(Collectors.toList()).contains(stockInfo.getStockId())).collect(Collectors.toList());
+                cardMdseList.stream()
+                        .filter(cardMdse -> cardMdse.getMdseId().equals(mdseInfo2.getMdseId()))
+                        .findFirst()
+                        .ifPresent(card -> mdseInfo2.setStartingQuantity(card.getQuantity()));
+
                 mdseInfo2.setStockList(stockInfoList);
                 return mdseInfo2;
             }).collect(Collectors.toList());

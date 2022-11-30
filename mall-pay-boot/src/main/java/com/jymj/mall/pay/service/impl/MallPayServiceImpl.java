@@ -17,9 +17,10 @@ import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.order.api.OrderFeignClient;
 import com.jymj.mall.order.dto.OrderPaySuccess;
 import com.jymj.mall.order.vo.MallOrderInfo;
-import com.jymj.mall.pay.entity.MallWeChatPayInfo;
+import com.jymj.mall.pay.entity.MallPayInfo;
 import com.jymj.mall.pay.repository.MallWeChatPayInfoRepository;
 import com.jymj.mall.pay.service.MallPayService;
+import com.jymj.mall.pay.vo.StatisticsInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -90,6 +92,7 @@ public class MallPayServiceImpl implements MallPayService {
 
             boolean existence = redisUtils.hasKey(key);
             if (!existence) {
+                redisUtils.set(key, 1, 30, TimeUnit.MINUTES);
                 OrderPaySuccess orderPaySuccess = new OrderPaySuccess();
                 orderPaySuccess.setOrderId(orderInfo.getOrderId());
                 BigDecimal totalFree = new BigDecimal(String.valueOf(notifyResult.getTotalFee())).divide(new BigDecimal("100"), 2, RoundingMode.HALF_EVEN);
@@ -98,30 +101,29 @@ public class MallPayServiceImpl implements MallPayService {
                 orderPaySuccess.setPayTime(DateUtil.parse(notifyResult.getTimeEnd()));
 
                 orderFeignClient.paySuccess(orderPaySuccess);
-                redisUtils.set(key, 1, 30, TimeUnit.MINUTES);
 
-                MallWeChatPayInfo weChatPayInfo = new MallWeChatPayInfo();
-                weChatPayInfo.setOrderId(orderInfo.getOrderId());
-                weChatPayInfo.setOpenid(notifyResult.getOpenid());
-                weChatPayInfo.setIsSubscribe(notifyResult.getIsSubscribe());
-                weChatPayInfo.setTradeType(notifyResult.getTradeType());
-                weChatPayInfo.setBankType(notifyResult.getBankType());
-                weChatPayInfo.setTotalFee(notifyResult.getTotalFee());
-                weChatPayInfo.setFeeType(notifyResult.getFeeType());
-                weChatPayInfo.setCashFee(notifyResult.getCashFee());
-                weChatPayInfo.setTransactionId(notifyResult.getTransactionId());
-                weChatPayInfo.setOutTradeNo(notifyResult.getOutTradeNo());
-                weChatPayInfo.setTimeEnd(notifyResult.getTimeEnd());
-                weChatPayInfo.setReturnCode(notifyResult.getReturnCode());
-                weChatPayInfo.setResultCode(notifyResult.getResultCode());
-                weChatPayInfo.setAppid(notifyResult.getAppid());
-                weChatPayInfo.setMchId(notifyResult.getMchId());
-                weChatPayInfo.setNonceStr(notifyResult.getNonceStr());
-                weChatPayInfo.setSign(notifyResult.getSign());
-                weChatPayInfo.setXmlString(notifyResult.getXmlString());
-                payInfoRepository.save(weChatPayInfo);
-
-
+                MallPayInfo payInfo = new MallPayInfo();
+                payInfo.setUserId(orderInfo.getUserInfo().getUserId());
+                payInfo.setOrderId(orderInfo.getOrderId());
+                payInfo.setPayMethod(OrderPayMethodEnum.WEI_XIN_PAY);
+                payInfo.setOpenid(notifyResult.getOpenid());
+                payInfo.setIsSubscribe(notifyResult.getIsSubscribe());
+                payInfo.setTradeType(notifyResult.getTradeType());
+                payInfo.setBankType(notifyResult.getBankType());
+                payInfo.setTotalFee(notifyResult.getTotalFee());
+                payInfo.setFeeType(notifyResult.getFeeType());
+                payInfo.setCashFee(notifyResult.getCashFee());
+                payInfo.setTransactionId(notifyResult.getTransactionId());
+                payInfo.setOutTradeNo(notifyResult.getOutTradeNo());
+                payInfo.setTimeEnd(notifyResult.getTimeEnd());
+                payInfo.setReturnCode(notifyResult.getReturnCode());
+                payInfo.setResultCode(notifyResult.getResultCode());
+                payInfo.setAppid(notifyResult.getAppid());
+                payInfo.setMchId(notifyResult.getMchId());
+                payInfo.setNonceStr(notifyResult.getNonceStr());
+                payInfo.setSign(notifyResult.getSign());
+                payInfo.setXmlString(notifyResult.getXmlString());
+                payInfoRepository.save(payInfo);
             }
         }
     }
@@ -137,5 +139,19 @@ public class MallPayServiceImpl implements MallPayService {
                 .outTradeNo(orderInfo.getOrderNo())
                 .outRefundNo(orderInfo.getOrderNo() + "-" + RandomUtil.randomNumbers(4))
                 .refundFee(BaseWxPayRequest.yuanToFen(orderInfo.getAmountActuallyPaid().toString())).build();
+    }
+
+    @Override
+    public StatisticsInfo getStatisticsByUserId(Long userId) {
+        Long count = payInfoRepository.countByUserId(userId);
+        Long totalFee = payInfoRepository.sumTotalFeeByUserId(userId);
+        Optional<MallPayInfo> payInfoOptional = payInfoRepository.findFirstByUserIdOrderByCreateTimeDesc(userId);
+        if (payInfoOptional.isPresent()){
+            MallPayInfo mallPayInfo = payInfoOptional.get();
+            BigDecimal totalFeeBigDecimal = new BigDecimal(String.valueOf(totalFee)).divide(new BigDecimal("100"), 2, RoundingMode.HALF_EVEN);
+            BigDecimal lastFee = new BigDecimal(String.valueOf(mallPayInfo.getTotalFee())).divide(new BigDecimal("100"), 2, RoundingMode.HALF_EVEN);
+            return StatisticsInfo.builder().total(count).totalFee(totalFeeBigDecimal.toString()).lastTime(mallPayInfo.getCreateTime()).lastFee(lastFee.toString()).build();
+        }
+        return null;
     }
 }

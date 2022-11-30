@@ -1,14 +1,13 @@
 package com.jymj.mall.pay.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.jymj.mall.common.enums.OrderPayMethodEnum;
+import com.jymj.mall.common.web.pojo.BaseEntity;
+import lombok.*;
 
 import javax.persistence.*;
 
 /**
- * 商城微信支付信息
+ * 商城支付信息
  *
  * @author J.Tang
  * @version 1.0
@@ -18,17 +17,22 @@ import javax.persistence.*;
 @Data
 @Entity
 @Builder
+@EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "mall_wechat_pay_info")
-public class MallWeChatPayInfo {
+@Table(name = "mall_pay_info")
+public class MallPayInfo extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "mall_wechat_pay_info_pay_id_seq")
-    @SequenceGenerator(name = "mall_wechat_pay_info_pay_id_seq",sequenceName = "mall_wechat_pay_info_pay_id_seq",allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "mall_pay_info_pay_id_seq")
+    @SequenceGenerator(name = "mall_pay_info_pay_id_seq",sequenceName = "mall_pay_info_pay_id_seq",allocationSize = 1)
     private Long payId;
 
+    private Long userId;
+
     private Long orderId;
+
+    private OrderPayMethodEnum payMethod;
     /**
      * openid
      */

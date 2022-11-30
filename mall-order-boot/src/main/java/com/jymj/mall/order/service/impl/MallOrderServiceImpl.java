@@ -38,6 +38,7 @@ import com.jymj.mall.shop.dto.VerifyOrderMdse;
 import com.jymj.mall.shop.vo.ShopInfo;
 import com.jymj.mall.user.api.UserAddressFeignClient;
 import com.jymj.mall.user.api.UserFeignClient;
+import com.jymj.mall.user.dto.UserDTO;
 import com.jymj.mall.user.vo.AddressInfo;
 import com.jymj.mall.user.vo.MemberInfo;
 import com.jymj.mall.user.vo.UserInfo;
@@ -163,13 +164,21 @@ public class MallOrderServiceImpl implements OrderService {
         Result<MemberInfo> memberInfoResult = null;
         MdseInfoShow show = MdseInfoShow.builder().stock(1).shop(1).picture(1).build();
         for (OrderMdseDTO orderMdseDTO : orderMdseList) {
-            Integer type = orderMdseDTO.getType();
 
             String key = String.format("mall-order:order:mdse:%d:stock:%d", orderMdseDTO.getMdseId(), orderMdseDTO.getStockId());
             Boolean lock = redissonLockUtil.lock(key);
             if (Boolean.TRUE.equals(lock)) {
 
-                if (type.equals(2)) {
+                Result<MdseInfo> mdseInfoResult = mdseFeignClient.getMdseOptionalById(orderMdseDTO.getMdseId(), show);
+
+                if (!Result.isSuccess(mdseInfoResult)) {
+                    redissonLockUtil.unlock(key);
+                    throw new BusinessException("商品信息错误");
+                }
+
+                MdseInfo mdseInfo = mdseInfoResult.getData();
+
+                if (mdseInfo.getClassify().equals(2)) {
                     if (memberInfoResult == null) {
                         memberInfoResult = userFeignClient.getMemberByUserId(UserUtils.getUserId());
                     }
@@ -180,14 +189,6 @@ public class MallOrderServiceImpl implements OrderService {
 
                 }
 
-                Result<MdseInfo> mdseInfoResult = mdseFeignClient.getMdseOptionalById(orderMdseDTO.getMdseId(), show);
-
-                if (!Result.isSuccess(mdseInfoResult)) {
-                    redissonLockUtil.unlock(key);
-                    throw new BusinessException("商品信息错误");
-                }
-
-                MdseInfo mdseInfo = mdseInfoResult.getData();
                 MallOrderMdseDetails mdseDetailsList = saveMdseDetails(orderId, 0L, mdseInfo, orderMdseDTO);
                 orderMdseDetailsList.add(mdseDetailsList);
 
@@ -216,6 +217,7 @@ public class MallOrderServiceImpl implements OrderService {
         orderMdseDetails.setOrderId(orderId);
         orderMdseDetails.setMdseId(mdseInfo.getMdseId());
         orderMdseDetails.setUsageStatus(SystemConstants.STATUS_CLOSE);
+        orderMdseDetails.setNumber(mdseInfo.getNumber());
         StockInfo stockInfo = mdseInfo.getStockList()
                 .stream()
                 .filter(info -> info.getStockId().equals(orderMdseDTO.getStockId()))
@@ -535,6 +537,13 @@ public class MallOrderServiceImpl implements OrderService {
 
     }
 
+    /**
+     * 订单卡详情
+     *
+     * @param orderMdseDetails     订单商品详情
+     * @param orderMdseDetailsList 订单商品详情列表
+     * @return 订单商品详情
+     */
     private MallOrderMdseDetailsInfo orderCardDetails2vo(MallOrderMdseDetails orderMdseDetails, List<MallOrderMdseDetails> orderMdseDetailsList) {
         MallOrderMdseDetailsInfo info = orderMdseDetails2vo(orderMdseDetails);
         info.setCardMdseInfoList(orderMdseDetailsList2vo(
@@ -561,8 +570,11 @@ public class MallOrderServiceImpl implements OrderService {
             info.setType(mallOrderMdseDetails.getType());
             info.setShopName(mallOrderMdseDetails.getShopName());
             info.setMdseName(mallOrderMdseDetails.getMdseName());
+            info.setNumber(mallOrderMdseDetails.getNumber());
             info.setMdseStockSpec(mallOrderMdseDetails.getMdseStockSpec());
             info.setUsageStatus(mallOrderMdseDetails.getUsageStatus());
+            info.setUsageQuantity(Objects.nonNull(mallOrderMdseDetails.getUsageQuantity()) ? mallOrderMdseDetails.getUsageQuantity() : 0);
+            info.setUsageDate(mallOrderMdseDetails.getUsageDate());
             info.setMdsePicture(mallOrderMdseDetails.getMdsePicture());
             info.setMdsePrice(mallOrderMdseDetails.getMdsePrice());
         }
@@ -633,13 +645,13 @@ public class MallOrderServiceImpl implements OrderService {
 
             if (!ObjectUtils.isEmpty(orderPageQuery.getMdseId())) {
                 Result<List<MdsePurchaseRecordDTO>> purchaseRecordListResult = mdseFeignClient.getPurchaseRecordByMdseId(orderPageQuery.getMdseId());
-               if (Result.isSuccess(purchaseRecordListResult)){
-                   orderIdList = Sets.newHashSet();
-                   orderIdList.addAll(purchaseRecordListResult.getData().stream().map(MdsePurchaseRecordDTO::getOrderId).filter(Objects::nonNull).collect(Collectors.toList()));
-                   orderIdList.add(0L);
-               }else {
-                   throw new BusinessException("服务异常");
-               }
+                if (Result.isSuccess(purchaseRecordListResult)) {
+                    orderIdList = Sets.newHashSet();
+                    orderIdList.addAll(purchaseRecordListResult.getData().stream().map(MdsePurchaseRecordDTO::getOrderId).filter(Objects::nonNull).collect(Collectors.toList()));
+                    orderIdList.add(0L);
+                } else {
+                    throw new BusinessException("服务异常");
+                }
             }
 
             if (StringUtils.hasText(orderPageQuery.getAddressee())) {
@@ -724,9 +736,13 @@ public class MallOrderServiceImpl implements OrderService {
                 mallOrder = orderRepository.save(mallOrder);
                 Long userId = mallOrder.getUserId();
 
-                //付款减库存
+                //付款减库存 会员
+                boolean member = false;
                 List<MallOrderMdseDetails> orderMdseDetailsList = orderMdseDetailsRepository.findAllByOrderId(mallOrder.getOrderId());
                 for (MallOrderMdseDetails orderMdseDetails : orderMdseDetailsList) {
+                    if (orderMdseDetails.getType() == 2) {
+                        member = true;
+                    }
                     if (orderMdseDetails.getInventoryReductionMethod() == InventoryReductionMethod.PAYMENT && orderMdseDetails.getType() == 1) {
                         Long stockId = orderMdseDetails.getStockId();
                         Integer quantity = orderMdseDetails.getQuantity();
@@ -735,12 +751,20 @@ public class MallOrderServiceImpl implements OrderService {
                     MallOrder finalMallOrder = mallOrder;
                     executor.execute(() -> mdseFeignClient.addMdsePurchaseRecord(MdsePurchaseRecordDTO.builder().orderId(finalMallOrder.getOrderId()).userId(userId).mdseId(orderMdseDetails.getMdseId()).type(orderMdseDetails.getType()).build()));
                 }
+                if (member) {
+                    executor.execute(() -> userFeignClient.updateUser(UserDTO.builder().userId(userId).memberLevel(1).build()));
+                }
             }
             redissonLockUtil.unlock(key);
         }
 
     }
 
+    /**
+     * 验证
+     *
+     * @param verifyOrderMdse 验证订单信息
+     */
     @Override
     @CacheEvict(value = "mall-order:order-info:", key = "'order-id:'+#verifyOrderMdse.orderId")
     public void verify(VerifyOrderMdse verifyOrderMdse) {
@@ -756,7 +780,21 @@ public class MallOrderServiceImpl implements OrderService {
         }
 
         MallOrderMdseDetails orderMdseDetails = mdseDetailsOptional.get();
+
+        Integer verifyQuantity = Objects.nonNull(verifyOrderMdse.getQuantity()) ? verifyOrderMdse.getQuantity() : orderMdseDetails.getQuantity();
+        Integer usageQuantity = Objects.nonNull(orderMdseDetails.getUsageQuantity()) ? orderMdseDetails.getUsageQuantity() : 0;
+        if ((verifyQuantity + usageQuantity) > orderMdseDetails.getQuantity()) {
+            throw new BusinessException("核销数量错误！");
+        }
+
         orderMdseDetails.setUsageStatus(SystemConstants.STATUS_OPEN);
+
+        if (verifyQuantity + usageQuantity < orderMdseDetails.getQuantity()) {
+            orderMdseDetails.setUsageStatus(SystemConstants.STATUS_CLOSE);
+        }
+        orderMdseDetails.setUsageQuantity(verifyQuantity + usageQuantity);
+
+        orderMdseDetails.setUsageDate(new Date());
         orderMdseDetailsRepository.save(orderMdseDetails);
     }
 

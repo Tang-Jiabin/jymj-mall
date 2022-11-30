@@ -12,14 +12,12 @@ import com.jymj.mall.mdse.dto.MdsePurchaseRecordDTO;
 import com.jymj.mall.user.dto.UserAuthDTO;
 import com.jymj.mall.user.dto.UserDTO;
 import com.jymj.mall.user.dto.UserPageQuery;
-import com.jymj.mall.user.entity.MallMember;
 import com.jymj.mall.user.entity.MallUser;
 import com.jymj.mall.user.entity.MallUserRole;
 import com.jymj.mall.user.enums.MemberEnum;
 import com.jymj.mall.user.enums.SourceEnum;
 import com.jymj.mall.user.repository.MallUserRoleRepository;
 import com.jymj.mall.user.repository.UserRepository;
-import com.jymj.mall.user.service.MemberService;
 import com.jymj.mall.user.service.UserService;
 import com.jymj.mall.user.vo.UserInfo;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +56,6 @@ public class UserServiceImpl implements UserService {
     private final MdseFeignClient mdseFeignClient;
     private final PasswordEncoder passwordEncoder;
 
-    private final MemberService memberService;
 
 
     @Override
@@ -234,7 +231,14 @@ public class UserServiceImpl implements UserService {
             user.setMemberLevel(dto.getMemberLevel());
             update = true;
         }
-
+        if (StringUtils.hasText(dto.getMemberName())) {
+            user.setMemberName(dto.getMemberName());
+            update = true;
+        }
+        if (StringUtils.hasText(dto.getMemberMobile())) {
+            user.setMemberMobile(dto.getMemberMobile());
+            update = true;
+        }
 
         return update;
     }
@@ -267,8 +271,8 @@ public class UserServiceImpl implements UserService {
             userInfo.setPurchaseCount(entity.getPurchaseCount());
             userInfo.setVerifyPerson(entity.getVerifyPerson());
             userInfo.setMemberLevel(entity.getMemberLevel());
-            Optional<MallMember> memberOptional = memberService.findByUserId(entity.getUserId());
-            memberOptional.ifPresent(member -> userInfo.setMemberInfo(memberService.entity2vo(member)));
+            userInfo.setMemberName(entity.getMemberName());
+            userInfo.setMemberMobile(entity.getMemberMobile());
             return userInfo;
         }
         return null;

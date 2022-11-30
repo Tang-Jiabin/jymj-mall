@@ -1,8 +1,7 @@
 package com.jymj.mall.mdse.entity;
 
 import com.jymj.mall.common.web.pojo.BaseEntity;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLDeleteAll;
 import org.hibernate.annotations.Where;
@@ -19,6 +18,9 @@ import javax.persistence.*;
  * @date 2022-09-06
  */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "mall_shop_mdse_map")
 @Where(clause = "deleted = 0")

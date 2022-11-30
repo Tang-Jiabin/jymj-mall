@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 订单商品详情
@@ -46,6 +47,9 @@ public class MallOrderMdseDetails extends BaseEntity {
     @ApiModelProperty("商品id")
     private Long mdseId;
 
+    @ApiModelProperty("商品编号")
+    private String number;
+
     @ApiModelProperty("库存id")
     private Long stockId;
 
@@ -75,6 +79,12 @@ public class MallOrderMdseDetails extends BaseEntity {
 
     @ApiModelProperty("使用状态 1-已使用 2-未使用")
     private Integer usageStatus;
+
+    @ApiModelProperty("使用数量")
+    private Integer usageQuantity;
+
+    @ApiModelProperty("使用时间")
+    private Date usageDate;
 
     @ApiModelProperty("库存减少方式")
     private InventoryReductionMethod inventoryReductionMethod;

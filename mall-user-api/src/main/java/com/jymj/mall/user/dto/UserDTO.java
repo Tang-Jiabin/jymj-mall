@@ -90,4 +90,10 @@ public class UserDTO {
 
     @ApiModelProperty(value = "会员等级")
     private Integer memberLevel;
+
+    @ApiModelProperty("会员姓名")
+    private String memberName;
+
+    @ApiModelProperty("会员手机号")
+    private String memberMobile;
 }

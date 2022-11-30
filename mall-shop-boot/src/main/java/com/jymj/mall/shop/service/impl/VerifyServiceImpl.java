@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.jymj.mall.admin.api.AdminFeignClient;
 import com.jymj.mall.admin.dto.UpdateAdminDTO;
 import com.jymj.mall.admin.vo.AdminInfo;
+import com.jymj.mall.common.constants.MdseConstants;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.Result;
@@ -316,6 +317,13 @@ public class VerifyServiceImpl implements VerifyService {
         if (!orderMdseDetailsInfo.isPresent()) {
             throw new BusinessException("商品不存在");
         }
+
+        MallOrderMdseDetailsInfo mdseInfo = orderMdseDetailsInfo.get();
+
+        if (mdseInfo.getType().equals(MdseConstants.MDSE_TYPE_CARD)) {
+            //TODO 验证是否生效
+        }
+
         Result<Object> verify = orderFeignClient.verify(verifyOrderMdse);
         if (!Result.isSuccess(verify)) {
             throw new BusinessException("核销失败");
@@ -328,6 +336,7 @@ public class VerifyServiceImpl implements VerifyService {
         verifyOrder.setShopId(verifyOrder.getShopId());
         verifyOrder.setMdseId(mdseDetailsInfo.getMdseId());
         verifyOrder.setStockId(mdseDetailsInfo.getStockId());
+        verifyOrder.setQuantity(verifyOrderMdse.getQuantity());
         verifyOrder.setDeleted(SystemConstants.DELETED_NO);
         verifyOrderRepository.save(verifyOrder);
     }

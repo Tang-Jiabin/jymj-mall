@@ -96,7 +96,7 @@ public class MdseDTO {
     @ApiModelProperty("库存规格集合")
     private Set<StockDTO> stockList;
 
-    @ApiModelProperty("商品状态 1-上架 2-下架")
+    @ApiModelProperty("商品状态 1-上架 2-下架 3-草稿")
     private Integer status;
 
     @ApiModelProperty("卡商品集合")

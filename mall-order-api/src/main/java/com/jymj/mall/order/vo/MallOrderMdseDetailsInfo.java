@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -19,6 +20,9 @@ public class MallOrderMdseDetailsInfo {
 
     @ApiModelProperty("商品id")
     private Long mdseId;
+
+    @ApiModelProperty("商品编号")
+    private String number;
 
     @ApiModelProperty("库存id")
     private Long stockId;
@@ -49,6 +53,12 @@ public class MallOrderMdseDetailsInfo {
 
     @ApiModelProperty("使用状态 1-已使用 2-未使用")
     private Integer usageStatus;
+
+    @ApiModelProperty("使用数量")
+    private Integer usageQuantity;
+
+    @ApiModelProperty("使用时间")
+    private Date usageDate;
 
     @ApiModelProperty("订单卡商品")
     private List<MallOrderMdseDetailsInfo> cardMdseInfoList;
