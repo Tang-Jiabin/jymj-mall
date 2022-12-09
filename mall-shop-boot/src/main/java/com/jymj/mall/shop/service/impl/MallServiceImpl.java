@@ -2,6 +2,7 @@ package com.jymj.mall.shop.service.impl;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.IdcardUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.google.common.collect.Lists;
 import com.jymj.mall.admin.api.*;
@@ -11,6 +12,7 @@ import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.admin.vo.DistrictInfo;
 import com.jymj.mall.admin.vo.RoleInfo;
 import com.jymj.mall.common.constants.SystemConstants;
+import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.shop.dto.AddMallDTO;
@@ -82,6 +84,14 @@ public class MallServiceImpl implements MallService {
         if (Result.isSuccess(deptInfoResult)) {
             MallDetails mallDetails = new MallDetails();
 
+            if (!StringUtils.hasText(mallDTO.getIdNumber())) {
+                throw new BusinessException("身份证号不能为空");
+
+            }
+            if (!IdcardUtil.isValidCard(mallDTO.getIdNumber())) {
+                throw new BusinessException("身份证号错误");
+            }
+
             mallDetails.setName(mallDTO.getName());
             mallDetails.setLogo(mallDTO.getLogo());
             mallDetails.setIntroduce(mallDTO.getIntroduce());
@@ -90,6 +100,7 @@ public class MallServiceImpl implements MallService {
             mallDetails.setDeptId(deptInfoResult.getData().getDeptId());
             mallDetails.setManagerName(mallDTO.getNickname());
             mallDetails.setManagerMobile(mallDTO.getMobile());
+            mallDetails.setManagerIdNumber(mallDTO.getIdNumber());
             mallDetails.setDeleted(SystemConstants.DELETED_NO);
             mallDetails.setMallNo(IdUtil.getSnowflake(SystemConstants.WORK_ID, SystemConstants.MALL_ADMIN_DATACENTER_ID).nextIdStr());
             mallDetails.setType(mallDTO.getType());
@@ -133,10 +144,7 @@ public class MallServiceImpl implements MallService {
                 adminDTO.setRoleIdList(Lists.newArrayList(roleInfo.getRoleId()));
                 adminFeignClient.add(adminDTO);
             }
-
-
         }
-
     }
 
 
@@ -189,13 +197,13 @@ public class MallServiceImpl implements MallService {
 
         List<CompletableFuture<MallInfo>> futureList = Optional.ofNullable(content)
                 .orElse(Lists.newArrayList())
-                .stream().map(entity -> CompletableFuture.supplyAsync(() -> mall2vo(entity),executor))
+                .stream().map(entity -> CompletableFuture.supplyAsync(() -> mall2vo(entity), executor))
                 .collect(Collectors.toList());
         return futureList.stream().map(CompletableFuture::join).collect(Collectors.toList());
     }
 
     @Override
-    @CacheEvict(value="mall-shop:mall-info:",allEntries = true)
+    @CacheEvict(value = "mall-shop:mall-info:", allEntries = true)
     public void deleteMall(String ids) {
         List<Long> mallIds = Arrays.stream(ids.split(",")).map(Long::parseLong).collect(Collectors.toList());
         Optional.of(mallIds)
@@ -218,7 +226,7 @@ public class MallServiceImpl implements MallService {
 
     @Override
     @GlobalTransactional(name = "mall-shop-update-mall", rollbackFor = Exception.class)
-    @CacheEvict(value="mall-shop:mall-info:",key = "'mall-id:'+#updateMallDTO.mallId")
+    @CacheEvict(value = "mall-shop:mall-info:", key = "'mall-id:'+#updateMallDTO.mallId")
     public void updateMall(UpdateMallDTO updateMallDTO) {
         Optional<MallDetails> mallDetailsOptional = mallDetailsRepository.findById(updateMallDTO.getMallId());
 
@@ -240,6 +248,7 @@ public class MallServiceImpl implements MallService {
             mallDetails.setDistrictId(updateMallDTO.getDistrictId());
             mallDetails.setManagerName(updateMallDTO.getNickname());
             mallDetails.setManagerMobile(updateMallDTO.getMobile());
+            mallDetails.setManagerIdNumber(updateMallDTO.getIdNumber());
             mallDetailsRepository.save(mallDetails);
         });
 
@@ -264,6 +273,7 @@ public class MallServiceImpl implements MallService {
         mallVO.setManagerName(mall.getManagerName());
         mallVO.setManagerMobile(mall.getManagerMobile());
         mallVO.setCreateTime(mall.getCreateTime());
+        mallVO.setManagerIdNumber(mall.getManagerIdNumber());
 
         if (mall.getDistrictId() != null) {
             Result<List<DistrictInfo>> districtListResult = districtFeignClient.parent(mall.getDistrictId());

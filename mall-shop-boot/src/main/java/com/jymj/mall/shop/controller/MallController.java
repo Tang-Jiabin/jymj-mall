@@ -43,21 +43,21 @@ public class MallController {
 
     @ApiOperation(value = "添加商场")
     @PostMapping
-    private Result addMall(@Valid  @RequestBody AddMallDTO mallDTO) {
+    public Result addMall(@Valid  @RequestBody AddMallDTO mallDTO) {
         mallService.addMall(mallDTO);
         return Result.success();
     }
 
     @ApiOperation(value = "删除商场")
     @DeleteMapping("/{ids}")
-    private Result deleteMall(@ApiParam("删除商场，多个以英文逗号(,)分割") @Valid @PathVariable String ids) {
+    public Result deleteMall(@ApiParam("删除商场，多个以英文逗号(,)分割") @Valid @PathVariable String ids) {
         mallService.deleteMall(ids);
         return Result.success();
     }
 
     @ApiOperation(value = "修改商场")
     @PutMapping
-    private Result updateMall(@Valid @RequestBody UpdateMallDTO updateMallDTO) {
+    public Result updateMall(@Valid @RequestBody UpdateMallDTO updateMallDTO) {
         mallService.updateMall(updateMallDTO);
         return Result.success();
     }

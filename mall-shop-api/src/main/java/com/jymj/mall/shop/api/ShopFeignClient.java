@@ -30,4 +30,8 @@ public interface ShopFeignClient {
     @GetMapping("/api/v1/shop/{shopId}/info")
     @Cacheable(cacheNames = "mall-shop:shop-info:", key = "'shop-id:'+#shopId")
     Result<ShopInfo> getShopById(@Valid @PathVariable Long shopId);
+
+    @GetMapping("/api/v1/shop/mall/{mallId}/lists")
+    @Cacheable(cacheNames = "mall-shop:shop-list:", key = "'mall-id:'+#mallId")
+    Result<List<ShopInfo>> getShopByMallId(@PathVariable Long mallId);
 }

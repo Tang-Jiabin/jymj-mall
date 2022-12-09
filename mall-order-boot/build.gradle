@@ -1,10 +1,11 @@
 
 dependencies {
 
-    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+//    implementation 'org.springframework.boot:spring-boot-starter-amqp'
     implementation project(":mall-common")
     implementation project(":mall-common-redis")
     implementation project(":mall-common-web")
+    implementation project(":mall-common-mq")
     implementation project(":mall-shop-api")
     implementation project(":mall-mdse-api")
     implementation project(":mall-user-api")

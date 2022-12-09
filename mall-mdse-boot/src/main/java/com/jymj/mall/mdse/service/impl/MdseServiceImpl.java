@@ -2,6 +2,7 @@ package com.jymj.mall.mdse.service.impl;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.jymj.mall.common.constants.MdseConstants;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.Result;
@@ -10,7 +11,10 @@ import com.jymj.mall.mdse.dto.*;
 import com.jymj.mall.mdse.entity.*;
 import com.jymj.mall.mdse.enums.InventoryReductionMethod;
 import com.jymj.mall.mdse.enums.PictureType;
-import com.jymj.mall.mdse.repository.*;
+import com.jymj.mall.mdse.repository.CardMdseRepository;
+import com.jymj.mall.mdse.repository.MdseCardRulesRepository;
+import com.jymj.mall.mdse.repository.MdsePurchaseRecordRepository;
+import com.jymj.mall.mdse.repository.MdseRepository;
 import com.jymj.mall.mdse.service.*;
 import com.jymj.mall.mdse.vo.*;
 import com.jymj.mall.search.api.MdseSearchFeignClient;
@@ -24,6 +28,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -65,7 +70,6 @@ public class MdseServiceImpl implements MdseService {
     private final TypeService typeService;
     private final LabelService labelService;
     private final ShopFeignClient shopFeignClient;
-    private final ShopMdseMapRepository shopMdseMapRepository;
     private final MdseSearchFeignClient mdseSearchFeignClient;
     private final ThreadPoolTaskExecutor executor;
     private final MdseCardRulesRepository cardRulesRepository;
@@ -83,9 +87,7 @@ public class MdseServiceImpl implements MdseService {
         mdse.setNumber(dto.getNumber());
         mdse.setPrice(dto.getPrice());
         mdse.setPostage(dto.getPostage());
-        mdse.setInventoryQuantity(dto.getInventoryQuantity());
         mdse.setStartingQuantity(dto.getStartingQuantity());
-        mdse.setRemainingQuantity(dto.getInventoryQuantity());
         mdse.setShowRemainingQuantity(Objects.nonNull(dto.getShowRemainingQuantity()) ? dto.getShowRemainingQuantity() : false);
         mdse.setRefund(dto.getRefund());
         mdse.setInventoryReductionMethod(dto.getInventoryReductionMethod());
@@ -95,7 +97,7 @@ public class MdseServiceImpl implements MdseService {
         mdse.setMallId(dto.getMallId());
         mdse.setDeleted(SystemConstants.DELETED_NO);
         mdse.setStatus(dto.getStatus() == null ? 2 : dto.getStatus());
-        mdse.setClassify(1);
+        mdse.setClassify(MdseConstants.MDSE_TYPE_MDSE);
         if (Objects.nonNull(dto.getClassify())) {
             mdse.setClassify(dto.getClassify());
         }
@@ -113,6 +115,16 @@ public class MdseServiceImpl implements MdseService {
             Optional<MdseMfg> mfgOptional = mfgService.findById(mfgId);
             MdseMfg mfg = mfgOptional.orElseThrow(() -> new BusinessException("厂家不存在"));
             mdse.setMfgId(mfg.getMfgId());
+        }
+
+        //商品店铺
+        Long shopId = dto.getShopId();
+        if (Objects.nonNull(shopId)) {
+            Result<ShopInfo> shopInfoResult = shopFeignClient.getShopById(shopId);
+            if (!Result.isSuccess(shopInfoResult)) {
+                throw new BusinessException("店铺不存在");
+            }
+            mdse.setShopId(shopId);
         }
 
         //商品类型
@@ -162,24 +174,6 @@ public class MdseServiceImpl implements MdseService {
             groupService.addMdseGroupMap(mdseId, groupList.stream().map(MdseGroup::getGroupId).collect(Collectors.toList()));
         }
 
-        //商品所属店铺
-        Set<Long> shopIdList = dto.getShopIdList();
-        if (!CollectionUtils.isEmpty(shopIdList)) {
-            Result<List<ShopInfo>> shopInfoListResult = shopFeignClient.getAllById(StringUtils.collectionToCommaDelimitedString(shopIdList));
-            if (Result.isSuccess(shopInfoListResult)) {
-                List<ShopInfo> shopInfoList = shopInfoListResult.getData();
-                List<ShopMdseMap> shopMdseMapList = Lists.newArrayList();
-                for (ShopInfo shopInfo : shopInfoList) {
-                    ShopMdseMap shopMdseMap = new ShopMdseMap();
-                    shopMdseMap.setMdseId(mdseId);
-                    shopMdseMap.setShopId(shopInfo.getShopId());
-                    shopMdseMap.setDeleted(SystemConstants.DELETED_NO);
-                    shopMdseMapList.add(shopMdseMap);
-                }
-                shopMdseMapRepository.saveAll(shopMdseMapList);
-            }
-        }
-
         //商品库存
         Set<StockDTO> stockList = dto.getStockList();
         Optional.of(stockList)
@@ -199,7 +193,7 @@ public class MdseServiceImpl implements MdseService {
                 cardMdse.setCardId(mdseId);
                 cardMdse.setMdseId(cardMdseDTO.getMdseId());
                 cardMdse.setStockId(cardMdseDTO.getStockId());
-                cardMdse.setQuantity(cardMdseDTO.getQuantity());
+                cardMdse.setQuantity(Objects.nonNull(cardMdseDTO.getQuantity()) ? cardMdseDTO.getQuantity() : 1);
                 cardMdse.setDeleted(SystemConstants.DELETED_NO);
                 cardMdseList.add(cardMdse);
             }
@@ -248,10 +242,6 @@ public class MdseServiceImpl implements MdseService {
         if (!ObjectUtils.isEmpty(dto.getPostage())) {
             mallMdse.setPostage(dto.getPostage());
         }
-        //剩余库存数量
-        if (!ObjectUtils.isEmpty(dto.getInventoryQuantity())) {
-            mallMdse.setRemainingQuantity(dto.getInventoryQuantity());
-        }
         //商品起售数量
         if (!ObjectUtils.isEmpty(dto.getStartingQuantity())) {
             mallMdse.setStartingQuantity(dto.getStartingQuantity());
@@ -288,6 +278,10 @@ public class MdseServiceImpl implements MdseService {
         if (!ObjectUtils.isEmpty(dto.getMfgId())) {
             mallMdse.setMfgId(dto.getMfgId());
         }
+        //商品厂家id
+        if (!ObjectUtils.isEmpty(dto.getShopId())) {
+            mallMdse.setShopId(dto.getShopId());
+        }
         //商品类型id
         if (!ObjectUtils.isEmpty(dto.getTypeId())) {
             mallMdse.setTypeId(dto.getTypeId());
@@ -299,141 +293,164 @@ public class MdseServiceImpl implements MdseService {
 
         //卡生效规则
         if (Objects.nonNull(dto.getEffectiveRules())) {
-            EffectiveRulesDTO effectiveRules = dto.getEffectiveRules();
-            Optional<MdseCardRules> cardRulesOptional = cardRulesRepository.findByCardId(mallMdse.getMdseId());
-            MdseCardRules cardRules = new MdseCardRules();
-            if (cardRulesOptional.isPresent()) {
-                cardRules = cardRulesOptional.get();
-            }
-            cardRules.setCardId(mallMdse.getMdseId());
-            cardRules.setEffectiveRules(effectiveRules.getEffectiveRules());
-            cardRules.setHoursLater(effectiveRules.getHoursLater());
-            cardRules.setUsageRule(effectiveRules.getUsageRule());
-            cardRules.setDays(effectiveRules.getDays());
-            cardRules.setStartDate(effectiveRules.getStartDate());
-            cardRules.setEndDate(effectiveRules.getEndDate());
-            cardRules.setDeleted(SystemConstants.DELETED_NO);
-            cardRulesRepository.save(cardRules);
+            updateCardRules(dto, mallMdse);
         }
 
+        List<CompletableFuture<Void>> futureList = Lists.newArrayList();
         //卡商品信息
         if (!CollectionUtils.isEmpty(dto.getCardMdseList())) {
-            Set<CardMdseDTO> cardMdseDTOList = dto.getCardMdseList();
-            List<CardMdse> allByCardId = cardMdseRepository.findAllByCardId(mallMdse.getMdseId());
-            cardMdseRepository.deleteAll(allByCardId);
-            List<CardMdse> cardMdseList = Lists.newArrayList();
-            for (CardMdseDTO cardMdseDTO : cardMdseDTOList) {
-                CardMdse cardMdse = new CardMdse();
-                cardMdse.setCardId(mallMdse.getMdseId());
-                cardMdse.setMdseId(cardMdseDTO.getMdseId());
-                cardMdse.setStockId(cardMdseDTO.getStockId());
-                cardMdse.setDeleted(SystemConstants.DELETED_NO);
-                cardMdseList.add(cardMdse);
-            }
-            cardMdseRepository.saveAll(cardMdseList);
+            CompletableFuture<Void> updateCardMdseFuture = CompletableFuture.runAsync(() -> updateCardMdseList(dto), executor).exceptionally(throwable -> {
+                log.error("更新卡商品失败:{}", dto.getCardMdseList());
+                throwable.printStackTrace();
+                throw new BusinessException("更新卡商品失败");
+            });
+            futureList.add(updateCardMdseFuture);
         }
 
         if (!CollectionUtils.isEmpty(dto.getPictureList())) {
-            pictureService.updateMdsePicture(dto.getPictureList(), dto.getMdseId(), PictureType.MDSE_PIC);
+            CompletableFuture<Void> updatePictureFuture = CompletableFuture.runAsync(() -> pictureService.updateMdsePicture(dto.getPictureList(), dto.getMdseId(), PictureType.MDSE_PIC), executor).exceptionally(throwable -> {
+                log.error("更新商品图片失败:{}", dto.getPictureList());
+                throwable.printStackTrace();
+                throw new BusinessException("更新商品图片失败");
+            });
+            futureList.add(updatePictureFuture);
         }
         if (!CollectionUtils.isEmpty(dto.getVideoList())) {
-            pictureService.updateMdsePicture(dto.getVideoList(), dto.getMdseId(), PictureType.MDSE_VIDEO);
+            CompletableFuture<Void> updateVideoFuture = CompletableFuture.runAsync(() -> pictureService.updateMdsePicture(dto.getVideoList(), dto.getMdseId(), PictureType.MDSE_VIDEO), executor).exceptionally(throwable -> {
+                log.error("更新商品视频失败:{}", dto.getVideoList());
+                throwable.printStackTrace();
+                throw new BusinessException("更新商品视频失败");
+            });
+            futureList.add(updateVideoFuture);
         }
-        updateMdseGroup(dto);
 
-        updateMdseShop(dto);
+        if (!ObjectUtils.isEmpty(dto.getGroupIdList())) {
+            CompletableFuture<Void> updateGroupFuture = CompletableFuture.runAsync(() -> updateMdseGroup(dto), executor).exceptionally(throwable -> {
+                log.error("更新商品分组失败:{}", dto.getVideoList());
+                throwable.printStackTrace();
+                throw new BusinessException("更新商品分组失败");
+            });
+            futureList.add(updateGroupFuture);
+        }
 
-        updateMdseLabel(dto);
+        if (!ObjectUtils.isEmpty(dto.getLabelIdList())) {
+            CompletableFuture<Void> updateLabelFuture = CompletableFuture.runAsync(() -> updateMdseLabel(dto), executor).exceptionally(throwable -> {
+                log.error("更新商品标签失败:{}", dto.getVideoList());
+                throwable.printStackTrace();
+                throw new BusinessException("更新商品标签失败");
+            });
+            futureList.add(updateLabelFuture);
+        }
 
-        updateMdseStock(dto);
+        if (!ObjectUtils.isEmpty(dto.getStockList())) {
+            CompletableFuture<Void> updateStockFuture = CompletableFuture.runAsync(() -> updateMdseStock(dto), executor).exceptionally(throwable -> {
+                log.error("更新商品规格失败:{}", dto.getVideoList());
+                throwable.printStackTrace();
+                throw new BusinessException("更新商品规格失败");
+            });
+            futureList.add(updateStockFuture);
+        }
+
+        if (!futureList.isEmpty()) {
+            CompletableFuture.allOf(futureList.toArray(new CompletableFuture[0]));
+        }
 
         return Optional.of(mdseRepository.save(mallMdse));
     }
 
+
+    private void updateCardMdseList(MdseDTO dto) {
+        Set<CardMdseDTO> cardMdseDTOList = dto.getCardMdseList();
+        List<CardMdse> allByCardId = cardMdseRepository.findAllByCardId(dto.getMdseId());
+        cardMdseRepository.deleteAll(allByCardId);
+        List<CardMdse> cardMdseList = Lists.newArrayList();
+        for (CardMdseDTO cardMdseDTO : cardMdseDTOList) {
+            CardMdse cardMdse = new CardMdse();
+            cardMdse.setCardId(dto.getMdseId());
+            cardMdse.setMdseId(cardMdseDTO.getMdseId());
+            cardMdse.setStockId(cardMdseDTO.getStockId());
+            cardMdse.setQuantity(cardMdseDTO.getQuantity());
+            cardMdse.setDeleted(SystemConstants.DELETED_NO);
+            cardMdseList.add(cardMdse);
+        }
+        cardMdseRepository.saveAll(cardMdseList);
+    }
+
+    @CacheEvict(value = "mall-mdse:card-rules-result:", key = "'card-id:'+#mallMdse.mdseId")
+    public void updateCardRules(MdseDTO dto, MallMdse mallMdse) {
+        EffectiveRulesDTO effectiveRules = dto.getEffectiveRules();
+        Optional<MdseCardRules> cardRulesOptional = cardRulesRepository.findByCardId(mallMdse.getMdseId());
+        MdseCardRules cardRules = new MdseCardRules();
+        if (cardRulesOptional.isPresent()) {
+            cardRules = cardRulesOptional.get();
+        }
+        cardRules.setCardId(mallMdse.getMdseId());
+        cardRules.setEffectiveRules(effectiveRules.getEffectiveRules());
+        cardRules.setHoursLater(effectiveRules.getHoursLater());
+        cardRules.setUsageRule(effectiveRules.getUsageRule());
+        cardRules.setDays(effectiveRules.getDays());
+        cardRules.setStartDate(effectiveRules.getStartDate());
+        cardRules.setEndDate(effectiveRules.getEndDate());
+        cardRules.setDeleted(SystemConstants.DELETED_NO);
+        cardRulesRepository.save(cardRules);
+    }
+
     private void updateMdseStock(MdseDTO dto) {
 
-        Set<StockDTO> stockList = dto.getStockList();
-        if (!ObjectUtils.isEmpty(stockList)) {
-            List<MdseStock> mdseStockList = stockService.findAllByMdseId(dto.getMdseId());
-            //需要删除的库存
-            List<MdseStock> deleteMdseStockList = mdseStockList.stream().filter(mdseStock -> !stockList.stream().map(StockDTO::getStockId).filter(Objects::nonNull).collect(Collectors.toList()).contains(mdseStock.getStockId())).collect(Collectors.toList());
-            stockService.deleteMdseStock(deleteMdseStockList);
 
-            //需要添加的库存
-            List<StockDTO> addMdseStockList = stockList.stream().filter(stockDTO -> {
-                if (stockDTO.getStockId() == null || stockDTO.getStockId() == 0L) {
-                    stockDTO.setMdseId(dto.getMdseId());
-                    return true;
+        List<MdseStock> mdseStockList = stockService.findAllByMdseId(dto.getMdseId());
+        //需要删除的库存
+        List<MdseStock> deleteMdseStockList = mdseStockList.stream().filter(mdseStock -> !dto.getStockList().stream().map(StockDTO::getStockId).filter(Objects::nonNull).collect(Collectors.toList()).contains(mdseStock.getStockId())).collect(Collectors.toList());
+        stockService.deleteMdseStock(deleteMdseStockList);
+
+        //需要添加的库存
+        List<StockDTO> addMdseStockList = dto.getStockList().stream().filter(stockDTO -> {
+            if (stockDTO.getStockId() == null || stockDTO.getStockId() == 0L) {
+                stockDTO.setMdseId(dto.getMdseId());
+                return true;
+            }
+            for (MdseStock stock : mdseStockList) {
+                if (stock.getStockId().equals(stockDTO.getStockId())) {
+                    return false;
                 }
-                for (MdseStock stock : mdseStockList) {
-                    if (stock.getStockId().equals(stockDTO.getStockId())) {
-                        return false;
-                    }
-                }
-                return false;
-            }).collect(Collectors.toList());
-            addMdseStockList.forEach(stockService::add);
+            }
+            return false;
+        }).collect(Collectors.toList());
+        addMdseStockList.forEach(stockService::add);
 
 
-            //需要修改的库存
-            List<StockDTO> updateMdseStockList = stockList.stream().filter(stockDTO -> mdseStockList.stream().map(MdseStock::getStockId).collect(Collectors.toList()).contains(stockDTO.getStockId())).collect(Collectors.toList());
-            updateMdseStockList.forEach(stockService::update);
-        }
+        //需要修改的库存
+        List<StockDTO> updateMdseStockList = dto.getStockList().stream().filter(stockDTO -> mdseStockList.stream().map(MdseStock::getStockId).collect(Collectors.toList()).contains(stockDTO.getStockId())).collect(Collectors.toList());
+        updateMdseStockList.forEach(stockService::update);
+
 
     }
-
 
     private void updateMdseLabel(MdseDTO dto) {
-        Set<Long> labelIdList = dto.getLabelIdList();
-        if (!ObjectUtils.isEmpty(labelIdList)) {
-            List<MallMdseLabelMap> mdseLabelMapList = labelService.findMdseLabelAllByMdseId(dto.getMdseId());
-            //需要删除的标签
-            List<MallMdseLabelMap> deleteMdseLabelMapList = mdseLabelMapList.stream().filter(mdseLabel -> !labelIdList.contains(mdseLabel.getLabelId())).collect(Collectors.toList());
-            labelService.deleteMdseLabel(deleteMdseLabelMapList);
-            //需要添加的标签
-            List<Long> addMdseLabelIdList = labelIdList.stream().filter(labelId -> !mdseLabelMapList.stream().map(MallMdseLabelMap::getLabelId).collect(Collectors.toList()).contains(labelId)).collect(Collectors.toList());
-            labelService.addMdseLabelMap(dto.getMdseId(), addMdseLabelIdList);
-        }
 
-    }
+        List<MallMdseLabelMap> mdseLabelMapList = labelService.findMdseLabelAllByMdseId(dto.getMdseId());
+        //需要删除的标签
+        List<MallMdseLabelMap> deleteMdseLabelMapList = mdseLabelMapList.stream().filter(mdseLabel -> !dto.getLabelIdList().contains(mdseLabel.getLabelId())).collect(Collectors.toList());
+        labelService.deleteMdseLabel(deleteMdseLabelMapList);
+        //需要添加的标签
+        List<Long> addMdseLabelIdList = dto.getLabelIdList().stream().filter(labelId -> !mdseLabelMapList.stream().map(MallMdseLabelMap::getLabelId).collect(Collectors.toList()).contains(labelId)).collect(Collectors.toList());
+        labelService.addMdseLabelMap(dto.getMdseId(), addMdseLabelIdList);
 
-    private void updateMdseShop(MdseDTO dto) {
-        Set<Long> shopIdList = dto.getShopIdList();
-        if (!ObjectUtils.isEmpty(shopIdList)) {
-            List<ShopMdseMap> shopMdseMapList = shopMdseMapRepository.findAllByMdseId(dto.getMdseId());
-            //需要删除的店铺
-            List<ShopMdseMap> deleteShopMdseList = shopMdseMapList.stream().filter(shopMdse -> !shopIdList.contains(shopMdse.getShopId())).collect(Collectors.toList());
-            shopMdseMapRepository.deleteAll(deleteShopMdseList);
-            //需要添加的店铺
-            List<ShopMdseMap> shopMdseMaps = shopIdList.stream()
-                    .filter(shopId -> !shopMdseMapList.stream().map(ShopMdseMap::getShopId).collect(Collectors.toList()).contains(shopId))
-                    .map(shopId -> {
-                        ShopMdseMap shopMdseMap = new ShopMdseMap();
-                        shopMdseMap.setMdseId(dto.getMdseId());
-                        shopMdseMap.setShopId(shopId);
-                        shopMdseMap.setDeleted(SystemConstants.DELETED_NO);
-                        return shopMdseMap;
-                    }).collect(Collectors.toList());
-
-            shopMdseMapRepository.saveAll(shopMdseMaps);
-        }
 
     }
 
     private void updateMdseGroup(MdseDTO dto) {
-        Set<Long> groupIdList = dto.getGroupIdList();
-        if (!ObjectUtils.isEmpty(groupIdList)) {
-            List<MallMdseGroupMap> mdseGroupList = groupService.findMdseGroupAllByMdseId(dto.getMdseId());
-            //需要删除的分组
-            List<MallMdseGroupMap> deleteMdseGroupList = mdseGroupList.stream().filter(mdseGroup -> !groupIdList.contains(mdseGroup.getGroupId())).collect(Collectors.toList());
-            groupService.deleteMdseGroupAll(deleteMdseGroupList);
-            //需要添加的分组
-            List<Long> addMdseGroupIdList = groupIdList.stream().filter(id -> !mdseGroupList.stream().map(MallMdseGroupMap::getGroupId).collect(Collectors.toList()).contains(id)).collect(Collectors.toList());
-            groupService.addMdseGroupMap(dto.getMdseId(), addMdseGroupIdList);
-        }
+
+        List<MallMdseGroupMap> mdseGroupList = groupService.findMdseGroupAllByMdseId(dto.getMdseId());
+        //需要删除的分组
+        List<MallMdseGroupMap> deleteMdseGroupList = mdseGroupList.stream().filter(mdseGroup -> !dto.getGroupIdList().contains(mdseGroup.getGroupId())).collect(Collectors.toList());
+        groupService.deleteMdseGroupAll(deleteMdseGroupList);
+        //需要添加的分组
+        List<Long> addMdseGroupIdList = dto.getGroupIdList().stream().filter(id -> !mdseGroupList.stream().map(MallMdseGroupMap::getGroupId).collect(Collectors.toList()).contains(id)).collect(Collectors.toList());
+        groupService.addMdseGroupMap(dto.getMdseId(), addMdseGroupIdList);
+
 
     }
-
 
     @Override
     public void delete(String ids) {
@@ -489,13 +506,13 @@ public class MdseServiceImpl implements MdseService {
     }
 
     private MdseInfo setCardInfo(MallMdse entity, MdseInfo mdseInfo) {
-        if (entity.getClassify().equals(2)) {
+        if (entity.getClassify().equals(MdseConstants.MDSE_TYPE_CARD)) {
             Optional<MdseCardRules> rulesOptional = cardRulesRepository.findByCardId(entity.getMdseId());
             rulesOptional.ifPresent(rule -> mdseInfo.setEffectiveRules(rule2vo(rule)));
 
             List<CardMdse> cardMdseList = cardMdseRepository.findAllByCardId(entity.getMdseId());
             List<MallMdse> mdseList = findAllById(cardMdseList.stream().map(CardMdse::getMdseId).collect(Collectors.toList()));
-            List<MdseInfo> mdseInfoList = list2vo(mdseList, MdseInfoShow.builder().stock(1).shop(1).picture(1).build());
+            List<MdseInfo> mdseInfoList = mdseList.stream().map(mdse -> entity2vo(mdse, MdseInfoShow.builder().stock(SystemConstants.STATUS_OPEN).shop(SystemConstants.STATUS_OPEN).picture(SystemConstants.STATUS_OPEN).build())).collect(Collectors.toList());
             mdseInfoList = mdseInfoList.stream().map(mdseInfo2 -> {
                 List<StockInfo> stockList = mdseInfo2.getStockList();
                 List<StockInfo> stockInfoList = stockList.stream().filter(stockInfo -> cardMdseList.stream().map(CardMdse::getStockId).collect(Collectors.toList()).contains(stockInfo.getStockId())).collect(Collectors.toList());
@@ -512,6 +529,7 @@ public class MdseServiceImpl implements MdseService {
         return mdseInfo;
     }
 
+    @Override
     public EffectiveRulesInfo rule2vo(MdseCardRules cardRules) {
         EffectiveRulesInfo rulesInfo = new EffectiveRulesInfo();
         rulesInfo.setRulesId(cardRules.getRulesId());
@@ -523,7 +541,6 @@ public class MdseServiceImpl implements MdseService {
         rulesInfo.setEndDate(cardRules.getEndDate());
         return rulesInfo;
     }
-
 
     private MdseInfo setMdseInfoOther(MallMdse entity, MdseInfoShow show, MdseInfo mdseInfo) {
         if (SystemConstants.STATUS_OPEN.equals(show.getGroup())) {
@@ -567,16 +584,19 @@ public class MdseServiceImpl implements MdseService {
                 mdseInfo.setTypeInfo(typeService.entity2vo(mdseType));
             }
         }
-        if (SystemConstants.STATUS_OPEN.equals(show.getBrand()) && !ObjectUtils.isEmpty(entity.getTypeId())) {
-            Optional<MdseBrand> brandOptional = brandService.findById(entity.getTypeId());
+        if (SystemConstants.STATUS_OPEN.equals(show.getBrand()) && !ObjectUtils.isEmpty(entity.getBrandId())) {
+            Optional<MdseBrand> brandOptional = brandService.findById(entity.getBrandId());
             if (brandOptional.isPresent()) {
                 MdseBrand mdseBrand = brandOptional.get();
                 mdseInfo.setBrand(brandService.entity2vo(mdseBrand));
             }
         }
-        if (SystemConstants.STATUS_OPEN.equals(show.getShop()) && !ObjectUtils.isEmpty(entity.getMdseId())) {
-            List<Long> shopIdList = shopMdseMapRepository.findAllByMdseId(entity.getMdseId()).stream().map(ShopMdseMap::getShopId).collect(Collectors.toList());
-            mdseInfo.setShopInfoList(getShopInfoList(shopIdList));
+        if (SystemConstants.STATUS_OPEN.equals(show.getShop()) && !ObjectUtils.isEmpty(entity.getShopId())) {
+            Result<ShopInfo> shopInfoResult = shopFeignClient.getShopById(entity.getShopId());
+            if (Result.isSuccess(shopInfoResult)) {
+                mdseInfo.setShopInfo(shopInfoResult.getData());
+                mdseInfo.setShopInfoList(Lists.newArrayList(shopInfoResult.getData()));
+            }
         }
         return mdseInfo;
     }
@@ -589,8 +609,8 @@ public class MdseServiceImpl implements MdseService {
         mdseInfo.setNumber(entity.getNumber());
         mdseInfo.setPrice(entity.getPrice());
         mdseInfo.setPostage(entity.getPostage());
-        mdseInfo.setInventoryQuantity(entity.getInventoryQuantity());
-        mdseInfo.setRemainingQuantity(entity.getRemainingQuantity());
+//        mdseInfo.setInventoryQuantity(entity.getInventoryQuantity());
+//        mdseInfo.setRemainingQuantity(entity.getRemainingQuantity());
         mdseInfo.setStartingQuantity(entity.getStartingQuantity());
         mdseInfo.setShowRemainingQuantity(entity.isShowRemainingQuantity());
         mdseInfo.setRefund(entity.isRefund());
@@ -603,20 +623,6 @@ public class MdseServiceImpl implements MdseService {
         mdseInfo.setMallId(entity.getMallId());
         mdseInfo.setClassify(entity.getClassify());
         return mdseInfo;
-    }
-
-    private List<ShopInfo> getShopInfoList(List<Long> shopIdList) {
-        if (!CollectionUtils.isEmpty(shopIdList)) {
-            List<CompletableFuture<Result<ShopInfo>>> futureList = shopIdList.stream()
-                    .map(shopId -> CompletableFuture.supplyAsync(() -> shopFeignClient.getShopById(shopId), executor))
-                    .collect(Collectors.toList());
-            return futureList.stream()
-                    .map(CompletableFuture::join)
-                    .filter(Result::isSuccess)
-                    .map(Result::getData)
-                    .collect(Collectors.toList());
-        }
-        return Collections.emptyList();
     }
 
     @Override
@@ -639,7 +645,6 @@ public class MdseServiceImpl implements MdseService {
         return mdseRepository.findAllById(idList);
     }
 
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateStatus(MdseStatusDTO mdseDTO) {
@@ -654,7 +659,6 @@ public class MdseServiceImpl implements MdseService {
         }
     }
 
-
     @Override
     public Page<MallMdse> findPage(MdsePageQuery mdsePageQuery) {
 
@@ -663,7 +667,6 @@ public class MdseServiceImpl implements MdseService {
         Specification<MallMdse> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> list = Lists.newArrayList();
 
-            CriteriaBuilder.In<Long> mdseIdIn = criteriaBuilder.in(root.get("mdseId").as(Long.class));
             Set<Long> mdseIdSet = Sets.newHashSet();
 
             //商品分类
@@ -698,33 +701,26 @@ public class MdseServiceImpl implements MdseService {
 
             //品牌id
             if (mdsePageQuery.getBrandId() != null) {
-                list.add(criteriaBuilder.equal(root.get("brandId").as(Integer.class), mdsePageQuery.getBrandId()));
+                list.add(criteriaBuilder.equal(root.get("brandId").as(Long.class), mdsePageQuery.getBrandId()));
             }
 
             //厂家id
             if (mdsePageQuery.getMfgId() != null) {
-                list.add(criteriaBuilder.equal(root.get("mfgId").as(Integer.class), mdsePageQuery.getMfgId()));
+                list.add(criteriaBuilder.equal(root.get("mfgId").as(Long.class), mdsePageQuery.getMfgId()));
             }
 
             //商场id
             if (mdsePageQuery.getMallId() != null) {
-                list.add(criteriaBuilder.equal(root.get("mallId").as(Integer.class), mdsePageQuery.getMallId()));
+                list.add(criteriaBuilder.equal(root.get("mallId").as(Long.class), mdsePageQuery.getMallId()));
             }
 
             //店铺id
             if (mdsePageQuery.getShopId() != null) {
-                List<ShopMdseMap> shopMdseMapList = shopMdseMapRepository.findAllByShopId(mdsePageQuery.getShopId());
-                shopMdseMapList.forEach(mdseLabel -> mdseIdSet.add(mdseLabel.getMdseId()));
-                mdseIdSet.add(0L);
+                list.add(criteriaBuilder.equal(root.get("shopId").as(Long.class), mdsePageQuery.getShopId()));
             }
 
             if (!ObjectUtils.isEmpty(mdsePageQuery.getUserId())) {
-                List<MdsePurchaseRecord> purchaseRecordList = Lists.newArrayList();
-                if (!ObjectUtils.isEmpty(mdsePageQuery.getTypeId())) {
-                    purchaseRecordList = purchaseRecordRepository.findAllByUserIdAndType(mdsePageQuery.getUserId(), mdsePageQuery.getTypeId());
-                } else {
-                    purchaseRecordList = purchaseRecordRepository.findAllByUserId(mdsePageQuery.getUserId());
-                }
+                List<MdsePurchaseRecord> purchaseRecordList = ObjectUtils.isEmpty(mdsePageQuery.getTypeId()) ? purchaseRecordRepository.findAllByUserId(mdsePageQuery.getUserId()) : purchaseRecordRepository.findAllByUserIdAndType(mdsePageQuery.getUserId(), mdsePageQuery.getTypeId());
                 purchaseRecordList.forEach(purchaseRecord -> mdseIdSet.add(purchaseRecord.getMdseId()));
                 mdseIdSet.add(0L);
             }
@@ -732,12 +728,16 @@ public class MdseServiceImpl implements MdseService {
 
             //数量大于等于
             if (mdsePageQuery.getQuantityGreaterThanOrEqual() != null) {
-                list.add(criteriaBuilder.greaterThanOrEqualTo(root.get("remainingQuantity").as(Integer.class), mdsePageQuery.getQuantityGreaterThanOrEqual()));
+                List<MdseStock> stockList = stockService.findAllByRemainingStockGreaterThanOrEqual(mdsePageQuery.getQuantityGreaterThanOrEqual());
+                stockList.stream().map(MdseStock::getMdseId).filter(Objects::nonNull).forEach(mdseIdSet::add);
+                mdseIdSet.add(0L);
             }
 
             //数量小于等于
             if (mdsePageQuery.getQuantityLessThanOrEqual() != null) {
-                list.add(criteriaBuilder.lessThanOrEqualTo(root.get("remainingQuantity").as(Integer.class), mdsePageQuery.getQuantityLessThanOrEqual()));
+                List<MdseStock> stockList = stockService.findAllByRemainingStockLessThanEqual(mdsePageQuery.getQuantityLessThanOrEqual());
+                stockList.stream().map(MdseStock::getMdseId).filter(Objects::nonNull).forEach(mdseIdSet::add);
+                mdseIdSet.add(0L);
             }
 
             //销量大于等于
@@ -775,17 +775,17 @@ public class MdseServiceImpl implements MdseService {
             }
 
             if (!CollectionUtils.isEmpty(mdseIdSet)) {
+                CriteriaBuilder.In<Long> mdseIdIn = criteriaBuilder.in(root.get("mdseId").as(Long.class));
                 mdseIdSet.forEach(mdseIdIn::value);
+                System.out.println(mdseIdSet);
                 list.add(mdseIdIn);
             }
 
-            list.add(criteriaBuilder.equal(root.get("deleted").as(Integer.class), SystemConstants.DELETED_NO));
             Predicate[] p = new Predicate[list.size()];
             return criteriaBuilder.and(list.toArray(p));
         };
         return mdseRepository.findAll(spec, pageable);
     }
-
 
     public List<PictureInfo> findPictureListByMdseId(Long mdseId) {
         if (!ObjectUtils.isEmpty(mdseId)) {
@@ -804,7 +804,6 @@ public class MdseServiceImpl implements MdseService {
         }
         return Collections.emptyList();
     }
-
 
     public List<StockInfo> findStockListByMdseId(Long mdseId) {
 
@@ -835,7 +834,6 @@ public class MdseServiceImpl implements MdseService {
         }
     }
 
-
     public List<LabelInfo> findLabelListByMdseId(Long mdseId) {
         if (!ObjectUtils.isEmpty(mdseId)) {
             List<MdseLabel> labelList = labelService.findAllByMdseId(mdseId);
@@ -843,7 +841,6 @@ public class MdseServiceImpl implements MdseService {
         }
         return Collections.emptyList();
     }
-
 
     @Async
     @Override
@@ -875,7 +872,6 @@ public class MdseServiceImpl implements MdseService {
         mdseSearchFeignClient.updateMdseList(mdseInfoList);
     }
 
-
     @Override
     public List<MallMdse> findAll() {
         return mdseRepository.findAll();
@@ -883,9 +879,7 @@ public class MdseServiceImpl implements MdseService {
 
     @Override
     public List<MallMdse> findAllByShopIds(List<Long> lids) {
-        List<ShopMdseMap> shopMdseMapList = shopMdseMapRepository.findAllByShopIdIn(lids);
-        List<Long> mdseIdList = shopMdseMapList.stream().map(ShopMdseMap::getMdseId).filter(mdseId -> !ObjectUtils.isEmpty(mdseId)).collect(Collectors.toList());
-        return mdseRepository.findAllById(mdseIdList);
+        return mdseRepository.findAllByShopIdIn(lids);
     }
 
     @Override
@@ -961,6 +955,11 @@ public class MdseServiceImpl implements MdseService {
     @Override
     public List<MdsePurchaseRecord> getAllPurchaseRecordByType(Integer type) {
         return purchaseRecordRepository.findAllByType(type);
+    }
+
+    @Override
+    public Optional<MdseCardRules> findCardRulesByMdseId(Long mdseId) {
+        return cardRulesRepository.findByCardId(mdseId);
     }
 
 }

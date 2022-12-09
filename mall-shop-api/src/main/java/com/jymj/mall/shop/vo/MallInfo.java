@@ -52,6 +52,9 @@ public class MallInfo {
     @ApiModelProperty("管理人电话")
     private String managerMobile;
 
+    @ApiModelProperty("管理人身份证号")
+    private String managerIdNumber;
+
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty("创建时间")
     private Date createTime;

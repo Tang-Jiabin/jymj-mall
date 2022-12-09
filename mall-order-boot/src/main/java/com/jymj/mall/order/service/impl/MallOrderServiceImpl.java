@@ -2,6 +2,7 @@ package com.jymj.mall.order.service.impl;
 
 import cn.hutool.core.util.IdUtil;
 import com.google.common.collect.Lists;
+import com.jymj.mall.common.constants.MdseConstants;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.enums.OrderDeliveryMethodEnum;
 import com.jymj.mall.common.enums.OrderStatusEnum;
@@ -17,6 +18,7 @@ import com.jymj.mall.mdse.dto.MdseInfoShow;
 import com.jymj.mall.mdse.dto.MdsePurchaseRecordDTO;
 import com.jymj.mall.mdse.dto.StockDTO;
 import com.jymj.mall.mdse.enums.InventoryReductionMethod;
+import com.jymj.mall.mdse.vo.EffectiveRulesInfo;
 import com.jymj.mall.mdse.vo.MdseInfo;
 import com.jymj.mall.mdse.vo.PictureInfo;
 import com.jymj.mall.mdse.vo.StockInfo;
@@ -34,6 +36,7 @@ import com.jymj.mall.order.service.OrderService;
 import com.jymj.mall.order.vo.MallOrderDeliveryDetailsInfo;
 import com.jymj.mall.order.vo.MallOrderInfo;
 import com.jymj.mall.order.vo.MallOrderMdseDetailsInfo;
+import com.jymj.mall.shop.api.ShopFeignClient;
 import com.jymj.mall.shop.dto.VerifyOrderMdse;
 import com.jymj.mall.shop.vo.ShopInfo;
 import com.jymj.mall.user.api.UserAddressFeignClient;
@@ -59,6 +62,7 @@ import org.springframework.util.StringUtils;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -83,6 +87,7 @@ public class MallOrderServiceImpl implements OrderService {
     private final RedissonLockUtil redissonLockUtil;
     private final MdseStockFeignClient mdseStockFeignClient;
     private final UserAddressFeignClient addressFeignClient;
+    private final ShopFeignClient shopFeignClient;
     private final MallOrderRepository orderRepository;
     private final ThreadPoolTaskExecutor executor;
     private final MallOrderMdseDetailsRepository orderMdseDetailsRepository;
@@ -142,7 +147,7 @@ public class MallOrderServiceImpl implements OrderService {
         List<MallOrderMdseDetails> orderMdseDetailsList = saveOrderMdseDetailsList(orderMdseList, mallOrder.getOrderId());
 
         BigDecimal totalAmount = orderMdseDetailsList.stream()
-                .map(MallOrderMdseDetails::getMdsePrice)
+                .map(mdseDetail -> mdseDetail.getMdsePrice().setScale(2, RoundingMode.HALF_UP))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         mallOrder.setTotalAmount(totalAmount);
@@ -162,7 +167,7 @@ public class MallOrderServiceImpl implements OrderService {
     private List<MallOrderMdseDetails> saveOrderMdseDetailsList(List<OrderMdseDTO> orderMdseList, Long orderId) {
         List<MallOrderMdseDetails> orderMdseDetailsList = Lists.newArrayList();
         Result<MemberInfo> memberInfoResult = null;
-        MdseInfoShow show = MdseInfoShow.builder().stock(1).shop(1).picture(1).build();
+        MdseInfoShow show = MdseInfoShow.builder().stock(SystemConstants.STATUS_OPEN).shop(SystemConstants.STATUS_OPEN).picture(SystemConstants.STATUS_OPEN).build();
         for (OrderMdseDTO orderMdseDTO : orderMdseList) {
 
             String key = String.format("mall-order:order:mdse:%d:stock:%d", orderMdseDTO.getMdseId(), orderMdseDTO.getStockId());
@@ -178,7 +183,7 @@ public class MallOrderServiceImpl implements OrderService {
 
                 MdseInfo mdseInfo = mdseInfoResult.getData();
 
-                if (mdseInfo.getClassify().equals(2)) {
+                if (mdseInfo.getClassify().equals(MdseConstants.MDSE_TYPE_CARD)) {
                     if (memberInfoResult == null) {
                         memberInfoResult = userFeignClient.getMemberByUserId(UserUtils.getUserId());
                     }
@@ -205,13 +210,13 @@ public class MallOrderServiceImpl implements OrderService {
     /**
      * 保存订单商品详情
      *
-     * @param orderId            订单id
-     * @param orderMdseDetailsId
-     * @param mdseInfo           商品信息
-     * @param orderMdseDTO       商品id信息
+     * @param orderId      订单id
+     * @param cardId       订单商品详情id
+     * @param mdseInfo     商品信息
+     * @param orderMdseDTO 商品id信息
      * @return 订单商品详情
      */
-    private MallOrderMdseDetails saveMdseDetails(Long orderId, Long orderMdseDetailsId, MdseInfo mdseInfo, OrderMdseDTO orderMdseDTO) {
+    private MallOrderMdseDetails saveMdseDetails(Long orderId, Long cardId, MdseInfo mdseInfo, OrderMdseDTO orderMdseDTO) {
 
         MallOrderMdseDetails orderMdseDetails = new MallOrderMdseDetails();
         orderMdseDetails.setOrderId(orderId);
@@ -234,15 +239,12 @@ public class MallOrderServiceImpl implements OrderService {
             stockDTO.setStockId(stockInfo.getStockId());
             stockDTO.setTotalInventory(orderMdseDTO.getQuantity());
             mdseStockFeignClient.lessMdseStock(stockDTO);
-
-            mdseFeignClient.updateMdseSalesVolume(MdseDTO.builder().mdseId(orderMdseDetails.getMdseId()).salesVolume(orderMdseDTO.getQuantity()).build());
+            MallOrderMdseDetails finalOrderMdseDetails = orderMdseDetails;
+            executor.execute(() -> mdseFeignClient.updateMdseSalesVolume(MdseDTO.builder().mdseId(finalOrderMdseDetails.getMdseId()).salesVolume(orderMdseDTO.getQuantity()).build()));
         }
 
-        if (mdseInfo.getClassify() == 1) {
-            ShopInfo shopInfo = mdseInfo.getShopInfoList()
-                    .stream()
-                    .filter(info -> info.getShopId().equals(orderMdseDTO.getShopId()))
-                    .findFirst()
+        if (mdseInfo.getClassify().equals(MdseConstants.MDSE_TYPE_MDSE)) {
+            ShopInfo shopInfo = Optional.of(mdseInfo.getShopInfo())
                     .orElseThrow(() -> new BusinessException("店铺信息错误"));
             orderMdseDetails.setShopId(shopInfo.getShopId());
             orderMdseDetails.setShopName(shopInfo.getName());
@@ -287,24 +289,21 @@ public class MallOrderServiceImpl implements OrderService {
         orderMdseDetails.setMdseStockSpec(stockSpec);
         orderMdseDetails.setMdsePicture(pictureUrl);
         orderMdseDetails.setMdsePrice(mdsePrice);
-        orderMdseDetails.setCardId(orderMdseDetailsId);
+        orderMdseDetails.setCardId(cardId);
         orderMdseDetails.setDeleted(SystemConstants.DELETED_NO);
         orderMdseDetails = orderMdseDetailsRepository.save(orderMdseDetails);
-        if (mdseInfo.getClassify() == 2) {
+        if (mdseInfo.getClassify().equals(MdseConstants.MDSE_TYPE_CARD)) {
             List<MdseInfo> mdseInfoList = mdseInfo.getMdseInfoList();
-            for (MdseInfo info : mdseInfoList) {
-                saveMdseDetails(orderId, orderMdseDetails.getOrderMdseDetailsId(), info, OrderMdseDTO.builder()
-                        .mdseId(info.getMdseId())
-                        .quantity(1)
-                        .shopId(info.getShopInfoList().get(0).getShopId())
-                        .stockId(info.getStockList().get(0).getStockId())
-                        .build());
-            }
+            mdseInfoList.forEach(info -> saveMdseDetails(orderId, mdseInfo.getMdseId(), info, OrderMdseDTO.builder()
+                    .mdseId(info.getMdseId())
+                    .quantity(info.getStartingQuantity())
+                    .shopId(0L)
+                    .stockId(info.getStockList().get(0).getStockId())
+                    .build()));
         }
 
         return orderMdseDetails;
     }
-
 
     /**
      * 修改订单
@@ -417,7 +416,7 @@ public class MallOrderServiceImpl implements OrderService {
                     mdseStockFeignClient.lessMdseStock(StockDTO.builder().stockId(stockId).totalInventory(-quantity).build());
                     mdseFeignClient.updateMdseSalesVolume(MdseDTO.builder().mdseId(orderMdseDetails.getMdseId()).salesVolume(-quantity).build());
                 }
-                if (mallOrder.getOrderStatus() == OrderStatusEnum.UNSHIPPED && orderMdseDetails.getType() == 1) {
+                if (mallOrder.getOrderStatus() == OrderStatusEnum.UNSHIPPED && orderMdseDetails.getType().equals(MdseConstants.MDSE_TYPE_MDSE)) {
                     Long stockId = orderMdseDetails.getStockId();
                     Integer quantity = orderMdseDetails.getQuantity();
                     mdseStockFeignClient.lessMdseStock(StockDTO.builder().stockId(stockId).totalInventory(-quantity).build());
@@ -484,7 +483,7 @@ public class MallOrderServiceImpl implements OrderService {
             //订单商品详情
             List<MallOrderMdseDetails> orderMdseDetailsList = orderMdseDetailsRepository.findAllByOrderId(entity.getOrderId());
             if (!CollectionUtils.isEmpty(orderMdseDetailsList)) {
-                List<MallOrderMdseDetailsInfo> orderMdseDetailsInfoList = orderMdseDetailsList2vo(orderMdseDetailsList, Boolean.FALSE);
+                List<MallOrderMdseDetailsInfo> orderMdseDetailsInfoList = orderMdseDetailsList2vo(orderMdseDetailsList);
                 orderInfo.setOrderMdseDetailsInfoList(orderMdseDetailsInfoList);
             }
 
@@ -520,14 +519,14 @@ public class MallOrderServiceImpl implements OrderService {
      * @param orderMdseDetailsList 订单商品实体集合
      * @return 视图对象集合
      */
-    private List<MallOrderMdseDetailsInfo> orderMdseDetailsList2vo(List<MallOrderMdseDetails> orderMdseDetailsList, boolean carded) {
+    private List<MallOrderMdseDetailsInfo> orderMdseDetailsList2vo(List<MallOrderMdseDetails> orderMdseDetailsList) {
 
         List<CompletableFuture<MallOrderMdseDetailsInfo>> futureList = Optional.of(orderMdseDetailsList)
                 .orElse(Lists.newArrayList())
                 .stream()
                 .filter(Objects::nonNull)
-                .filter(entity -> Boolean.FALSE.equals(carded) ? entity.getCardId() == 0 : Boolean.TRUE)
-                .map(entity -> CompletableFuture.supplyAsync(() -> orderCardDetails2vo(entity, orderMdseDetailsList), executor))
+                .filter(entity -> entity.getCardId().equals(0L))
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity.getType().equals(MdseConstants.MDSE_TYPE_MDSE) ? orderMdseDetails2vo(entity) : orderCardDetails2vo(entity, orderMdseDetailsList), executor))
                 .collect(Collectors.toList());
         return futureList.stream()
                 .map(CompletableFuture::join)
@@ -546,11 +545,11 @@ public class MallOrderServiceImpl implements OrderService {
      */
     private MallOrderMdseDetailsInfo orderCardDetails2vo(MallOrderMdseDetails orderMdseDetails, List<MallOrderMdseDetails> orderMdseDetailsList) {
         MallOrderMdseDetailsInfo info = orderMdseDetails2vo(orderMdseDetails);
-        info.setCardMdseInfoList(orderMdseDetailsList2vo(
-                orderMdseDetailsList
-                        .stream()
-                        .filter(details -> details.getCardId().equals(orderMdseDetails.getOrderMdseDetailsId()))
-                        .collect(Collectors.toList()), Boolean.TRUE));
+        info.setCardMdseInfoList(orderMdseDetailsList
+                .stream()
+                .filter(details -> details.getCardId().equals(orderMdseDetails.getMdseId()))
+                .map(this::orderMdseDetails2vo)
+                .collect(Collectors.toList()));
         return info;
     }
 
@@ -577,6 +576,13 @@ public class MallOrderServiceImpl implements OrderService {
             info.setUsageDate(mallOrderMdseDetails.getUsageDate());
             info.setMdsePicture(mallOrderMdseDetails.getMdsePicture());
             info.setMdsePrice(mallOrderMdseDetails.getMdsePrice());
+            if (mallOrderMdseDetails.getType().equals(MdseConstants.MDSE_TYPE_CARD)) {
+                Result<EffectiveRulesInfo> effectiveRulesInfoResult = mdseFeignClient.getCardRulesByMdseId(mallOrderMdseDetails.getMdseId());
+                if (Result.isSuccess(effectiveRulesInfoResult)) {
+                    EffectiveRulesInfo effectiveRules = effectiveRulesInfoResult.getData();
+                    info.setEffectiveRules(effectiveRules);
+                }
+            }
         }
 
         return info;
@@ -610,6 +616,18 @@ public class MallOrderServiceImpl implements OrderService {
      */
     @Override
     public Page<MallOrder> findPage(OrderPageQuery orderPageQuery) {
+
+        Result<List<ShopInfo>> shopListResult = Objects.nonNull(orderPageQuery.getMallId()) ? shopFeignClient.getShopByMallId(orderPageQuery.getMallId()) : shopFeignClient.lists();
+
+        if (!Result.isSuccess(shopListResult)) {
+            throw new BusinessException("授权信息错误");
+        }
+
+        List<Long> shopIdList = shopListResult.getData().stream().map(ShopInfo::getShopId).collect(Collectors.toList());
+        List<Long> ids = ObjectUtils.isEmpty(orderPageQuery.getShopIdList()) ? shopIdList : orderPageQuery.getShopIdList().stream().filter(shopIdList::contains).collect(Collectors.toList());
+        orderPageQuery.setShopIdList(ids);
+
+
         Pageable pageable = PageUtils.getPageable(orderPageQuery);
         Specification<MallOrder> specification = (root, query, criteriaBuilder) -> {
             List<Predicate> list = Lists.newArrayList();
@@ -716,54 +734,168 @@ public class MallOrderServiceImpl implements OrderService {
     @Override
     @GlobalTransactional(name = "mall-order-pay-success", rollbackFor = Exception.class)
     public void paySuccess(OrderPaySuccess orderPaySuccess) {
-        String key = String.format("mall-order:order:pay-success:%d", orderPaySuccess.getOrderId());
-        Boolean lock = redissonLockUtil.lock(key);
-        if (Boolean.TRUE.equals(lock)) {
-            Optional<MallOrder> orderOptional = findById(orderPaySuccess.getOrderId());
-            MallOrder mallOrder = orderOptional.orElseThrow(() -> {
-                redissonLockUtil.unlock(key);
-                return new BusinessException("支付成功订单不存在");
-            });
-            if (mallOrder.getOrderStatus() == OrderStatusEnum.UNPAID) {
-                mallOrder.setOrderStatus(OrderStatusEnum.UNSHIPPED);
-                if (mallOrder.getOrderDeliveryMethod() == OrderDeliveryMethodEnum.PICK_UP) {
-                    mallOrder.setOrderStatus(OrderStatusEnum.COMPLETED);
-                }
 
-                mallOrder.setOrderPayMethod(orderPaySuccess.getOrderPayMethod());
-                mallOrder.setPayTime(orderPaySuccess.getPayTime());
-                mallOrder.setAmountActuallyPaid(orderPaySuccess.getAmountActuallyPaid());
-                mallOrder = orderRepository.save(mallOrder);
-                Long userId = mallOrder.getUserId();
+        Optional<MallOrder> orderOptional = findById(orderPaySuccess.getOrderId());
+        MallOrder mallOrder = orderOptional.orElseThrow(() -> {
 
-                //付款减库存 会员
-                boolean member = false;
-                List<MallOrderMdseDetails> orderMdseDetailsList = orderMdseDetailsRepository.findAllByOrderId(mallOrder.getOrderId());
-                for (MallOrderMdseDetails orderMdseDetails : orderMdseDetailsList) {
-                    if (orderMdseDetails.getType() == 2) {
-                        member = true;
-                    }
-                    if (orderMdseDetails.getInventoryReductionMethod() == InventoryReductionMethod.PAYMENT && orderMdseDetails.getType() == 1) {
-                        Long stockId = orderMdseDetails.getStockId();
-                        Integer quantity = orderMdseDetails.getQuantity();
-                        mdseStockFeignClient.lessMdseStock(StockDTO.builder().stockId(stockId).totalInventory(quantity).build());
-                    }
-                    MallOrder finalMallOrder = mallOrder;
-                    executor.execute(() -> mdseFeignClient.addMdsePurchaseRecord(MdsePurchaseRecordDTO.builder().orderId(finalMallOrder.getOrderId()).userId(userId).mdseId(orderMdseDetails.getMdseId()).type(orderMdseDetails.getType()).build()));
-                }
-                if (member) {
-                    executor.execute(() -> userFeignClient.updateUser(UserDTO.builder().userId(userId).memberLevel(1).build()));
-                }
+            log.error("支付成功订单不存在{}", orderPaySuccess.getOrderId());
+            return new BusinessException("支付成功订单不存在：" + orderPaySuccess.getOrderId());
+        });
+
+        if (mallOrder.getOrderStatus() == OrderStatusEnum.UNPAID) {
+            mallOrder.setOrderStatus(OrderStatusEnum.UNSHIPPED);
+            if (mallOrder.getOrderDeliveryMethod() == OrderDeliveryMethodEnum.PICK_UP) {
+                mallOrder.setOrderStatus(OrderStatusEnum.UNRECEIVED);
             }
-            redissonLockUtil.unlock(key);
+
+            mallOrder.setOrderPayMethod(orderPaySuccess.getOrderPayMethod());
+            mallOrder.setPayTime(orderPaySuccess.getPayTime());
+            mallOrder.setAmountActuallyPaid(orderPaySuccess.getAmountActuallyPaid());
+            mallOrder.setDeleted(SystemConstants.DELETED);
+            mallOrder = orderRepository.save(mallOrder);
+
+            boolean member = false;
+            List<MallOrderMdseDetails> orderMdseDetailsList = orderMdseDetailsRepository.findAllByOrderId(mallOrder.getOrderId());
+            CompletableFuture.runAsync(() -> orderMdseDetailsRepository.deleteAll(orderMdseDetailsList), executor);
+
+            //商品按照会员卡和商品分组
+            Map<Integer, List<MallOrderMdseDetails>> orderMdseDetailsGroup = orderMdseDetailsList.stream().filter(details -> Objects.nonNull(details.getType()) && Objects.nonNull(details.getCardId()) && details.getCardId().equals(0L)).collect(Collectors.groupingBy(MallOrderMdseDetails::getType));
+            //商品订单
+            List<MallOrderMdseDetails> mdseDetailsList = orderMdseDetailsGroup.get(MdseConstants.MDSE_TYPE_MDSE);
+            //卡订单
+            List<MallOrderMdseDetails> cardDetailsList = orderMdseDetailsGroup.get(MdseConstants.MDSE_TYPE_CARD);
+            //商品订单按照店铺分组
+            Map<Long, List<MallOrderMdseDetails>> mdseDetailsGroup = Optional.ofNullable(mdseDetailsList).orElse(Lists.newArrayList()).stream().filter(mdseDetails -> Objects.nonNull(mdseDetails.getShopId())).collect(Collectors.groupingBy(MallOrderMdseDetails::getShopId));
+            //按照店铺分组创建商品订单
+            MallOrder createOrder = mallOrder;
+            mdseDetailsGroup.forEach((shopId, mdseDetails) -> createShopMdseOrder(createOrder, mdseDetails));
+            //创建卡订单
+            if (!CollectionUtils.isEmpty(cardDetailsList)) {
+                member = true;
+                cardDetailsList.forEach(cardDetail -> createSingleCardOrder(orderMdseDetailsList, createOrder, cardDetail));
+            }
+            if (member) {
+                CompletableFuture.runAsync(() -> userFeignClient.updateUser(UserDTO.builder().userId(createOrder.getUserId()).memberLevel(1).build()), executor);
+            }
         }
+
 
     }
 
+    private void createSingleCardOrder(List<MallOrderMdseDetails> orderMdseDetailsList, MallOrder createOrder, MallOrderMdseDetails cardDetail) {
+
+        //计算金额
+        Integer quantity = cardDetail.getQuantity();
+        cardDetail.setQuantity(1);
+        calculatedAmount(Lists.newArrayList(cardDetail), createOrder);
+        createOrder.setTotalAmount(createOrder.getTotalAmount().divide(new BigDecimal(String.valueOf(quantity)), 2, RoundingMode.HALF_UP));
+        createOrder.setAmountPayable(createOrder.getAmountPayable().divide(new BigDecimal(String.valueOf(quantity)), 2, RoundingMode.HALF_UP));
+        createOrder.setAmountActuallyPaid(createOrder.getAmountActuallyPaid().divide(new BigDecimal(String.valueOf(quantity)), 2, RoundingMode.HALF_UP));
+
+        for (int i = 0; i < quantity; i++) {
+
+            MallOrder cardOrder = createOrder(createOrder);
+
+            List<MallOrderMdseDetails> cardDetails = orderMdseDetailsList.stream().filter(orderMdseDetail -> Objects.nonNull(orderMdseDetail.getCardId()) && cardDetail.getMdseId().equals(orderMdseDetail.getCardId())).collect(Collectors.toList());
+
+            createOrderMdseDetails(cardOrder, 0L, cardDetail);
+            cardDetails.forEach(cardMdseDetail -> createOrderMdseDetails(cardOrder, cardDetail.getMdseId(), cardMdseDetail));
+
+            //减库存
+            if (cardDetail.getInventoryReductionMethod() == InventoryReductionMethod.PAYMENT) {
+                Long stockId = cardDetail.getStockId();
+                CompletableFuture.runAsync(() -> mdseStockFeignClient.lessMdseStock(StockDTO.builder().stockId(stockId).totalInventory(1).build()), executor);
+            }
+            //添加购买记录
+            CompletableFuture.runAsync(() -> mdseFeignClient.addMdsePurchaseRecord(MdsePurchaseRecordDTO.builder().orderId(cardOrder.getOrderId()).userId(cardOrder.getUserId()).mdseId(cardDetail.getMdseId()).type(cardDetail.getType()).build()), executor);
+        }
+    }
+
+    private static void calculatedAmount(List<MallOrderMdseDetails> orderMdseDetailsList, MallOrder createOrder) {
+        //总金额（总订单）
+        BigDecimal totalAmount = createOrder.getTotalAmount();
+        //应付金额（总订单）
+        BigDecimal amountPayable = createOrder.getAmountPayable();
+        //实付金额（总订单）
+        BigDecimal amountActuallyPaid = createOrder.getAmountActuallyPaid();
+        //店铺订单总金额
+        BigDecimal shopTotalAmount = orderMdseDetailsList.stream()
+                .filter(details -> Objects.nonNull(details.getType()) && Objects.nonNull(details.getCardId()) && details.getCardId().equals(0L))
+                .map(mdseDetail -> mdseDetail.getMdsePrice().setScale(2, RoundingMode.HALF_UP))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        //店铺订单金额倍数
+        BigDecimal multiple = shopTotalAmount.divide(totalAmount, 2, RoundingMode.HALF_UP);
+        //店铺订单应付金额
+        BigDecimal shopAmountPayable = amountPayable.multiply(multiple).setScale(2, RoundingMode.HALF_UP);
+        //店铺订单实付金额
+        BigDecimal shopAmountActuallyPaid = amountActuallyPaid.multiply(multiple).setScale(2, RoundingMode.HALF_UP);
+
+        createOrder.setTotalAmount(shopTotalAmount);
+        createOrder.setAmountPayable(shopAmountPayable);
+        createOrder.setAmountActuallyPaid(shopAmountActuallyPaid);
+    }
+
+    private void createShopMdseOrder(MallOrder createOrder, List<MallOrderMdseDetails> mdseDetails) {
+
+        //计算订单金额
+        calculatedAmount(mdseDetails, createOrder);
+        MallOrder shopMdseOrder = createOrder(createOrder);
+        mdseDetails.forEach(mdseDetail -> {
+            MallOrderMdseDetails details = createOrderMdseDetails(shopMdseOrder, 0L, mdseDetail);
+            //减库存
+            if (mdseDetail.getInventoryReductionMethod() == InventoryReductionMethod.PAYMENT) {
+                Long stockId = details.getStockId();
+                Integer quantity = details.getQuantity();
+                CompletableFuture.runAsync(() -> mdseStockFeignClient.lessMdseStock(StockDTO.builder().stockId(stockId).totalInventory(quantity).build()), executor);
+            }
+            //添加购买记录
+            CompletableFuture.runAsync(() -> mdseFeignClient.addMdsePurchaseRecord(MdsePurchaseRecordDTO.builder().orderId(shopMdseOrder.getOrderId()).userId(shopMdseOrder.getUserId()).mdseId(mdseDetail.getMdseId()).type(mdseDetail.getType()).build()), executor);
+        });
+    }
+
+    private MallOrder createOrder(MallOrder createOrder) {
+        MallOrder cardOrder = new MallOrder();
+        cardOrder.setOrderNo(IdUtil.getSnowflake(SystemConstants.WORK_ID, SystemConstants.MALL_ORDER_DATACENTER_ID).nextIdStr());
+        cardOrder.setOrderStatus(createOrder.getOrderStatus());
+        cardOrder.setUserId(createOrder.getUserId());
+        cardOrder.setTotalAmount(createOrder.getTotalAmount());
+        cardOrder.setAmountPayable(createOrder.getAmountPayable());
+        cardOrder.setAmountActuallyPaid(createOrder.getAmountActuallyPaid());
+        cardOrder.setOrderPayMethod(createOrder.getOrderPayMethod());
+        cardOrder.setPayTime(createOrder.getPayTime());
+        cardOrder.setRemarks(createOrder.getRemarks());
+        cardOrder.setOrderDeliveryMethod(createOrder.getOrderDeliveryMethod());
+        cardOrder.setDeleted(SystemConstants.DELETED_NO);
+        cardOrder = orderRepository.save(cardOrder);
+        return cardOrder;
+    }
+
+    private MallOrderMdseDetails createOrderMdseDetails(MallOrder cardOrder, Long cardId, MallOrderMdseDetails cardMdseDetail) {
+        MallOrderMdseDetails details = new MallOrderMdseDetails();
+        details.setOrderId(cardOrder.getOrderId());
+        details.setCardId(cardId);
+        details.setMdseId(cardMdseDetail.getMdseId());
+        details.setNumber(cardMdseDetail.getNumber());
+        details.setStockId(cardMdseDetail.getStockId());
+        details.setShopId(cardMdseDetail.getShopId());
+        details.setQuantity(cardMdseDetail.getQuantity());
+        details.setType(cardMdseDetail.getType());
+        details.setShopName(cardMdseDetail.getShopName());
+        details.setMdseName(cardMdseDetail.getMdseName());
+        details.setMdseStockSpec(cardMdseDetail.getMdseStockSpec());
+        details.setMdsePicture(cardMdseDetail.getMdsePicture());
+        details.setMdsePrice(cardMdseDetail.getMdsePrice());
+        details.setUsageStatus(SystemConstants.STATUS_CLOSE);
+        details.setUsageQuantity(0);
+        details.setInventoryReductionMethod(cardMdseDetail.getInventoryReductionMethod());
+        details.setDeleted(SystemConstants.DELETED_NO);
+        return orderMdseDetailsRepository.save(details);
+    }
+
     /**
-     * 验证
+     * 核销
      *
-     * @param verifyOrderMdse 验证订单信息
+     * @param verifyOrderMdse 核销订单信息
      */
     @Override
     @CacheEvict(value = "mall-order:order-info:", key = "'order-id:'+#verifyOrderMdse.orderId")

@@ -34,26 +34,29 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ShopController {
 
+
     private final ShopService shopService;
 
     @ApiOperation(value = "添加店铺")
     @PostMapping
-    private Result<ShopInfo> addShop(@Valid @RequestBody ShopDTO shopDTO) {
+    public Result<ShopInfo> addShop(@Valid @RequestBody ShopDTO shopDTO) {
         MallShop mallShop = shopService.add(shopDTO);
         ShopInfo shopInfo = shopService.entity2vo(mallShop);
         return Result.success(shopInfo);
     }
 
+
+
     @ApiOperation(value = "删除店铺")
     @DeleteMapping("/{ids}")
-    private Result deleteShop(@Valid @PathVariable String ids) {
+    public Result deleteShop(@Valid @PathVariable String ids) {
         shopService.delete(ids);
         return Result.success();
     }
 
     @ApiOperation(value = "修改店铺")
     @PutMapping
-    private Result<ShopInfo> updateShop(@RequestBody ShopDTO shopDTO) {
+    public Result<ShopInfo> updateShop(@RequestBody ShopDTO shopDTO) {
         Optional<MallShop> mallShopOptional = shopService.update(shopDTO);
         return mallShopOptional.map(shop -> Result.success(shopService.entity2vo(shop))).orElse(Result.failed());
     }
@@ -80,6 +83,14 @@ public class ShopController {
     public Result<List<ShopInfo>> lists() {
         Long deptId = UserUtils.getDeptId();
         List<MallShop> mallShopList = shopService.findAllByDeptId(deptId);
+        List<ShopInfo> shopInfoList = shopService.list2vo(mallShopList);
+        return Result.success(shopInfoList);
+    }
+
+    @ApiOperation(value = "店铺列表")
+    @GetMapping("/mall/{mallId}/lists")
+    public Result<List<ShopInfo>> getShopByMallId(@PathVariable Long mallId) {
+        List<MallShop> mallShopList = shopService.findAllByMallId(mallId);
         List<ShopInfo> shopInfoList = shopService.list2vo(mallShopList);
         return Result.success(shopInfoList);
     }

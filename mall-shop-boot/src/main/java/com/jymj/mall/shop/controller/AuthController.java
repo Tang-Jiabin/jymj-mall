@@ -32,7 +32,7 @@ public class AuthController {
 
     @ApiOperation(value = "添加认证")
     @PostMapping
-    private Result<MallAuthInfo> addAuth(@Valid @RequestBody AddMallAuth mallAuth) {
+    public Result<MallAuthInfo> addAuth(@Valid @RequestBody AddMallAuth mallAuth) {
         MallAuth auth = mallAuthService.addAuth(mallAuth);
         MallAuthInfo authInfo = mallAuthService.auth2vo(auth);
         return Result.success(authInfo);
@@ -40,14 +40,14 @@ public class AuthController {
 
     @ApiOperation(value = "删除认证")
     @DeleteMapping("/{id}")
-    private Result deleteAuth( @Valid @PathVariable Long id) {
+    public Result deleteAuth( @Valid @PathVariable Long id) {
         mallAuthService.deleteAuth(id);
         return Result.success();
     }
 
     @ApiOperation(value = "修改认证")
     @PutMapping
-    private Result<MallAuthInfo> updateAuth(@Valid @RequestBody UpdateMallAuth updateMallAuth) {
+    public Result<MallAuthInfo> updateAuth(@Valid @RequestBody UpdateMallAuth updateMallAuth) {
         MallAuth mallAuth = mallAuthService.updateAuth(updateMallAuth);
         MallAuthInfo authInfo = mallAuthService.auth2vo(mallAuth);
         return Result.success(authInfo);

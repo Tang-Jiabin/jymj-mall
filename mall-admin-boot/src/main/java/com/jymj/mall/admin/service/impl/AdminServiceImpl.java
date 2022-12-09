@@ -283,15 +283,19 @@ public class AdminServiceImpl implements AdminService {
             List<Predicate> list = Lists.newArrayList();
 
             if (StringUtils.hasText(adminPageQuery.getNumber())) {
-                list.add(criteriaBuilder.like(root.get("number").as(String.class), adminPageQuery.getNumber() + SystemConstants.SQL_LIKE));
+                list.add(criteriaBuilder.like(root.get("number").as(String.class), SystemConstants.generateSqlLike(adminPageQuery.getNumber())));
             }
 
             if (StringUtils.hasText(adminPageQuery.getNickname())) {
-                list.add(criteriaBuilder.like(root.get("nickname").as(String.class), adminPageQuery.getNickname() + SystemConstants.SQL_LIKE));
+                list.add(criteriaBuilder.like(root.get("nickname").as(String.class), SystemConstants.generateSqlLike(adminPageQuery.getNickname() )));
             }
 
             if (StringUtils.hasText(adminPageQuery.getMobile())) {
-                list.add(criteriaBuilder.like(root.get("mobile").as(String.class), adminPageQuery.getMobile() + SystemConstants.SQL_LIKE));
+                list.add(criteriaBuilder.like(root.get("mobile").as(String.class), SystemConstants.generateSqlLike(adminPageQuery.getMobile())));
+            }
+
+            if (Objects.nonNull(adminPageQuery.getMallId())) {
+                list.add(criteriaBuilder.equal(root.get("mallId").as(Long.class), adminPageQuery.getMallId()));
             }
 
             if (!ObjectUtils.isEmpty(adminPageQuery.getRoleId())) {
@@ -306,7 +310,6 @@ public class AdminServiceImpl implements AdminService {
             deptIdList.forEach(in::value);
             list.add(in);
 
-            list.add(criteriaBuilder.equal(root.get("deleted").as(Integer.class), SystemConstants.DELETED_NO));
             Predicate[] p = new Predicate[list.size()];
             return criteriaBuilder.and(list.toArray(p));
         };

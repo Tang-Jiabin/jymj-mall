@@ -34,4 +34,6 @@ public class AliYunConfig {
 
     private AliRole role;
 
+
+
 }

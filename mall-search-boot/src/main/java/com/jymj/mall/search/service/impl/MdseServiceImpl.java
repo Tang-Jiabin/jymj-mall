@@ -102,6 +102,9 @@ public class MdseServiceImpl implements MdseService {
         if (!ObjectUtils.isEmpty(mdsePageQuery.getBrandId())) {
             boolQueryBuilder.filter(QueryBuilders.matchQuery("brand.brandId", mdsePageQuery.getBrandId()));
         }
+        if (!ObjectUtils.isEmpty(mdsePageQuery.getGroupId())) {
+            boolQueryBuilder.filter(QueryBuilders.matchQuery("groupList.groupId", mdsePageQuery.getGroupId()));
+        }
         if (!StringUtils.hasText(mdsePageQuery.getProperties())) {
             mdsePageQuery.setProperties("salesVolume");
         }

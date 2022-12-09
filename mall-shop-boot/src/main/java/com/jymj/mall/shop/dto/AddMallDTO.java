@@ -68,4 +68,8 @@ public class AddMallDTO {
     @ApiModelProperty("昵称")
     private String nickname;
 
+    @NotBlank(message = "身份证号不能为空")
+    @ApiModelProperty("身份证号")
+    private String idNumber;
+
 }

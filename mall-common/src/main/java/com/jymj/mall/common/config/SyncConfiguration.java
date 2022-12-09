@@ -31,12 +31,12 @@ public class SyncConfiguration  {
         //- queueCapacity = (coreSizePool/taskcost)*responsetime
         //- maxPoolSize = (max(tasks)- queueCapacity)/(1/taskcost)
         //核心线程数
-        taskExecutor.setCorePoolSize(50);
+        taskExecutor.setCorePoolSize(200);
 //        taskExecutor.setCorePoolSize(500);
         //线程池维护线程的最大数量,只有在缓冲队列满了之后才会申请超过核心线程数的线程
         taskExecutor.setMaxPoolSize(1500);
         //缓存队列
-        taskExecutor.setQueueCapacity(200);
+        taskExecutor.setQueueCapacity(500);
         //许的空闲时间,当超过了核心线程出之外的线程在空闲时间到达之后会被销毁
         taskExecutor.setKeepAliveSeconds(200);
         //异步方法内部线程名称

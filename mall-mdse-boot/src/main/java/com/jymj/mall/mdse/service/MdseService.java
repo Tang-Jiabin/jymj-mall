@@ -3,13 +3,16 @@ package com.jymj.mall.mdse.service;
 import com.jymj.mall.common.web.service.BaseService;
 import com.jymj.mall.mdse.dto.*;
 import com.jymj.mall.mdse.entity.MallMdse;
+import com.jymj.mall.mdse.entity.MdseCardRules;
 import com.jymj.mall.mdse.entity.MdsePurchaseRecord;
+import com.jymj.mall.mdse.vo.EffectiveRulesInfo;
 import com.jymj.mall.mdse.vo.GroupInfo;
 import com.jymj.mall.mdse.vo.MdseInfo;
 import com.jymj.mall.mdse.vo.MdsePurchaseRecordInfo;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 商品
@@ -54,4 +57,8 @@ public interface MdseService extends BaseService<MallMdse, MdseInfo, MdseDTO> {
     List<MdsePurchaseRecord> getAllPurchaseRecordByMdseId(Long mdseId);
 
     List<MdsePurchaseRecord> getAllPurchaseRecordByType(Integer type);
+
+    Optional<MdseCardRules> findCardRulesByMdseId(Long mdseId);
+
+    EffectiveRulesInfo rule2vo(MdseCardRules cardRules);
 }

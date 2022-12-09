@@ -22,4 +22,32 @@ public class AliOss {
 
     @Value("${aliyun.oss.endpoint}")
     private String endpoint;
+
+    /**过期时间*/
+    @Value("${aliyun.oss.expireTime}")
+    private Long expireTime;
+
+    /**
+     * 文件最小
+     */
+    @Value("${aliyun.oss.min}")
+    private Long min;
+
+    /**
+     * 文件最大
+     */
+    @Value("${aliyun.oss.max}")
+    private Long max;
+
+    /**
+     * 目录
+     */
+    @Value("${aliyun.oss.dir}")
+    private String dir;
+
+    /**
+     * 直传地址
+     */
+    @Value("${aliyun.oss.host}")
+    private String host;
 }

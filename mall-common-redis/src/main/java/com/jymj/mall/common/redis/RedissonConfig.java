@@ -30,7 +30,7 @@ public class RedissonConfig {
                 .setConnectTimeout(5000)
                 .setTimeout(5000)
                 .setConnectionPoolSize(64)
-                .setConnectionMinimumIdleSize(10)
+                .setConnectionMinimumIdleSize(30)
                 .setPingConnectionInterval(10000);
 
         redissonClient = Redisson.create(config);

@@ -82,7 +82,7 @@ public class PermissionServiceImpl implements PermissionService {
                     btnPermRoles.put(perm, item.getRoles());
                 });
                 log.info("添加BTN拦截规则 : {}", btnPermRoles);
-                redisUtils.hset(GlobalConstants.URL_PERM_ROLES_KEY, btnPermRoles);
+                redisUtils.hset(GlobalConstants.BTN_PERM_ROLES_KEY, btnPermRoles);
             }
         }
         return true;

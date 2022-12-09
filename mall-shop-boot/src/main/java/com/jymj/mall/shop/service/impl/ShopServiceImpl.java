@@ -6,7 +6,6 @@ import com.jymj.mall.admin.dto.AddDeptDTO;
 import com.jymj.mall.admin.vo.DeptInfo;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
-import com.jymj.mall.common.redis.RedisUtils;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.util.UserUtils;
@@ -20,6 +19,7 @@ import com.jymj.mall.shop.service.ShopService;
 import com.jymj.mall.shop.vo.ShopInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -55,9 +55,9 @@ public class ShopServiceImpl implements ShopService {
     private final MallShopRepository shopRepository;
     private final MallService mallService;
     private final ThreadPoolTaskExecutor executor;
-    private final RedisUtils redisUtils;
 
     @Override
+    @CacheEvict(value = "mall-shop:shop-list:", key = "'mall-id:'+#dto.mallId")
     public MallShop add(ShopDTO dto) {
         Long deptId = UserUtils.getDeptId();
 
@@ -97,7 +97,10 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    @CacheEvict(value="mall-shop:shop-info:",key = "'shop-id:'+#dto.shopId")
+    @Caching(evict = {
+            @CacheEvict(value = "mall-shop:shop-info:", key = "'shop-id:'+#dto.shopId"),
+            @CacheEvict(value = "mall-shop:shop-list:", key = "'mall-id:'+#dto.mallId")
+    })
     public Optional<MallShop> update(ShopDTO dto) {
         if (!ObjectUtils.isEmpty(dto.getShopId())) {
             Optional<MallShop> shopOptional = findById(dto.getShopId());
@@ -167,7 +170,10 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    @CacheEvict(value="mall-shop:shop-info:",allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "mall-shop:shop-info:", allEntries = true),
+            @CacheEvict(value = "mall-shop:shop-list:", allEntries = true)
+    })
     public void delete(String ids) {
         List<Long> shopIdList = Arrays.stream(ids.split(",")).map(Long::parseLong).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(shopIdList)) {
@@ -188,7 +194,6 @@ public class ShopServiceImpl implements ShopService {
         }
         return null;
     }
-
 
 
     @Override
@@ -239,6 +244,10 @@ public class ShopServiceImpl implements ShopService {
                 list.add(criteriaBuilder.equal(root.get("status").as(Integer.class), shopPageQuery.getStatus()));
             }
 
+            if (Objects.nonNull(shopPageQuery.getMallId())) {
+                list.add(criteriaBuilder.equal(root.get("mallId").as(Integer.class), shopPageQuery.getMallId()));
+            }
+
             if (!CollectionUtils.isEmpty(deptIdList)) {
                 CriteriaBuilder.In<Long> in = criteriaBuilder.in(root.get("deptId").as(Long.class));
                 deptIdList.forEach(in::value);
@@ -273,8 +282,14 @@ public class ShopServiceImpl implements ShopService {
 
     }
 
+    @Override
+    public List<MallShop> findAllByMallId(Long mallId) {
+
+        return shopRepository.findAllByMallId(mallId);
+    }
+
     private ShopInfo getShopInfo(MallShop entity) {
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("HH:mm:ss");
+
         ShopInfo shopInfo = new ShopInfo();
         shopInfo.setShopId(entity.getShopId());
         shopInfo.setName(entity.getName());
@@ -283,8 +298,8 @@ public class ShopServiceImpl implements ShopService {
         shopInfo.setMobile(entity.getMobile());
         shopInfo.setStatus(entity.getStatus());
         shopInfo.setInBusiness(entity.getInBusiness());
-        shopInfo.setBusinessStartTime(df.format(entity.getBusinessStartTime()));
-        shopInfo.setBusinessEndTime(df.format(entity.getBusinessEndTime()));
+        shopInfo.setBusinessStartTime(entity.getBusinessStartTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+        shopInfo.setBusinessEndTime(entity.getBusinessEndTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
         shopInfo.setLongitude(entity.getLongitude());
         shopInfo.setLatitude(entity.getLatitude());
         return shopInfo;

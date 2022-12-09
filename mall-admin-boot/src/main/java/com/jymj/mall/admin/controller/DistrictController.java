@@ -48,10 +48,11 @@ public class DistrictController {
 
     @ApiOperation(value = "父级列表")
     @GetMapping("/{districtId}/parent")
-    public Result<List<DistrictInfo>> parent(@PathVariable Long districtId){
+    public Result<List<DistrictInfo>> parent(@PathVariable Long districtId) {
         List<SysDistrict> districtList = districtService.findParent(districtId);
         List<DistrictInfo> districtInfoList = districtService.list2vo(districtList);
         return Result.success(districtInfoList);
     }
+
 
 }

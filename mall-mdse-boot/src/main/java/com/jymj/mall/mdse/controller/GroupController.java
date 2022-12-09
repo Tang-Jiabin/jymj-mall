@@ -36,7 +36,7 @@ public class GroupController {
 
     @ApiOperation(value = "添加分组")
     @PostMapping
-    private Result<GroupInfo> addGroup(@Valid @RequestBody GroupDTO groupDTO) {
+    public Result<GroupInfo> addGroup(@Valid @RequestBody GroupDTO groupDTO) {
         MdseGroup group = groupService.add(groupDTO);
         GroupInfo groupInfo = groupService.entity2vo(group);
         return Result.success(groupInfo);
@@ -44,14 +44,14 @@ public class GroupController {
 
     @ApiOperation(value = "删除分组")
     @DeleteMapping("/{ids}")
-    private Result deleteGroup(@Valid @PathVariable String ids) {
+    public Result deleteGroup(@Valid @PathVariable String ids) {
         groupService.delete(ids);
         return Result.success();
     }
 
     @ApiOperation(value = "修改分组")
     @PutMapping
-    private Result<GroupInfo> updateGroup(@RequestBody GroupDTO groupDTO) {
+    public Result<GroupInfo> updateGroup(@RequestBody GroupDTO groupDTO) {
         Optional<MdseGroup> groupOptional = groupService.update(groupDTO);
         return groupOptional.map(entity -> Result.success(groupService.entity2vo(entity))).orElse(Result.failed("更新失败"));
     }

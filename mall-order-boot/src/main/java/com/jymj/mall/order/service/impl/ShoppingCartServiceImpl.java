@@ -64,7 +64,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         Long shopId = dto.getShopId();
         Integer quantity = dto.getQuantity();
 
-        MdseInfoShow mdseInfoShow = MdseInfoShow.builder().stock(1).shop(1).build();
+        MdseInfoShow mdseInfoShow = MdseInfoShow.builder().stock(SystemConstants.STATUS_OPEN).shop(SystemConstants.STATUS_OPEN).build();
 
         Result<MdseInfo> mdseInfoResult = mdseFeignClient.getMdseOptionalById(mdseId, mdseInfoShow);
         if (!Result.isSuccess(mdseInfoResult)) {
@@ -82,10 +82,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 .findFirst()
                 .orElseThrow(() -> new BusinessException("库存信息错误"));
 
-        ShopInfo shopInfo = mdseInfo.getShopInfoList()
-                .stream()
-                .filter(info -> info.getShopId().equals(shopId))
-                .findFirst()
+        ShopInfo shopInfo = Optional.of(mdseInfo.getShopInfo())
                 .orElseThrow(() -> new BusinessException("店铺信息错误"));
 
         if (quantity < mdseInfo.getStartingQuantity()) {
@@ -143,7 +140,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     public ShoppingCartMdseInfo entity2vo(ShoppingCartMdse entity) {
         if (!ObjectUtils.isEmpty(entity)) {
 
-            MdseInfoShow mdseInfoShow = MdseInfoShow.builder().shop(1).stock(1).picture(1).build();
+            MdseInfoShow mdseInfoShow = MdseInfoShow.builder().shop(SystemConstants.STATUS_OPEN).stock(SystemConstants.STATUS_OPEN).picture(SystemConstants.STATUS_OPEN).build();
             Result<MdseInfo> mdseInfoResult = mdseFeignClient.getMdseOptionalById(entity.getMdseId(), mdseInfoShow);
 
             if (Result.isSuccess(mdseInfoResult)) {
@@ -165,11 +162,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                         .orElse(ObjectUtils.isEmpty(mdseInfo.getPictureList()) ? null : mdseInfo.getPictureList().get(0));
                 cartMdseInfo.setPictureInfo(pictureInfo);
 
-                ShopInfo shopInfo = mdseInfo.getShopInfoList()
-                        .stream()
-                        .filter(info -> info.getShopId().equals(entity.getShopId()))
-                        .findFirst()
-                        .orElse(null);
+                ShopInfo shopInfo = Optional.of(mdseInfo.getShopInfo()).orElse(null);
                 cartMdseInfo.setShopInfo(shopInfo);
 
                 StockInfo stockInfo = mdseInfo.getStockList()
@@ -191,7 +184,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 .orElse(Lists.newArrayList())
                 .stream()
                 .filter(entity -> !ObjectUtils.isEmpty(entity))
-                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity),executor))
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity), executor))
                 .collect(Collectors.toList());
         return futureList.stream()
                 .map(CompletableFuture::join)

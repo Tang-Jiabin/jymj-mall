@@ -1,4 +1,4 @@
-package com.jymj.mall.order.config;
+package com.jymj.mall.common.mq;
 
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;

@@ -64,4 +64,7 @@ public class MallDetails extends BaseEntity {
     @ApiModelProperty("管理人电话")
     private String managerMobile;
 
+    @ApiModelProperty("管理人身份证号")
+    private String managerIdNumber;
+
 }

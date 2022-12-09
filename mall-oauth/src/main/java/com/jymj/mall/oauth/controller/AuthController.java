@@ -87,7 +87,7 @@ public class AuthController {
             long currentTime = System.currentTimeMillis() / 1000;
             // token未过期，添加至缓存作为黑名单限制访问，缓存时间为token过期剩余时间
             if (expireTime > currentTime) {
-                redisTemplate.opsForValue().set(SecurityConstants.TOKEN_BLACKLIST_PREFIX + jti, null, (expireTime - currentTime), TimeUnit.SECONDS);
+                redisTemplate.opsForValue().set(SecurityConstants.TOKEN_BLACKLIST_PREFIX + jti, "1", (expireTime - currentTime), TimeUnit.SECONDS);
             }
         } else { // token 永不过期则永久加入黑名单
             redisTemplate.opsForValue().set(SecurityConstants.TOKEN_BLACKLIST_PREFIX + jti, null);

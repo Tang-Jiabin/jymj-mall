@@ -13,7 +13,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.time.LocalDate;
+import java.util.Date;
 
 /**
  * 卡使用规则
@@ -52,11 +52,11 @@ public class MdseCardRules extends BaseEntity {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty("可用开始时间")
-    private LocalDate startDate;
+    private Date startDate;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty("可用结束时间")
-    private LocalDate endDate;
+    private Date endDate;
 
     @ApiModelProperty("商品id")
     private Long cardId;

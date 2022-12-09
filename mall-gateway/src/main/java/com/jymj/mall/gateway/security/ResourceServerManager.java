@@ -101,12 +101,10 @@ public class ResourceServerManager implements ReactiveAuthorizationManager<Autho
                 .flatMapIterable(Authentication::getAuthorities)
                 .map(GrantedAuthority::getAuthority)
                 .any(authority -> {
-//                    StrUtil.removePrefix
                     String roleCode = CharSequenceUtil.removePrefix(authority, SecurityConstants.AUTHORITY_PREFIX);// ROLE_ADMIN移除前缀ROLE_得到用户的角色编码ADMIN
                     if (GlobalConstants.ROOT_ROLE_CODE.equals(roleCode)) {
                         return true; // 如果是超级管理员则放行
                     }
-//                    CollUtil.isNotEmpty
                     return CollUtil.isNotEmpty(authorizedRoles) && authorizedRoles.contains(roleCode);
                 })
                 .map(AuthorizationDecision::new)

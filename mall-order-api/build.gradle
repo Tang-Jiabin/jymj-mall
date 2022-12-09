@@ -5,5 +5,6 @@ dependencies {
     implementation project(":mall-common")
     implementation project(":mall-user-api")
     implementation project(":mall-shop-api")
+    implementation project(":mall-mdse-api")
 }
 

@@ -34,9 +34,9 @@ public class RedissonLockUtil {
             }
 
             RLock lock = redissonClient.getLock(lockName);
-            lock.lock(30, TimeUnit.SECONDS); //30秒后释放锁，防止死锁
             log.info("Thread [{}] lock [{}] success",Thread.currentThread().getName(),lockName);
-            return true;
+            return lock.tryLock(60,30,TimeUnit.SECONDS);
+
         } catch (Exception e) {
             log.info("lock [{}] exception",lockName,e);
             return false;

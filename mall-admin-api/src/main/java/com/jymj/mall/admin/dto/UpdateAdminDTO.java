@@ -75,4 +75,6 @@ public class UpdateAdminDTO {
 
     @ApiModelProperty("核销人员")
     private Integer verifyPerson;
+
+
 }

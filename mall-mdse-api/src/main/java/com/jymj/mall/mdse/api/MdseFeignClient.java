@@ -4,7 +4,9 @@ import com.jymj.mall.common.result.Result;
 import com.jymj.mall.mdse.dto.MdseDTO;
 import com.jymj.mall.mdse.dto.MdseInfoShow;
 import com.jymj.mall.mdse.dto.MdsePurchaseRecordDTO;
+import com.jymj.mall.mdse.vo.EffectiveRulesInfo;
 import com.jymj.mall.mdse.vo.MdseInfo;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,11 @@ import java.util.List;
  */
 @FeignClient(value = "mall-mdse",contextId = "mall-mdse")
 public interface MdseFeignClient {
+
+
+    @Cacheable(cacheNames = "mall-mdse:card-rules-result:", key = "'card-id:'+#mdseId")
+    @GetMapping("/api/v1/mdse/{mdseId}/cardRules")
+    Result<EffectiveRulesInfo> getCardRulesByMdseId(@Valid @PathVariable Long mdseId);
 
     @GetMapping("/api/v1/mdse/{mdseId}/optional")
     Result<MdseInfo> getMdseOptionalById(@Valid @PathVariable Long mdseId,@SpringQueryMap MdseInfoShow show);

@@ -18,4 +18,6 @@ import java.util.List;
 @Repository
 public interface MallShopRepository extends JpaRepository<MallShop,Long> , JpaSpecificationExecutor<MallShop> {
     List<MallShop> findAllByDeptIdIn(List<Long> deptIdList);
+
+    List<MallShop> findAllByMallId(Long mallId);
 }

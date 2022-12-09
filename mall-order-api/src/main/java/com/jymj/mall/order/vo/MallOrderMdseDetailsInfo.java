@@ -1,5 +1,6 @@
 package com.jymj.mall.order.vo;
 
+import com.jymj.mall.mdse.vo.EffectiveRulesInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -62,4 +63,7 @@ public class MallOrderMdseDetailsInfo {
 
     @ApiModelProperty("订单卡商品")
     private List<MallOrderMdseDetailsInfo> cardMdseInfoList;
+
+    @ApiModelProperty("卡生效规则")
+    private EffectiveRulesInfo effectiveRules;
 }

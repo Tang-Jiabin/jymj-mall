@@ -11,6 +11,7 @@ import com.jymj.mall.shop.repository.MallAuthRepository;
 import com.jymj.mall.shop.service.MallAuthService;
 import com.jymj.mall.shop.vo.MallAuthInfo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -32,6 +33,7 @@ public class MallAuthServiceImpl implements MallAuthService {
 
 
     @Override
+    @CacheEvict(value = {"mall-shop:mall-info:"}, key = "'mall-id:'+#addMallAuth.mallId")
     public MallAuth addAuth(AddMallAuth addMallAuth) {
 
 

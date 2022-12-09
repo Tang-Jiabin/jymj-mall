@@ -51,9 +51,6 @@ public class MdseDTO {
     @ApiModelProperty("运费")
     private BigDecimal postage;
 
-    @ApiModelProperty("库存数量")
-    private Integer inventoryQuantity;
-
     @ApiModelProperty("起售数量")
     private Integer startingQuantity;
 
@@ -75,8 +72,8 @@ public class MdseDTO {
     @ApiModelProperty("分组id集合")
     private Set<Long> groupIdList;
 
-    @ApiModelProperty("店铺（网点）id集合")
-    private Set<Long> shopIdList;
+    @ApiModelProperty("店铺（网点）id")
+    private Long shopId;
 
     @ApiModelProperty("标签id集合")
     private Set<Long> labelIdList;

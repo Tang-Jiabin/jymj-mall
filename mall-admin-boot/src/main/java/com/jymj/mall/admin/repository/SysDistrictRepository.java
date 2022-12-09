@@ -25,4 +25,6 @@ public interface SysDistrictRepository extends JpaRepository<SysDistrict,Long> {
     List<SysDistrict> findAllByTreePathIsLikeAndDeleted(String treePath,Integer deleted);
 
     Optional<SysDistrict> findByDistrictIdAndDeleted(Long districtId, Integer deleted);
+
+    Optional<SysDistrict> findByCode(String code);
 }

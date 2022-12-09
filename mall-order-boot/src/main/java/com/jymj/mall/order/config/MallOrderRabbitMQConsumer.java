@@ -2,7 +2,9 @@ package com.jymj.mall.order.config;
 
 
 import com.jymj.mall.common.enums.OrderStatusEnum;
+import com.jymj.mall.common.mq.MQConfig;
 import com.jymj.mall.order.dto.OrderDTO;
+import com.jymj.mall.order.dto.OrderPaySuccess;
 import com.jymj.mall.order.entity.MallOrder;
 import com.jymj.mall.order.service.OrderService;
 import com.jymj.mall.order.vo.MallOrderInfo;
@@ -49,32 +51,32 @@ public class MallOrderRabbitMQConsumer {
         // 查找数据库该订单是否已支付
         Optional<MallOrder> mallOrderOptional = orderService.findById(order.getOrderId());
         mallOrderOptional.ifPresent(e -> {
-            switch (e.getOrderStatus()){
+            switch (e.getOrderStatus()) {
                 case UNPAID:
-                    log.info("订单未付款：{}",e.getOrderId());
+                    log.info("订单未付款：{}", e.getOrderId());
                     orderService.update(OrderDTO.builder().orderId(e.getOrderId()).statusEnum(OrderStatusEnum.CLOSED).build());
-                    log.info("订单id:{} 长时间未支付，已关闭", order.getOrderId());
+                    log.info("订单未支付：{}", order.getOrderId());
                     break;
                 case CANCELED:
-                    log.info("订单已取消：{}",e.getOrderId());
+                    log.info("订单已取消：{}", e.getOrderId());
                     break;
                 case COMPLETED:
-                    log.info("订单已完成：{}",e.getOrderId());
+                    log.info("订单已完成：{}", e.getOrderId());
                     break;
                 case UNSHIPPED:
-                    log.info("订单未发货：{}",e.getOrderId());
+                    log.info("订单未发货：{}", e.getOrderId());
                     break;
                 case UNRECEIVED:
-                    log.info("订单未收货：{}",e.getOrderId());
+                    log.info("订单未收货：{}", e.getOrderId());
                     break;
                 case AFTER_SALES:
-                    log.info("订单售后：{}",e.getOrderId());
+                    log.info("订单售后中：{}", e.getOrderId());
                     break;
                 case CLOSED:
-                    log.info("订单已关闭：{}",e.getOrderId());
+                    log.info("订单已关闭：{}", e.getOrderId());
                     break;
                 default:
-                    log.warn("订单状态未知：{}",e.getOrderId());
+                    log.warn("订单状态未知：{}", e.getOrderId());
                     break;
             }
         });
@@ -82,7 +84,8 @@ public class MallOrderRabbitMQConsumer {
 
     // 支付成功
     @RabbitListener(queues = MQConfig.QUEUE_PAY_SUCCESS)
-    public void handlerPayOrder(@Payload Long orderId, Message message) {
-        log.info("订单id：{}  付款成功", orderId);
+    public void handlerPayOrder(@Payload OrderPaySuccess paySuccess, Message message) {
+        log.info("订单id：{}  付款成功", paySuccess.getOrderId());
+        orderService.paySuccess(paySuccess);
     }
 }

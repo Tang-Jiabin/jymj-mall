@@ -11,6 +11,7 @@ import com.jymj.mall.common.constants.PayConstants;
 import com.jymj.mall.common.enums.OrderPayMethodEnum;
 import com.jymj.mall.common.enums.OrderStatusEnum;
 import com.jymj.mall.common.exception.BusinessException;
+import com.jymj.mall.common.mq.MQConfig;
 import com.jymj.mall.common.redis.RedisUtils;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.UserUtils;
@@ -23,7 +24,9 @@ import com.jymj.mall.pay.service.MallPayService;
 import com.jymj.mall.pay.vo.StatisticsInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -47,6 +50,7 @@ public class MallPayServiceImpl implements MallPayService {
     private final OrderFeignClient orderFeignClient;
     private final MallWeChatPayInfoRepository payInfoRepository;
     private final RedisUtils redisUtils;
+    private final RabbitTemplate rabbitTemplate;
 
 
     @Override
@@ -74,6 +78,7 @@ public class MallPayServiceImpl implements MallPayService {
     }
 
     @Override
+    @Transactional
     public void WeChatPayNotify(WxPayOrderNotifyResult notifyResult) {
         log.info("微信支付回调：{}", notifyResult.toString());
         if ("SUCCESS".equals(notifyResult.getResultCode())) {
@@ -100,7 +105,7 @@ public class MallPayServiceImpl implements MallPayService {
                 orderPaySuccess.setOrderPayMethod(OrderPayMethodEnum.WEI_XIN_PAY);
                 orderPaySuccess.setPayTime(DateUtil.parse(notifyResult.getTimeEnd()));
 
-                orderFeignClient.paySuccess(orderPaySuccess);
+//                orderFeignClient.paySuccess(orderPaySuccess);
 
                 MallPayInfo payInfo = new MallPayInfo();
                 payInfo.setUserId(orderInfo.getUserInfo().getUserId());
@@ -124,6 +129,8 @@ public class MallPayServiceImpl implements MallPayService {
                 payInfo.setSign(notifyResult.getSign());
                 payInfo.setXmlString(notifyResult.getXmlString());
                 payInfoRepository.save(payInfo);
+
+                rabbitTemplate.convertAndSend(MQConfig.EXCHANGE_DELAY, MQConfig.ROUTING_KEY_QUEUE_PAY_SUCCESS, orderPaySuccess);
             }
         }
     }
@@ -146,7 +153,7 @@ public class MallPayServiceImpl implements MallPayService {
         Long count = payInfoRepository.countByUserId(userId);
         Long totalFee = payInfoRepository.sumTotalFeeByUserId(userId);
         Optional<MallPayInfo> payInfoOptional = payInfoRepository.findFirstByUserIdOrderByCreateTimeDesc(userId);
-        if (payInfoOptional.isPresent()){
+        if (payInfoOptional.isPresent()) {
             MallPayInfo mallPayInfo = payInfoOptional.get();
             BigDecimal totalFeeBigDecimal = new BigDecimal(String.valueOf(totalFee)).divide(new BigDecimal("100"), 2, RoundingMode.HALF_EVEN);
             BigDecimal lastFee = new BigDecimal(String.valueOf(mallPayInfo.getTotalFee())).divide(new BigDecimal("100"), 2, RoundingMode.HALF_EVEN);

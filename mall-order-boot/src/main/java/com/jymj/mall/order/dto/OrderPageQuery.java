@@ -37,6 +37,9 @@ public class OrderPageQuery extends BasePageQueryDTO {
     @ApiModelProperty("商品id")
     private Long mdseId;
 
+    @ApiModelProperty("商城id")
+    private Long mallId;
+
     @ApiModelProperty("商品名称")
     private String mdseName;
 

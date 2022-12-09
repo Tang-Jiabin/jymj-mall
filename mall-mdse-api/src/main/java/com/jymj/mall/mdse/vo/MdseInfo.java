@@ -46,11 +46,11 @@ public class MdseInfo {
     @ApiModelProperty("运费")
     private BigDecimal postage;
 
-    @ApiModelProperty("库存数量")
-    private Integer inventoryQuantity;
+//    @ApiModelProperty("库存数量")
+//    private Integer inventoryQuantity;
 
-    @ApiModelProperty("剩余数量")
-    private Integer remainingQuantity;
+//    @ApiModelProperty("剩余数量")
+//    private Integer remainingQuantity;
 
     @ApiModelProperty("销售数量")
     private Integer salesVolume;
@@ -87,6 +87,7 @@ public class MdseInfo {
 
     @ApiModelProperty("店铺")
     private List<ShopInfo> shopInfoList;
+    private ShopInfo shopInfo;
 
     @ApiModelProperty("库存规格集合")
     private List<StockInfo> stockList;

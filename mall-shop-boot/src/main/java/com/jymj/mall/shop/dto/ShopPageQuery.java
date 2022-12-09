@@ -28,4 +28,7 @@ public class ShopPageQuery extends BasePageQueryDTO {
 
     @ApiModelProperty("状态")
     private Integer status;
+
+    @ApiModelProperty("商城id")
+    private Integer mallId;
 }

@@ -1,6 +1,7 @@
 package com.jymj.mall.admin.service.impl;
 
 import com.google.common.collect.Lists;
+import com.jymj.mall.admin.dto.MenuDTO;
 import com.jymj.mall.admin.entity.SysMenu;
 import com.jymj.mall.admin.entity.SysRoleMenu;
 import com.jymj.mall.admin.repository.SysMenuRepository;
@@ -10,7 +11,10 @@ import com.jymj.mall.admin.vo.MenuInfo;
 import com.jymj.mall.common.constants.SystemConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -53,6 +57,11 @@ public class MenuServiceImpl implements MenuService {
         return menuInfoList;
     }
 
+    @Override
+    public List<SysMenu> findAllByAdminId(Long adminId) {
+        return null;
+    }
+
     public MenuInfo menu2vo(SysMenu sysMenu) {
         MenuInfo menuInfo = new MenuInfo();
         menuInfo.setMenuId(sysMenu.getMenuId());
@@ -66,5 +75,38 @@ public class MenuServiceImpl implements MenuService {
         menuInfo.setRedirect(sysMenu.getRedirect());
         menuInfo.setType(sysMenu.getType());
         return menuInfo;
+    }
+
+    @Override
+    public SysMenu add(MenuDTO dto) {
+        return null;
+    }
+
+    @Override
+    public Optional<SysMenu> update(MenuDTO dto) {
+        return Optional.empty();
+    }
+
+    @Override
+    public void delete(String ids) {
+        List<Long> idList = Arrays.stream(ids.split(",")).filter(id -> !ObjectUtils.isEmpty(id)).map(Long::parseLong).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(idList)) {
+            menuRepository.deleteAllById(idList);
+        }
+    }
+
+    @Override
+    public Optional<SysMenu> findById(Long id) {
+        return menuRepository.findById(id);
+    }
+
+    @Override
+    public MenuInfo entity2vo(SysMenu entity) {
+        return null;
+    }
+
+    @Override
+    public List<MenuInfo> list2vo(List<SysMenu> entityList) {
+        return list2tree(entityList, SystemConstants.ROOT_MENU_ID);
     }
 }

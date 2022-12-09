@@ -32,7 +32,7 @@ public class LabelController {
 
     @ApiOperation(value = "添加标签")
     @PostMapping
-    private Result<LabelInfo> addLabel(@Valid @RequestBody LabelDTO labelDTO) {
+    public Result<LabelInfo> addLabel(@Valid @RequestBody LabelDTO labelDTO) {
         MdseLabel label = labelService.add(labelDTO);
         LabelInfo labelInfo = labelService.entity2vo(label);
         return Result.success(labelInfo);
@@ -40,14 +40,14 @@ public class LabelController {
 
     @ApiOperation(value = "删除标签")
     @DeleteMapping("/{ids}")
-    private Result deleteLabel(@Valid @PathVariable String ids) {
+    public Result deleteLabel(@Valid @PathVariable String ids) {
         labelService.delete(ids);
         return Result.success();
     }
 
     @ApiOperation(value = "修改标签")
     @PutMapping
-    private Result<LabelInfo> updateLabel(@RequestBody LabelDTO labelDTO) {
+    public Result<LabelInfo> updateLabel(@RequestBody LabelDTO labelDTO) {
         Optional<MdseLabel> mdseLabelOptional = labelService.update(labelDTO);
         return mdseLabelOptional.map(entity -> Result.success(labelService.entity2vo(entity))).orElse(Result.failed("更新失败"));
     }

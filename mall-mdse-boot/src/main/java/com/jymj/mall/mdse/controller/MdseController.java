@@ -1,12 +1,15 @@
 package com.jymj.mall.mdse.controller;
 
+import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.vo.PageVO;
 import com.jymj.mall.mdse.dto.*;
 import com.jymj.mall.mdse.entity.MallMdse;
+import com.jymj.mall.mdse.entity.MdseCardRules;
 import com.jymj.mall.mdse.entity.MdsePurchaseRecord;
 import com.jymj.mall.mdse.service.MdseService;
+import com.jymj.mall.mdse.vo.EffectiveRulesInfo;
 import com.jymj.mall.mdse.vo.MdseInfo;
 import com.jymj.mall.mdse.vo.MdsePurchaseRecordInfo;
 import io.swagger.annotations.Api;
@@ -14,6 +17,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.util.Lists;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -105,7 +109,16 @@ public class MdseController {
         Optional<MallMdse> mdseOptional = mdseService.findById(mdseId);
         if (mdseOptional.isPresent()) {
             MallMdse mallMdse = mdseOptional.get();
-            MdseInfo mdseInfo = mdseService.entity2vo(mallMdse, MdseInfoShow.builder().build());
+            MdseInfo mdseInfo = mdseService.entity2vo(mallMdse, MdseInfoShow.builder()
+                    .picture(SystemConstants.STATUS_OPEN)
+                    .label(SystemConstants.STATUS_OPEN)
+                    .group(SystemConstants.STATUS_OPEN)
+                    .stock(SystemConstants.STATUS_OPEN)
+                    .shop(SystemConstants.STATUS_OPEN)
+                    .mfg(SystemConstants.STATUS_OPEN)
+                    .brand(SystemConstants.STATUS_OPEN)
+                    .type(SystemConstants.STATUS_OPEN)
+                    .build());
             return Result.success(mdseInfo);
         }
         return Result.failed("商品不存在");
@@ -121,6 +134,19 @@ public class MdseController {
             return Result.success(mdseInfo);
         }
         return Result.failed("商品不存在");
+    }
+
+    @ApiOperation(value = "商品规则信息")
+    @GetMapping("/{mdseId}/cardRules")
+    @Cacheable(cacheNames = "mall-mdse:card-rules-result:", key = "'card-id:'+#mdseId")
+    public Result<EffectiveRulesInfo> getCardRulesByMdseId(@Valid @PathVariable Long mdseId) {
+        Optional<MdseCardRules> cardRulesOptional = mdseService.findCardRulesByMdseId(mdseId);
+        if (cardRulesOptional.isPresent()) {
+            MdseCardRules cardRules = cardRulesOptional.get();
+            EffectiveRulesInfo effectiveRulesInfo = mdseService.rule2vo(cardRules);
+            return Result.success(effectiveRulesInfo);
+        }
+        return Result.failed("规则不存在");
     }
 
     @ApiOperation(value = "商品id查询")
@@ -145,7 +171,7 @@ public class MdseController {
     @GetMapping("/pages")
     public Result<PageVO<MdseInfo>> pages(MdsePageQuery mdsePageQuery) {
         Page<MallMdse> page = mdseService.findPage(mdsePageQuery);
-        List<MdseInfo> mdseInfoList = mdseService.list2vo(page.getContent(), MdseInfoShow.builder().picture(1).stock(1).build());
+        List<MdseInfo> mdseInfoList = mdseService.list2vo(page.getContent(), MdseInfoShow.builder().picture(SystemConstants.STATUS_OPEN).stock(SystemConstants.STATUS_OPEN).build());
         PageVO<MdseInfo> pageVo = PageUtils.toPageVO(page, mdseInfoList);
 
         return Result.success(pageVo);
@@ -156,8 +182,7 @@ public class MdseController {
     @PutMapping("/refreshToElastic")
     public Result<String> refreshToElastic() {
         List<MallMdse> mdseList = mdseService.findAll();
-        List<MdseInfo> mdseInfoList = Lists.newArrayList();
-        mdseList.forEach(mdse -> mdseInfoList.add(mdseService.entity2vo(mdse)));
+        List<MdseInfo> mdseInfoList = mdseService.list2vo(mdseList);
         mdseInfoList.forEach(mdseService::syncToElasticAddMdseInfo);
         return Result.success();
     }

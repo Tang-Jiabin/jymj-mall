@@ -48,12 +48,6 @@ public class MallMdse extends BaseEntity {
     @ApiModelProperty("运费")
     private BigDecimal postage;
 
-    @ApiModelProperty("库存数量")
-    private Integer inventoryQuantity;
-
-    @ApiModelProperty("剩余数量")
-    private Integer remainingQuantity;
-
     @ApiModelProperty("销售数量")
     private Integer salesVolume;
 
@@ -86,6 +80,9 @@ public class MallMdse extends BaseEntity {
 
     @ApiModelProperty("商场id")
     private Long mallId;
+
+    @ApiModelProperty("店铺id")
+    private Long shopId;
 
     @ApiModelProperty("商品状态 1-上架 2-下架")
     private Integer status;

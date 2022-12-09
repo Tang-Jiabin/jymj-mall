@@ -23,4 +23,6 @@ public interface ShopService extends BaseService<MallShop, ShopInfo, ShopDTO> {
     List<MallShop> findAllByDeptId(Long deptId);
 
     List<MallShop> findAllById(String ids);
+
+    List<MallShop> findAllByMallId(Long mallId);
 }

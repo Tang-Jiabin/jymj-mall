@@ -29,5 +29,7 @@ public class AdminPageQuery extends BasePageQueryDTO {
     @ApiModelProperty("角色Id")
     private Long roleId;
 
+    @ApiModelProperty("商城Id")
+    private Long mallId;
 
 }

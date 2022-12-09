@@ -1,6 +1,7 @@
 package com.jymj.mall.user.service.impl;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.IdcardUtil;
 import cn.hutool.core.util.PhoneUtil;
 import com.google.common.collect.Lists;
@@ -62,6 +63,12 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(rollbackFor = Exception.class)
     public MallMember add(MemberDTO dto) {
         validMobileAndIDCard(dto);
+
+        if (StringUtils.hasText(dto.getEmail())){
+            if (!Validator.isEmail(dto.getEmail())) {
+                throw new BusinessException("邮箱格式错误");
+            }
+        }
         Long userId = UserUtils.getUserId();
         Optional<MallMember> memberOptional = memberRepository.findByUserId(userId);
         memberOptional.ifPresent(mallMember -> {

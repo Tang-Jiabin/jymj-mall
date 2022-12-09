@@ -31,4 +31,8 @@ public interface StockService extends BaseService<MdseStock, StockInfo, StockDTO
     MdseStock save(MdseStock stock);
 
     void lessInventory(StockDTO stockDTO);
+
+    List<MdseStock> findAllByRemainingStockGreaterThanOrEqual(Integer quantityGreaterThanOrEqual);
+
+    List<MdseStock> findAllByRemainingStockLessThanEqual(Integer quantityLessThanOrEqual);
 }

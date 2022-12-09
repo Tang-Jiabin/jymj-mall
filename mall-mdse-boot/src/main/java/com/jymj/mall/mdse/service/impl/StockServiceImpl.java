@@ -107,7 +107,7 @@ public class StockServiceImpl implements StockService {
             }
 
             if (dto.getTotalInventory() != null && !Objects.equals(dto.getTotalInventory(), stock.getRemainingStock())) {
-                int totalInventory = stock.getRemainingStock() - dto.getTotalInventory() + stock.getTotalInventory();
+                int totalInventory = ~(stock.getRemainingStock() - dto.getTotalInventory()-1) + stock.getTotalInventory();
                 stock.setRemainingStock(dto.getTotalInventory());
                 stock.setTotalInventory(totalInventory);
                 update = true;
@@ -313,7 +313,15 @@ public class StockServiceImpl implements StockService {
             });
             redissonLockUtil.unlock(key);
         }
+    }
 
+    @Override
+    public List<MdseStock> findAllByRemainingStockGreaterThanOrEqual(Integer quantityGreaterThanOrEqual) {
+        return stockRepository.findAllByRemainingStockGreaterThanEqual(quantityGreaterThanOrEqual);
+    }
 
+    @Override
+    public List<MdseStock> findAllByRemainingStockLessThanEqual(Integer quantityLessThanOrEqual) {
+        return stockRepository.findAllByRemainingStockLessThanEqual(quantityLessThanOrEqual);
     }
 }
