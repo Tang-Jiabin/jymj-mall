@@ -18,7 +18,9 @@ import com.jymj.mall.mdse.repository.MdseRepository;
 import com.jymj.mall.mdse.service.*;
 import com.jymj.mall.mdse.vo.*;
 import com.jymj.mall.search.api.MdseSearchFeignClient;
+import com.jymj.mall.shop.api.MallFeignClient;
 import com.jymj.mall.shop.api.ShopFeignClient;
+import com.jymj.mall.shop.vo.MallInfo;
 import com.jymj.mall.shop.vo.ShopInfo;
 import com.jymj.mall.user.api.UserFeignClient;
 import com.jymj.mall.user.vo.UserInfo;
@@ -70,6 +72,7 @@ public class MdseServiceImpl implements MdseService {
     private final TypeService typeService;
     private final LabelService labelService;
     private final ShopFeignClient shopFeignClient;
+    private final MallFeignClient mallFeignClient;
     private final MdseSearchFeignClient mdseSearchFeignClient;
     private final ThreadPoolTaskExecutor executor;
     private final MdseCardRulesRepository cardRulesRepository;
@@ -81,10 +84,32 @@ public class MdseServiceImpl implements MdseService {
     @Transactional(rollbackFor = Exception.class)
     public MallMdse add(MdseDTO dto) {
 
-        MallMdse mdse = new MallMdse();
+        Assert.notNull(dto.getMallId(), "商城id不能为空");
+        MallInfo mallInfo = null;
+        Result<MallInfo> mallInfoResult = mallFeignClient.getMallById(dto.getMallId());
+        if (Result.isSuccess(mallInfoResult)) {
+            mallInfo = mallInfoResult.getData();
+        } else {
+            throw new BusinessException("商城不存在");
+        }
+        if (ObjectUtils.isEmpty(mallInfo)) {
+            throw new BusinessException("商城不存在");
+        }
 
+        String code = mallInfo.getDistrictInfo().getCode();
+
+        Long maxSequenceByMallId = mdseRepository.findMaxSequenceByMallId(dto.getMallId());
+        if (ObjectUtils.isEmpty(maxSequenceByMallId)) {
+            maxSequenceByMallId = 0L;
+        }
+        maxSequenceByMallId++;
+        String sequence = String.format("%06d", maxSequenceByMallId);
+        code = code + sequence;
+
+        MallMdse mdse = new MallMdse();
+        mdse.setSequence(maxSequenceByMallId);
         mdse.setName(dto.getName());
-        mdse.setNumber(dto.getNumber());
+        mdse.setNumber(code);
         mdse.setPrice(dto.getPrice());
         mdse.setPostage(dto.getPostage());
         mdse.setStartingQuantity(dto.getStartingQuantity());
@@ -185,6 +210,7 @@ public class MdseServiceImpl implements MdseService {
                     stockService.add(stockDTO);
                 });
 
+        //卡商品列表
         if (!CollectionUtils.isEmpty(dto.getCardMdseList())) {
             Set<CardMdseDTO> cardMdseDTOList = dto.getCardMdseList();
             List<CardMdse> cardMdseList = Lists.newArrayList();
@@ -199,6 +225,7 @@ public class MdseServiceImpl implements MdseService {
             }
             cardMdseRepository.saveAll(cardMdseList);
         }
+        //使用规则
         if (Objects.nonNull(dto.getEffectiveRules())) {
             EffectiveRulesDTO effectiveRules = dto.getEffectiveRules();
             MdseCardRules cardRules = new MdseCardRules();

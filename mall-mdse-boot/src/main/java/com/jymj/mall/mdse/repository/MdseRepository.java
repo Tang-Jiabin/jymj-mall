@@ -3,6 +3,7 @@ package com.jymj.mall.mdse.repository;
 import com.jymj.mall.mdse.entity.MallMdse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,4 +19,7 @@ import java.util.List;
 @Repository
 public interface MdseRepository extends JpaRepository<MallMdse,Long>, JpaSpecificationExecutor<MallMdse> {
     List<MallMdse> findAllByShopIdIn(List<Long> shopIds);
+
+    @Query(value = "select max(sequence) from mall_mdse where mall_id = ?1",nativeQuery = true)
+    Long findMaxSequenceByMallId(Long mallId);
 }

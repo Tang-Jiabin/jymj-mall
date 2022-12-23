@@ -24,6 +24,7 @@ public interface SystemConstants {
      * 根行政区ID
      */
     Long ROOT_DISTRICT_ID = 0L;
+    Long ROOT_ID = 0L;
 
     /**
      * 未删除状态
@@ -56,7 +57,8 @@ public interface SystemConstants {
     Long MALL_ORDER_DATACENTER_ID = 1L;
     Long MALL_USER_DATACENTER_ID = 2L;
     Long MALL_ADMIN_DATACENTER_ID = 3L;
-
+    Integer HOME_PAGE_NO = 2;
+    Integer HOME_PAGE_YES = 1;
     /**
      * 生成sqlLike语句
      *

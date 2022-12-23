@@ -82,7 +82,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 .findFirst()
                 .orElseThrow(() -> new BusinessException("库存信息错误"));
 
-        ShopInfo shopInfo = Optional.of(mdseInfo.getShopInfo())
+        ShopInfo shopInfo = Optional.ofNullable(mdseInfo.getShopInfo())
                 .orElseThrow(() -> new BusinessException("店铺信息错误"));
 
         if (quantity < mdseInfo.getStartingQuantity()) {

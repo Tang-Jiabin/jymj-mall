@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -217,6 +218,7 @@ public class ShopServiceImpl implements ShopService {
         Pageable pageable = PageUtils.getPageable(shopPageQuery);
 
         Long deptId = UserUtils.getDeptId();
+        Assert.notNull(deptId, "部门id不能为空");
         List<DeptInfo> deptInfoList = Lists.newArrayList();
         Result<List<DeptInfo>> deptListResult = deptFeignClient.children(deptId);
         if (Result.isSuccess(deptListResult)) {
@@ -264,7 +266,7 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     public List<MallShop> findAllByDeptId(Long deptId) {
-
+        Assert.notNull(deptId, "部门id不能为空");
         Result<List<DeptInfo>> deptListResult = deptFeignClient.children(deptId);
         if (Result.isSuccess(deptListResult)) {
             List<DeptInfo> deptInfoList = deptListResult.getData();

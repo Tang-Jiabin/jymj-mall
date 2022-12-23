@@ -1,26 +1,33 @@
 package com.jymj.mall.shop.controller;
 
+import com.google.common.collect.Lists;
 import com.jymj.mall.common.result.Result;
+import com.jymj.mall.common.web.util.PageUtils;
+import com.jymj.mall.common.web.vo.PageVO;
 import com.jymj.mall.shop.dto.RenovationDTO;
+import com.jymj.mall.shop.dto.RenovationPageQuery;
+import com.jymj.mall.shop.dto.RenovationStatusDTO;
 import com.jymj.mall.shop.entity.ShopRenovation;
 import com.jymj.mall.shop.service.RenovationService;
 import com.jymj.mall.shop.vo.RenovationInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
  * 装修
- *
- *  * @author J.Tang
- *  * @version 1.0
- *  * @email seven_tjb@163.com
- *  * @date 2022-08-16
+ * <p>
+ * * @author J.Tang
+ * * @version 1.0
+ * * @email seven_tjb@163.com
+ * * @date 2022-08-16
  */
 @Api(tags = "商场装修")
 @RestController
@@ -53,6 +60,20 @@ public class RenovationController {
         return shopRenovationOptional.map(entity -> Result.success(renovationService.entity2vo(entity))).orElse(Result.failed("更新失败"));
     }
 
+    @ApiOperation(value = "修改装修状态")
+    @PutMapping("/status")
+    public Result<RenovationInfo> updateStatus(@RequestBody RenovationStatusDTO renovationStatusDTO) {
+        renovationService.updateStatus(renovationStatusDTO);
+        return Result.success();
+    }
+
+    @ApiOperation(value = "修改装修首页")
+    @PutMapping("/home")
+    public Result<RenovationInfo> updateHome(@RequestBody RenovationDTO renovationDTO) {
+        renovationService.updateHome(renovationDTO);
+        return Result.success();
+    }
+
     @ApiOperation(value = "装修信息")
     @GetMapping("/{renovationId}/info")
     public Result<RenovationInfo> getRenovationById(@Valid @PathVariable Long renovationId) {
@@ -62,9 +83,23 @@ public class RenovationController {
 
     @ApiOperation(value = "列表")
     @GetMapping("/lists")
-    public Result<List<RenovationInfo>> lists(Long mallId) {
-        List<ShopRenovation> renovationList = renovationService.findAllByMallId(mallId);
+    public Result<List<RenovationInfo>> lists(Long mallId, Integer status) {
+        List<ShopRenovation> renovationList;
+        if (Objects.nonNull(status)) {
+            renovationList = renovationService.findAllByMallIdAndStatus(mallId, status);
+        } else {
+            renovationList = renovationService.findAllByMallId(mallId);
+        }
         List<RenovationInfo> renovationInfoList = renovationService.list2vo(renovationList);
         return Result.success(renovationInfoList);
+    }
+
+    @ApiOperation(value = "装修分页")
+    @GetMapping("/pages")
+    public Result<PageVO<RenovationInfo>> pages(RenovationPageQuery renovationPageQuery) {
+        Page<ShopRenovation> page = renovationService.findPage(renovationPageQuery);
+        List<RenovationInfo> groupInfoList = renovationService.list2vo(page.getContent());
+        PageVO<RenovationInfo> pageVo = PageUtils.toPageVO(page, groupInfoList);
+        return Result.success(pageVo);
     }
 }

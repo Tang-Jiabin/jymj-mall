@@ -1,0 +1,25 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="mall-order" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
+    <deployment type="dockerfile">
+      <settings>
+        <option name="imageTag" value="mall-order" />
+        <option name="containerName" value="mall-order" />
+        <option name="portBindings">
+          <list>
+            <DockerPortBindingImpl>
+              <option name="containerPort" value="9120" />
+              <option name="hostIp" value="0.0.0.0" />
+              <option name="hostPort" value="9120" />
+            </DockerPortBindingImpl>
+          </list>
+        </option>
+        <option name="commandLineOptions" value="-d -it --restart always --net jymj-mall-network -v /root/jymj-mall/logs:/logs" />
+        <option name="showCommandPreview" value="true" />
+        <option name="sourceFilePath" value="mall-order-boot/Dockerfile" />
+      </settings>
+    </deployment>
+    <method v="2">
+      <option name="Gradle.BeforeRunTask" enabled="false" tasks="clean build" externalProjectPath="$PROJECT_DIR$/mall-order-boot" vmOptions="" scriptParameters="" />
+    </method>
+  </configuration>
+</component>

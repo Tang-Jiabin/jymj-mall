@@ -87,6 +87,8 @@ public class MdseInfo {
 
     @ApiModelProperty("店铺")
     private List<ShopInfo> shopInfoList;
+
+    @ApiModelProperty("店铺")
     private ShopInfo shopInfo;
 
     @ApiModelProperty("库存规格集合")

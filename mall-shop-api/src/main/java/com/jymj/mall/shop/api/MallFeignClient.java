@@ -21,4 +21,8 @@ public interface MallFeignClient {
 
     @GetMapping("/api/v1/mall/dept/{deptIds}")
     Result<List<MallInfo>> getMallByDeptIdIn(@PathVariable String deptIds);
+
+
+    @GetMapping("/api/v1/mall/{mallId}/info")
+    Result<MallInfo> getMallById(@PathVariable Long mallId);
 }

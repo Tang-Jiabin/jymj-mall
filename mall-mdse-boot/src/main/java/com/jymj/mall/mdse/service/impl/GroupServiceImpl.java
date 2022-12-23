@@ -213,7 +213,7 @@ public class GroupServiceImpl implements GroupService {
             }
 
             if (!ObjectUtils.isEmpty(groupPageQuery.getMallId())) {
-                list.add(criteriaBuilder.equal(root.get("mallId").as(Boolean.class), groupPageQuery.getMallId()));
+                list.add(criteriaBuilder.equal(root.get("mallId").as(Long.class), groupPageQuery.getMallId()));
             }
 
             list.add(criteriaBuilder.equal(root.get("deleted").as(Integer.class), SystemConstants.DELETED_NO));

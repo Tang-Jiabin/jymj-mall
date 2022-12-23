@@ -6,7 +6,9 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'io.github.openfeign:feign-okhttp:11.9.1'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation ('org.springframework.boot:spring-boot-starter-web'){
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
     implementation ('com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:2021.1'){
         exclude group: 'com.alibaba.nacos', module: 'nacos:nacos-client'
     }
@@ -15,11 +17,11 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap:3.1.4'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'com.alibaba.fastjson2:fastjson2:2.0.13.graal'
-    implementation 'cn.hutool:hutool-all:5.8.6'
     implementation 'com.github.binarywang:weixin-java-miniapp:4.4.0'
     implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer:3.1.4'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-undertow'
     runtimeOnly 'org.postgresql:postgresql'
     implementation project(":mall-common")
     implementation project(":mall-common-redis")

@@ -243,7 +243,7 @@ public class MallOrderServiceImpl implements OrderService {
             executor.execute(() -> mdseFeignClient.updateMdseSalesVolume(MdseDTO.builder().mdseId(finalOrderMdseDetails.getMdseId()).salesVolume(orderMdseDTO.getQuantity()).build()));
         }
 
-        if (mdseInfo.getClassify().equals(MdseConstants.MDSE_TYPE_MDSE)) {
+        if (MdseConstants.MDSE_TYPE_MDSE.equals(mdseInfo.getClassify())) {
             ShopInfo shopInfo = Optional.of(mdseInfo.getShopInfo())
                     .orElseThrow(() -> new BusinessException("店铺信息错误"));
             orderMdseDetails.setShopId(shopInfo.getShopId());
@@ -617,15 +617,7 @@ public class MallOrderServiceImpl implements OrderService {
     @Override
     public Page<MallOrder> findPage(OrderPageQuery orderPageQuery) {
 
-        Result<List<ShopInfo>> shopListResult = Objects.nonNull(orderPageQuery.getMallId()) ? shopFeignClient.getShopByMallId(orderPageQuery.getMallId()) : shopFeignClient.lists();
 
-        if (!Result.isSuccess(shopListResult)) {
-            throw new BusinessException("授权信息错误");
-        }
-
-        List<Long> shopIdList = shopListResult.getData().stream().map(ShopInfo::getShopId).collect(Collectors.toList());
-        List<Long> ids = ObjectUtils.isEmpty(orderPageQuery.getShopIdList()) ? shopIdList : orderPageQuery.getShopIdList().stream().filter(shopIdList::contains).collect(Collectors.toList());
-        orderPageQuery.setShopIdList(ids);
 
 
         Pageable pageable = PageUtils.getPageable(orderPageQuery);

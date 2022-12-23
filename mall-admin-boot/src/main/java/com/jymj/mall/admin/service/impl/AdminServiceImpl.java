@@ -1,6 +1,7 @@
 package com.jymj.mall.admin.service.impl;
 
 
+import cn.hutool.core.lang.Validator;
 import com.google.common.collect.Lists;
 import com.jymj.mall.admin.dto.AdminAuthDTO;
 import com.jymj.mall.admin.dto.AdminPageQuery;
@@ -25,6 +26,7 @@ import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.shop.api.VerifyFeignClient;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -51,6 +53,7 @@ import java.util.stream.Collectors;
  * @email seven_tjb@163.com
  * @date 2022-08-12
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
@@ -149,15 +152,37 @@ public class AdminServiceImpl implements AdminService {
             admin.setMobile(updateAdminDTO.getMobile());
         }
 
-        if (StringUtils.hasText(updateAdminDTO.getPassword())) {
+        if (StringUtils.hasText(updateAdminDTO.getPassword()) && StringUtils.hasText(updateAdminDTO.getOldPassword())) {
+
+            if (!passwordEncoder.matches(updateAdminDTO.getOldPassword(), admin.getPassword())) {
+                throw new BusinessException("旧密码错误");
+            }
+
+            passwordRule(updateAdminDTO.getPassword());
+
             admin.setPassword(passwordEncoder.encode(updateAdminDTO.getPassword()));
         }
 
-        admin.setNickname(StringUtils.hasText(updateAdminDTO.getNickname()) ? updateAdminDTO.getNickname() : admin.getNickname());
-        admin.setAvatar(StringUtils.hasText(updateAdminDTO.getAvatar()) ? updateAdminDTO.getAvatar() : admin.getAvatar());
-        admin.setEmail(StringUtils.hasText(updateAdminDTO.getEmail()) ? updateAdminDTO.getEmail() : admin.getEmail());
-        admin.setGender(updateAdminDTO.getGender() != null ? updateAdminDTO.getGender() : admin.getGender());
-        admin.setStatus(updateAdminDTO.getStatus() != null ? updateAdminDTO.getStatus() : admin.getStatus());
+        if (StringUtils.hasText(updateAdminDTO.getNickname())) {
+            admin.setNickname(updateAdminDTO.getNickname());
+        }
+        if (StringUtils.hasText(updateAdminDTO.getAvatar())) {
+            admin.setAvatar(updateAdminDTO.getAvatar());
+        }
+        if (updateAdminDTO.getGender() != null) {
+            admin.setGender(updateAdminDTO.getGender());
+        }
+        if (updateAdminDTO.getStatus() != null) {
+            admin.setStatus(updateAdminDTO.getStatus());
+        }
+        if(StringUtils.hasText(updateAdminDTO.getEmail())){
+            if (Validator.isEmail(updateAdminDTO.getEmail())) {
+                admin.setEmail(updateAdminDTO.getEmail());
+            } else {
+                throw new BusinessException("邮箱格式不正确");
+            }
+        }
+
         if (updateAdminDTO.getDeptId() != null) {
             Long deptId = UserUtils.getDeptId();
             List<SysDept> deptList = deptService.findChildren(deptId);
@@ -183,6 +208,24 @@ public class AdminServiceImpl implements AdminService {
 
         return Optional.of(adminRepository.save(admin));
     }
+
+
+
+    private void passwordRule(String password) {
+        if (password.length() < 6 || password.length() > 20) {
+            throw new BusinessException("密码长度必须在6-20位之间");
+        }
+        if (password.matches("[0-9]+")) {
+            throw new BusinessException("密码不能为纯数字");
+        }
+        if (password.matches("[a-zA-Z]+")) {
+            throw new BusinessException("密码不能为纯字母");
+        }
+        if (password.matches("[^0-9a-zA-Z]+")) {
+            throw new BusinessException("密码不能为纯特殊字符");
+        }
+    }
+
 
     @Override
     public Optional<SysAdmin> findById(Long adminId) {
@@ -229,6 +272,11 @@ public class AdminServiceImpl implements AdminService {
             adminInfo.setNumber(admin.getNumber());
             adminInfo.setOperationTime(admin.getUpdateTime());
             adminInfo.setVerifyPerson(admin.getVerifyPerson());
+            adminInfo.setInitPassword(SystemConstants.STATUS_CLOSE);
+
+            if (passwordEncoder.matches(SystemConstants.DEFAULT_USER_PASSWORD, admin.getPassword())) {
+                adminInfo.setInitPassword(SystemConstants.STATUS_OPEN);
+            }
 
             Optional<SysAdmin> adminOptional = findById(admin.getUpdateUserId());
             adminOptional.ifPresent(operator -> adminInfo.setOperator(operator.getNickname()));
@@ -287,7 +335,7 @@ public class AdminServiceImpl implements AdminService {
             }
 
             if (StringUtils.hasText(adminPageQuery.getNickname())) {
-                list.add(criteriaBuilder.like(root.get("nickname").as(String.class), SystemConstants.generateSqlLike(adminPageQuery.getNickname() )));
+                list.add(criteriaBuilder.like(root.get("nickname").as(String.class), SystemConstants.generateSqlLike(adminPageQuery.getNickname())));
             }
 
             if (StringUtils.hasText(adminPageQuery.getMobile())) {

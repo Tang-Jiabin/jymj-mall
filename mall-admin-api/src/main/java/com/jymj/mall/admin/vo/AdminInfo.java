@@ -65,5 +65,6 @@ public class AdminInfo {
     @ApiModelProperty("核销人员")
     private Integer verifyPerson;
 
-
+    @ApiModelProperty("初始化密码")
+    private Integer initPassword;
 }

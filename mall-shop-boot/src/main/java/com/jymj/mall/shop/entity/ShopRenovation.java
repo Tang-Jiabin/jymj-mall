@@ -55,4 +55,7 @@ public class ShopRenovation extends BaseEntity {
 
     @ApiModelProperty("状态")
     private Integer status;
+
+    @ApiModelProperty("主页")
+    private Integer homePage;
 }

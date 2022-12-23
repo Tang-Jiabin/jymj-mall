@@ -2,7 +2,9 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-aop'
     implementation 'com.nimbusds:nimbus-jose-jwt:9.23'
-    api 'org.springframework.boot:spring-boot-starter-web'
+    api ('org.springframework.boot:spring-boot-starter-web'){
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
     api 'org.springframework.cloud:spring-cloud-starter-openfeign'
     api 'io.github.openfeign:feign-okhttp:11.9.1'
     api('com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:2021.1') {
@@ -21,6 +23,7 @@ dependencies {
     api 'org.springframework.boot:spring-boot-starter-data-jpa'
     api 'org.springframework.boot:spring-boot-starter-actuator'
     api 'org.postgresql:postgresql'
+    api 'org.springframework.boot:spring-boot-starter-undertow'
     implementation project(":mall-common")
     implementation project(":mall-common-redis")
 }

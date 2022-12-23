@@ -70,7 +70,6 @@ public class AdminController {
     @GetMapping("/id/{adminId}/info")
     public Result<AdminInfo> getAdminById(@PathVariable Long adminId) {
         Optional<SysAdmin> adminOptional = adminService.findById(adminId);
-//        SysAdmin admin = adminOptional.orElseThrow(() -> new BusinessException(ResultCode.USER_NOT_EXIST));
         if (!adminOptional.isPresent()) {
             return Result.failed(ResultCode.USER_NOT_EXIST);
         }

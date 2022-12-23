@@ -10,18 +10,23 @@ import com.jymj.mall.order.dto.OrderPageQuery;
 import com.jymj.mall.order.entity.MallOrder;
 import com.jymj.mall.order.service.OrderService;
 import com.jymj.mall.order.vo.MallOrderInfo;
+import com.jymj.mall.shop.api.ShopFeignClient;
 import com.jymj.mall.shop.dto.VerifyOrderMdse;
+import com.jymj.mall.shop.vo.ShopInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 管理员订单
@@ -38,6 +43,7 @@ import java.util.Optional;
 public class AdminOrderController {
 
     private final OrderService orderService;
+    private final ShopFeignClient shopFeignClient;
 
 
 
@@ -83,6 +89,15 @@ public class AdminOrderController {
     @GetMapping("/pages")
     public Result<PageVO<MallOrderInfo>> pages(OrderPageQuery orderPageQuery) {
 
+        Result<List<ShopInfo>> shopListResult = Objects.nonNull(orderPageQuery.getMallId()) ? shopFeignClient.getShopByMallId(orderPageQuery.getMallId()) : shopFeignClient.lists();
+
+        if (!Result.isSuccess(shopListResult)) {
+            throw new BusinessException("授权信息错误");
+        }
+
+        List<Long> shopIdList = shopListResult.getData().stream().map(ShopInfo::getShopId).collect(Collectors.toList());
+        List<Long> ids = ObjectUtils.isEmpty(orderPageQuery.getShopIdList()) ? shopIdList : orderPageQuery.getShopIdList().stream().filter(shopIdList::contains).collect(Collectors.toList());
+        orderPageQuery.setShopIdList(ids);
 
         Page<MallOrder> page = orderService.findPage(orderPageQuery);
         List<MallOrderInfo> shoppingCartMdseInfoList = orderService.list2vo(page.getContent());
