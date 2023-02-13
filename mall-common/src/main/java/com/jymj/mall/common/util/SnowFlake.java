@@ -1,10 +1,5 @@
 package com.jymj.mall.common.util;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-
 /**
  * 雪花id
  *
@@ -103,33 +98,5 @@ public class SnowFlake {
         return System.currentTimeMillis();
     }
 
-    public static void main(String[] args) {
 
-        long start = System.currentTimeMillis();
-        Set<Long> list = Collections.synchronizedSet(new HashSet<>());
-        CountDownLatch downLatch = new CountDownLatch(12);
-        for (int i = 0; i < 12; i++) {
-            int finalI = i;
-            Thread thread = new Thread(()->{
-                SnowFlake snowFlake = new SnowFlake(finalI, 1);
-                for (int j = 0; j < 100000; j++) {
-                    long nextId = snowFlake.nextId();
-                    list.add(nextId);
-                }
-                downLatch.countDown();
-            });
-            thread.start();
-        }
-
-        try {
-            downLatch.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        long end = System.currentTimeMillis();
-        System.out.println(end-start+"ms");
-        System.out.println(list.size());
-
-
-    }
 }

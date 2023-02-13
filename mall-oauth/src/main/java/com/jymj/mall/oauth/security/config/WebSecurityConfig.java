@@ -42,7 +42,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         Map<String, UserDetailsService> userDetailsServiceMap = Maps.newHashMap();
-        userDetailsServiceMap.put(SecurityConstants.APP_CLIENT_ID, sysUserDetailsService);
+        userDetailsServiceMap.put(SecurityConstants.APP_ANDROID_CLIENT_ID, sysUserDetailsService);
         userDetailsServiceMap.put(SecurityConstants.WEAPP_CLIENT_ID, sysUserDetailsService);
         userDetailsServiceMap.put(SecurityConstants.ADMIN_CLIENT_ID, sysAdminDetailsService);
         authenticationProvider.setUserDetailsService(new MoreAuthenticatedUserDetailsServiceImpl(userDetailsServiceMap));
@@ -123,7 +123,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         Map<String, UserDetailsService> userDetailsServiceMap = Maps.newHashMap();
-        userDetailsServiceMap.put(SecurityConstants.APP_CLIENT_ID, sysUserDetailsService);
+        userDetailsServiceMap.put(SecurityConstants.APP_ANDROID_CLIENT_ID, sysUserDetailsService);
         userDetailsServiceMap.put(SecurityConstants.WEAPP_CLIENT_ID, sysUserDetailsService);
         userDetailsServiceMap.put(SecurityConstants.ADMIN_CLIENT_ID, sysAdminDetailsService);
         provider.setUserDetailsService(new MoreAuthenticatedUserDetailsServiceImpl(userDetailsServiceMap));

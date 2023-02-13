@@ -9,6 +9,7 @@ import com.jymj.mall.order.vo.MallOrderInfo;
 import com.jymj.mall.shop.dto.VerifyOrderMdse;
 import org.springframework.data.domain.Page;
 
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -27,4 +28,6 @@ public interface OrderService extends BaseService<MallOrder, MallOrderInfo,Order
     void paySuccess(OrderPaySuccess orderPaySuccess);
 
     void verify(VerifyOrderMdse verifyOrderMdse);
+
+    Map<String, Integer> findOrderNumberByUserId(Long userId);
 }

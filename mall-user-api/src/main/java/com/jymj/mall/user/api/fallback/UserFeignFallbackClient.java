@@ -48,5 +48,10 @@ public class UserFeignFallbackClient implements UserFeignClient {
         return Result.failed(ResultCode.USER_NOT_EXIST);
     }
 
+    @Override
+    public Result<UserAuthDTO> loadUserByUsername(String username) {
+        return Result.failed(ResultCode.DEGRADATION);
+    }
+
 
 }

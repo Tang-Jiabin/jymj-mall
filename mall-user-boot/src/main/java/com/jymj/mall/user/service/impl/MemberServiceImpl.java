@@ -94,7 +94,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(value = {"mall-user:member-info:", "mall-user:member-entity:"}, key = "'brand-id:'+#dto.memberId")
+    @CacheEvict(value = {"mall-user:member-info:", "mall-user:member-entity:"}, key = "'member-id:'+#dto.memberId")
     public Optional<MallMember> update(MemberDTO dto) {
         validMobileAndIDCard(dto);
         Long userId = UserUtils.getUserId();

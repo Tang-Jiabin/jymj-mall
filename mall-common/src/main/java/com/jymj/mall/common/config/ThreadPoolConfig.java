@@ -38,7 +38,7 @@ public class ThreadPoolConfig {
         /**
         * 线程池名前缀
         */
-        private String threadNamePrefix = "Jymj-Async-";
+        private String threadNamePrefix = "Mall-Async-";
 
         public int getCorePoolSize() {
             return corePoolSize;

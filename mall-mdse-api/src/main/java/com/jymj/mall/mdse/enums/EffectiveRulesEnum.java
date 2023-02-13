@@ -17,7 +17,6 @@ import java.util.List;
 
 public enum EffectiveRulesEnum implements BaseEnum<Integer> {
 
-
     /**
      * 生效规则
      */

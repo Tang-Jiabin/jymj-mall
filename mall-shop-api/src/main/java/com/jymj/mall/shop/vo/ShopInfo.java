@@ -3,6 +3,7 @@ package com.jymj.mall.shop.vo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 
 /**
  * 店铺（网点）
@@ -46,10 +47,13 @@ public class ShopInfo {
     private String businessEndTime;
 
     @ApiModelProperty("经度")
-    private String longitude;
+    private Double longitude;
 
     @ApiModelProperty("纬度")
-    private String latitude;
+    private Double latitude;
+
+    @ApiModelProperty("店铺位置")
+    private GeoPoint position;
 
 
 }

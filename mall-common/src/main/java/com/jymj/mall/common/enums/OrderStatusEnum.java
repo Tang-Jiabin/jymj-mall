@@ -24,7 +24,9 @@ public enum OrderStatusEnum implements BaseEnum<Integer>{
     COMPLETED(3, "已完成"),
     AFTER_SALES(4, "售后"),
     CANCELED(5, "取消"),
-    CLOSED(6, "关闭");
+    CLOSED(6, "关闭"),
+    UNEVALUATED(7, "待评价");
+
 
     @Getter
     private final Integer value;

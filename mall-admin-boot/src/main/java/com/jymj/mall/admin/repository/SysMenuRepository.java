@@ -20,4 +20,6 @@ public interface SysMenuRepository extends JpaRepository<SysMenu,Long> {
 
 
     List<SysMenu> findAllByMenuIdInAndDeleted(List<Long> menuIdList, Integer deleted);
+
+    List<SysMenu> findAllByMenuIdIn(List<Long> menuIdList);
 }

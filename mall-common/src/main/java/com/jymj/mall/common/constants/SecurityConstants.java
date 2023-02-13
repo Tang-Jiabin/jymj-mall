@@ -19,7 +19,6 @@ public interface SecurityConstants {
      */
     String JWT_PREFIX = "Bearer ";
 
-
     /**
      * Basic认证前缀
      */
@@ -86,9 +85,9 @@ public interface SecurityConstants {
     String ADMIN_CLIENT_ID = "admin-web";
 
     /**
-     * 移动端（H5/Android/IOS）客户端ID
+     * 用户安卓端
      */
-    String APP_CLIENT_ID = "user-app";
+    String APP_ANDROID_CLIENT_ID = "user-android";
 
     /**
      * 微信小程序客户端ID

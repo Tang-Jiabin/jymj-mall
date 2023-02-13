@@ -128,12 +128,8 @@ public class MfgServiceImpl implements MfgService {
     @Cacheable(cacheNames = "mall-mdse:mfg-info:", key = "'mfg-id:'+#entity.mfgId")
     public MfgInfo entity2vo(MdseMfg entity) {
         if (entity != null) {
-
-
             return getMfgInfo(entity);
-
         }
-
         return null;
     }
 

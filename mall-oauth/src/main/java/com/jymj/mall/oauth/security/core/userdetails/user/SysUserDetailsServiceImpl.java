@@ -32,12 +32,13 @@ public class SysUserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) {
         SysUserDetails userDetails = null;
-        Result<UserAuthDTO> result = userFeignClient.loadUserByOpenId(username);
+        Result<UserAuthDTO> result = userFeignClient.loadUserByUsername(username);
         log.info("loadUserByUsername:{}",result.toString());
         if (Result.isSuccess(result)) {
             UserAuthDTO user = result.getData();
             if (null != user) {
                 userDetails = new SysUserDetails(user);
+                userDetails.setAuthenticationIdentity(AuthenticationIdentityEnum.USERNAME.getValue());
             }
         }
         return getUserDetails(userDetails);

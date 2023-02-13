@@ -7,8 +7,12 @@ import com.jymj.mall.mdse.vo.MdseInfo;
 import com.jymj.mall.search.repository.MdseInfoRepository;
 import com.jymj.mall.search.service.MdseService;
 import lombok.RequiredArgsConstructor;
+import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHitSupport;
@@ -22,6 +26,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -73,8 +78,18 @@ public class MdseServiceImpl implements MdseService {
         BoolQueryBuilder boolQueryBuilder = buildBasicQuery(mdsePageQuery);
         nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
 
+        if (mdsePageQuery.getProperties().equals("location") && Objects.nonNull(mdsePageQuery.getLat()) && Objects.nonNull(mdsePageQuery.getLon())) {
+            GeoDistanceSortBuilder sortBuilder = SortBuilders.geoDistanceSort("location", mdsePageQuery.getLat(), mdsePageQuery.getLon());
+            sortBuilder.unit(DistanceUnit.METERS);
+            sortBuilder.order(Objects.nonNull(mdsePageQuery.getDirection()) ? mdsePageQuery.getDirection().equals(1) ? SortOrder.ASC : SortOrder.DESC : SortOrder.ASC);
+            nativeSearchQueryBuilder.withSort(sortBuilder);
+            mdsePageQuery.setProperties(null);
+        }
+
         Pageable pageable = PageUtils.getPageable(mdsePageQuery);
         nativeSearchQueryBuilder.withPageable(pageable);
+
+
 
         SearchHits<MdseInfo> searchHitsResult = elasticsearchRestTemplate.search(nativeSearchQueryBuilder.build(), MdseInfo.class);
 

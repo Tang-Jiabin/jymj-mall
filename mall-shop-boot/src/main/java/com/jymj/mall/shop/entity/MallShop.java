@@ -60,10 +60,10 @@ public class MallShop extends BaseEntity {
     private LocalTime businessEndTime;
 
     @ApiModelProperty("经度")
-    private String longitude;
+    private Double longitude;
 
     @ApiModelProperty("纬度")
-    private String latitude;
+    private Double latitude;
 
     @ApiModelProperty("商场id")
     private Long mallId;

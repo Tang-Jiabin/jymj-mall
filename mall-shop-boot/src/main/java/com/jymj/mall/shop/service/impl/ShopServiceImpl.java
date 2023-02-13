@@ -22,6 +22,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -88,8 +89,8 @@ public class ShopServiceImpl implements ShopService {
         mallShop.setInBusiness(dto.getInBusiness());
         mallShop.setBusinessStartTime(dto.getBusinessStartTime());
         mallShop.setBusinessEndTime(dto.getBusinessEndTime());
-        mallShop.setLongitude(dto.getLongitude());
-        mallShop.setLatitude(dto.getLatitude());
+        mallShop.setLongitude(Double.parseDouble(dto.getLongitude()));
+        mallShop.setLatitude(Double.parseDouble(dto.getLatitude()));
         mallShop.setMallId(dto.getMallId());
         mallShop.setDeptId(deptInfo.getDeptId());
         mallShop.setDeleted(SystemConstants.DELETED_NO);
@@ -149,12 +150,12 @@ public class ShopServiceImpl implements ShopService {
             }
 
             if (StringUtils.hasText(dto.getLongitude())) {
-                mallShop.setLongitude(dto.getLongitude());
+                mallShop.setLongitude(Double.parseDouble(dto.getLongitude()));
                 update = true;
             }
 
             if (StringUtils.hasText(dto.getLatitude())) {
-                mallShop.setLatitude(dto.getLatitude());
+                mallShop.setLatitude(Double.parseDouble(dto.getLatitude()));
                 update = true;
             }
 
@@ -304,6 +305,8 @@ public class ShopServiceImpl implements ShopService {
         shopInfo.setBusinessEndTime(entity.getBusinessEndTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
         shopInfo.setLongitude(entity.getLongitude());
         shopInfo.setLatitude(entity.getLatitude());
+
+        shopInfo.setPosition(new GeoPoint(entity.getLatitude(), entity.getLongitude()));
         return shopInfo;
     }
 }

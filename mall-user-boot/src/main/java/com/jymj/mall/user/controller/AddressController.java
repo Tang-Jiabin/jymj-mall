@@ -31,10 +31,10 @@ import java.util.Optional;
 @RequestMapping("/api/v1/address")
 @RequiredArgsConstructor
 public class AddressController {
-    
+
     private final AddressService addressService;
 
-    
+
     @ApiOperation(value = "添加地址")
     @PostMapping
     public Result<AddressInfo> addAddress(@Valid @RequestBody AddressDTO addressDTO) {
@@ -69,8 +69,10 @@ public class AddressController {
     public Result<AddressInfo> getDefaultAddress() {
         List<UserAddress> addressList = addressService.findAllByUserId(UserUtils.getUserId());
         Optional<UserAddress> addressOptional = addressList.stream().filter(address -> address.getStatus().equals(SystemConstants.STATUS_OPEN)).findFirst();
+
         return addressOptional.map(address -> Result.success(addressService.entity2vo(address))).orElse(Result.failed());
     }
+
 
     @ApiOperation(value = "地址列表")
     @GetMapping("/list")

@@ -57,11 +57,17 @@ public class PreAuthenticatedUserDetailsServiceImpl<T extends Authentication> im
         // 获取认证身份标识，默认是用户名:username
         AuthenticationIdentityEnum authenticationIdentityEnum = BaseEnum.getEnumByValue(RequestUtils.getAuthenticationIdentity(), AuthenticationIdentityEnum.class);
         UserDetailsService userDetailsService = userDetailsServiceMap.get(clientId);
-        if (clientId.equals(SecurityConstants.APP_CLIENT_ID)) {
+        if (clientId.equals(SecurityConstants.APP_ANDROID_CLIENT_ID)) {
             // 移动端的用户体系是会员，认证方式是通过手机号 mobile 认证
             SysUserDetailsServiceImpl sysUserDetailsService = (SysUserDetailsServiceImpl) userDetailsService;
             if (authenticationIdentityEnum == AuthenticationIdentityEnum.MOBILE) {
                 return sysUserDetailsService.loadUserByMobile(authentication.getName());
+            }
+            if (authenticationIdentityEnum == AuthenticationIdentityEnum.USERNAME) {
+                return sysUserDetailsService.loadUserByUsername(authentication.getName());
+            }
+            if (authenticationIdentityEnum == AuthenticationIdentityEnum.OPENID) {
+                return sysUserDetailsService.loadUserByOpenId(authentication.getName());
             }
             return sysUserDetailsService.loadUserByUsername(authentication.getName());
         } else if (clientId.equals(SecurityConstants.WEAPP_CLIENT_ID)) {

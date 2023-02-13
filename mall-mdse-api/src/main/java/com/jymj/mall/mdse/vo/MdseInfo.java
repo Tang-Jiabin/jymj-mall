@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -46,12 +47,6 @@ public class MdseInfo {
     @ApiModelProperty("运费")
     private BigDecimal postage;
 
-//    @ApiModelProperty("库存数量")
-//    private Integer inventoryQuantity;
-
-//    @ApiModelProperty("剩余数量")
-//    private Integer remainingQuantity;
-
     @ApiModelProperty("销售数量")
     private Integer salesVolume;
 
@@ -86,9 +81,6 @@ public class MdseInfo {
     private TypeInfo typeInfo;
 
     @ApiModelProperty("店铺")
-    private List<ShopInfo> shopInfoList;
-
-    @ApiModelProperty("店铺")
     private ShopInfo shopInfo;
 
     @ApiModelProperty("库存规格集合")
@@ -117,5 +109,8 @@ public class MdseInfo {
 
     @ApiModelProperty("商品分类  1-商品 2-卡")
     private Integer classify;
+
+    @ApiModelProperty("商品坐标")
+    private GeoPoint location;
 
 }

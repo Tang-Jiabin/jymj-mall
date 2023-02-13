@@ -63,12 +63,7 @@ public class ResourceServerManager implements ReactiveAuthorizationManager<Autho
 //        }
 
 
-        /*
-          鉴权开始
-
-          缓存取 [URL权限-角色集合] 规则数据
-          urlPermRolesRules = [{'key':'GET:/api/v1/users/*','value':['ADMIN','TEST']},...]
-         */
+        // 鉴权开始 缓存取 [URL权限-角色集合] 规则数据
         Map<Object, Object> urlPermRolesRules = redisUtils.hmget(GlobalConstants.URL_PERM_ROLES_KEY);
         // 根据请求路径获取有访问权限的角色列表
         // 拥有访问权限的角色

@@ -108,7 +108,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 endpoints.getOAuth2RequestFactory(), authenticationManager
         ));
 
-
         // 添加微信授权模式的授权者
         granterList.add(new WechatTokenGranter(endpoints.getTokenServices(), endpoints.getClientDetailsService(),
                 endpoints.getOAuth2RequestFactory(), authenticationManager
@@ -163,8 +162,8 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         Map<String, UserDetailsService> clientUserDetailsServiceMap = Maps.newHashMap();
         // 系统管理客户端
         clientUserDetailsServiceMap.put(SecurityConstants.ADMIN_CLIENT_ID, sysAdminDetailsService);
-        // Android、IOS、H5 移动客户端
-        clientUserDetailsServiceMap.put(SecurityConstants.APP_CLIENT_ID, sysUserDetailsService);
+        // Android移动客户端
+        clientUserDetailsServiceMap.put(SecurityConstants.APP_ANDROID_CLIENT_ID, sysUserDetailsService);
         // 微信小程序客户端
         clientUserDetailsServiceMap.put(SecurityConstants.WEAPP_CLIENT_ID, sysUserDetailsService);
 
@@ -177,7 +176,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
            1 重复使用：access_token过期刷新时， refresh_token过期时间未改变，仍以初次生成的时间为准
            2 非重复使用：access_token过期刷新时， refresh_token过期时间延续，在refresh_token有效期内刷新便永不失效达到无需再次登录的目的
          */
-        tokenServices.setReuseRefreshToken(true);
+        tokenServices.setReuseRefreshToken(false);
         return tokenServices;
 
     }
@@ -225,7 +224,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
                 SysUserDetails sysUserDetails = (SysUserDetails) principal;
                 additionalInfo.put("userId", sysUserDetails.getMemberId());
                 if (StringUtils.hasText(sysUserDetails.getUsername())) {
-                    additionalInfo.put("username", sysUserDetails.getUsername());
+                    additionalInfo.put("nickname", sysUserDetails.getNickname());
                 }
                 if (StringUtils.hasText(sysUserDetails.getSessionKey())) {
                     additionalInfo.put("sessionKey", sysUserDetails.getSessionKey());

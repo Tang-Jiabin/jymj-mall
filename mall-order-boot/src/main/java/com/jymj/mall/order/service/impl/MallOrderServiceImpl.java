@@ -297,7 +297,7 @@ public class MallOrderServiceImpl implements OrderService {
             mdseInfoList.forEach(info -> saveMdseDetails(orderId, mdseInfo.getMdseId(), info, OrderMdseDTO.builder()
                     .mdseId(info.getMdseId())
                     .quantity(info.getStartingQuantity())
-                    .shopId(0L)
+                    .shopId(Objects.nonNull(info.getShopInfo()) ? Objects.nonNull(info.getShopInfo().getShopId()) ? info.getShopInfo().getShopId() : 0L : 0L)
                     .stockId(info.getStockList().get(0).getStockId())
                     .build()));
         }
@@ -618,8 +618,6 @@ public class MallOrderServiceImpl implements OrderService {
     public Page<MallOrder> findPage(OrderPageQuery orderPageQuery) {
 
 
-
-
         Pageable pageable = PageUtils.getPageable(orderPageQuery);
         Specification<MallOrder> specification = (root, query, criteriaBuilder) -> {
             List<Predicate> list = Lists.newArrayList();
@@ -920,6 +918,29 @@ public class MallOrderServiceImpl implements OrderService {
 
         orderMdseDetails.setUsageDate(new Date());
         orderMdseDetailsRepository.save(orderMdseDetails);
+    }
+
+    @Override
+    public Map<String, Integer> findOrderNumberByUserId(Long userId) {
+
+        //待付款
+        Integer waitPay = orderRepository.countByUserIdAndOrderStatus(userId, OrderStatusEnum.UNPAID);
+        //待发货
+        Integer waitDelivery = orderRepository.countByUserIdAndOrderStatus(userId, OrderStatusEnum.UNSHIPPED);
+        //待收货
+        Integer waitReceive = orderRepository.countByUserIdAndOrderStatus(userId, OrderStatusEnum.UNRECEIVED);
+        //待评价
+        Integer waitEvaluate = orderRepository.countByUserIdAndOrderStatus(userId,OrderStatusEnum.UNEVALUATED);
+        //退款/售后
+        Integer refund = orderRepository.countByUserIdAndOrderStatus(userId, OrderStatusEnum.AFTER_SALES);
+
+        Map<String, Integer> map = new HashMap<>(6);
+        map.put("UNPAID", waitPay);
+        map.put("UNSHIPPED", waitDelivery);
+        map.put("UNRECEIVED", waitReceive);
+        map.put("UNEVALUATED", waitEvaluate);
+        map.put("AFTER_SALES", refund);
+        return map;
     }
 
 }

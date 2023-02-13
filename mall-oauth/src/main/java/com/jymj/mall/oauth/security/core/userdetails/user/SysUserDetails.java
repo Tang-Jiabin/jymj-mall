@@ -1,6 +1,7 @@
 package com.jymj.mall.oauth.security.core.userdetails.user;
 
 import com.jymj.mall.common.constants.GlobalConstants;
+import com.jymj.mall.common.constants.SecurityConstants;
 import com.jymj.mall.user.dto.UserAuthDTO;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,6 +22,7 @@ public class SysUserDetails implements org.springframework.security.core.userdet
 
     private Long memberId;
     private String username;
+    private String nickname;
     private Boolean enabled;
 
     private String openId;
@@ -42,8 +44,9 @@ public class SysUserDetails implements org.springframework.security.core.userdet
     public SysUserDetails(UserAuthDTO user) {
         this.setMemberId(user.getUserId());
         this.setUsername(user.getUsername());
+        this.setNickname(user.getNickname());
         this.setOpenId(user.getUsername());
-        this.setPassword(user.getPassword());
+        this.setPassword(SecurityConstants.PASSWORD_ENCODE + user.getPassword());
         this.setRoles(user.getRoles());
         this.setEnabled(GlobalConstants.STATUS_YES.equals(user.getStatus()));
     }

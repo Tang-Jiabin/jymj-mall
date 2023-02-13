@@ -39,7 +39,7 @@ allprojects {
     dependencies {
         compileOnly 'org.projectlombok:lombok:1.18.24'
         annotationProcessor 'org.projectlombok:lombok:1.18.24'
-        implementation 'cn.hutool:hutool-all:5.8.8'
+        implementation 'cn.hutool:hutool-all:5.8.11'
         testCompileOnly 'org.projectlombok:lombok:1.18.24'
         testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
         implementation 'org.springframework.boot:spring-boot-starter'

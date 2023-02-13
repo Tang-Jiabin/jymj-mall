@@ -86,5 +86,7 @@ public class MdsePageQuery extends BasePageQueryDTO {
 
     @ApiModelProperty("用户id")
     private Long userId;
+    private Double lat;
+    private Double lon;
 
 }

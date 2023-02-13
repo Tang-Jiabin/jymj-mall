@@ -53,6 +53,13 @@ public class UserController {
         return userAuthOptional.map(Result::success).orElse(Result.failed(ResultCode.USER_NOT_EXIST));
     }
 
+    @ApiIgnore
+    @GetMapping("/username/{username}")
+    public Result<UserAuthDTO> loadUserByUsername( @PathVariable String username){
+        Optional<UserAuthDTO> userAuthOptional = userService.loadUserByUsername(username);
+        return userAuthOptional.map(Result::success).orElse(Result.failed(ResultCode.USER_NOT_EXIST));
+    }
+
 
     @ApiOperation(value = "添加用户")
     @PostMapping

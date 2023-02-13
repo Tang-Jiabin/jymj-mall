@@ -3,6 +3,7 @@ package com.jymj.mall.oauth.security.core.userdetails.admin;
 import com.google.common.collect.Lists;
 import com.jymj.mall.admin.dto.AdminAuthDTO;
 import com.jymj.mall.common.constants.GlobalConstants;
+import com.jymj.mall.common.constants.SecurityConstants;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -50,9 +51,9 @@ public class SysAdminDetails implements UserDetails {
         this.setUserId(user.getUserId());
         this.setUsername(user.getUsername());
         this.setDeptId(user.getDeptId());
-        this.setPassword(user.getPassword());
+        this.setPassword(SecurityConstants.PASSWORD_ENCODE + user.getPassword());
         this.setEnabled(GlobalConstants.STATUS_YES.equals(user.getStatus()));
-        if (user.getRoles() != null && user.getRoles().size() > 0) {
+        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
             authorities = Lists.newArrayList();
             user.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
         }

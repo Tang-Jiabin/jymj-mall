@@ -1,6 +1,5 @@
 package com.jymj.mall.shop.controller;
 
-import com.google.common.collect.Lists;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.vo.PageVO;

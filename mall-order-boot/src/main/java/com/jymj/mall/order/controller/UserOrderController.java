@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -48,7 +49,8 @@ public class UserOrderController {
 
     @ApiOperation(value = "创建订单")
     @PostMapping
-    public Result<MallOrderInfo> addOrder(@Valid @RequestBody OrderDTO orderDTO) {
+    public Result<MallOrderInfo> createOrder(@Valid @RequestBody OrderDTO orderDTO) {
+
         MallOrder mallOrder = orderService.add(orderDTO);
         MallOrderInfo mallOrderInfo = orderService.entity2vo(mallOrder);
         executor.execute(() -> rabbitTemplate.convertAndSend(MQConfig.EXCHANGE_DELAY, MQConfig.ROUTING_KEY_QUEUE_ORDER, mallOrderInfo));
@@ -58,7 +60,7 @@ public class UserOrderController {
 
     @ApiOperation(value = "删除订单")
     @DeleteMapping("/{ids}")
-    public Result<Object> deleteDept(@ApiParam("删除，多个id用英文逗号分割") @PathVariable String ids) {
+    public Result<Object> deleteOrder(@ApiParam("删除，多个id用英文逗号分割") @PathVariable String ids) {
         orderService.delete(ids);
         return Result.success();
     }
@@ -98,6 +100,12 @@ public class UserOrderController {
     @GetMapping("/status/lists")
     public Result<List<EnumTypeInfo>> orderStatusLists() {
         return Result.success(OrderStatusEnum.toList());
+    }
+
+    @ApiOperation(value = "订单状态数量")
+    @GetMapping("/status/number")
+    public Result<Map<String,Integer>> orderNumber() {
+        return Result.success(orderService.findOrderNumberByUserId(UserUtils.getUserId()));
     }
 
     @ApiOperation(value = "配送方式列表")

@@ -55,7 +55,6 @@ public class MallOrderRabbitMQConsumer {
                 case UNPAID:
                     log.info("订单未付款：{}", e.getOrderId());
                     orderService.update(OrderDTO.builder().orderId(e.getOrderId()).statusEnum(OrderStatusEnum.CLOSED).build());
-                    log.info("订单未支付：{}", order.getOrderId());
                     break;
                 case CANCELED:
                     log.info("订单已取消：{}", e.getOrderId());

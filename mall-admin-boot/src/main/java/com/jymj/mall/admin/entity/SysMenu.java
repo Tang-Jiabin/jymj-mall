@@ -24,7 +24,7 @@ import javax.persistence.*;
 @Table(name = "sys_menu")
 @Where(clause = "deleted = 0")
 @SQLDelete(sql = "UPDATE sys_menu SET deleted = 1 where menu_id = ?")
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper=true)
 @EntityListeners({AuditingEntityListener.class})
 public class SysMenu extends BaseEntity {
 

@@ -18,4 +18,6 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<MallUser,Long>, JpaSpecificationExecutor<MallUser> {
 
     Optional<MallUser> findByOpenid(String openid);
+
+    Optional<MallUser> findByUsername(String username);
 }

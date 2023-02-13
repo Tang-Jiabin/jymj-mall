@@ -1,6 +1,5 @@
 package com.jymj.mall.shop.service.impl;
 
-import javax.persistence.criteria.Predicate;
 import com.google.common.collect.Lists;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.web.util.PageUtils;
@@ -22,9 +21,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.validation.ValidationUtils;
 
-import javax.validation.Validation;
+import javax.persistence.criteria.Predicate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;

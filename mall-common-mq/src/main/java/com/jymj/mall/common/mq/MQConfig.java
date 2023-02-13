@@ -30,7 +30,6 @@ public class MQConfig {
     public static final String QUEUE_CHECK_ORDER = "QUEUE_CHECK_ORDER";
     // 订单支付成功路由键
     public static final String QUEUE_PAY_SUCCESS = "QUEUE_PAY_SUCCESS";
-
     //订单路由键
     public static final String ROUTING_KEY_QUEUE_ORDER = "ROUTING_KEY_QUEUE_ORDER";
     // 成功支付路由健

@@ -25,4 +25,6 @@ public interface UserService extends BaseService<MallUser, UserInfo, UserDTO> {
     Page<MallUser> findPage(UserPageQuery userPageQuery);
 
 
+    Optional<UserAuthDTO> loadUserByUsername(String username);
+
 }

@@ -1,5 +1,6 @@
 package com.jymj.mall.user.service.impl;
 
+import cn.hutool.core.util.PhoneUtil;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.web.util.UserUtils;
@@ -41,6 +42,11 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public UserAddress add(AddressDTO dto) {
+        //验证手机号是否正确
+        if (!PhoneUtil.isMobile(dto.getMobile())) {
+            throw new BusinessException("手机号格式不正确");
+        }
+
         UserAddress userAddress = UserAddress.builder()
                 .name(dto.getName())
                 .mobile(dto.getMobile())
@@ -78,6 +84,10 @@ public class AddressServiceImpl implements AddressService {
                 userAddress.setName(dto.getName());
             }
             if (StringUtils.hasText(dto.getMobile())) {
+                //验证手机号是否正确
+                if (!PhoneUtil.isMobile(dto.getMobile())) {
+                    throw new BusinessException("手机号格式不正确");
+                }
                 userAddress.setMobile(dto.getMobile());
             }
             if (StringUtils.hasText(dto.getRegion())) {

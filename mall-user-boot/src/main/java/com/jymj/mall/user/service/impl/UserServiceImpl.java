@@ -346,5 +346,34 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll(spec, pageable);
     }
 
+    @Override
+    public Optional<UserAuthDTO> loadUserByUsername(String username) {
+        Optional<MallUser> userOptional = userRepository.findByUsername(username);
+        if (userOptional.isPresent()) {
+            MallUser user = userOptional.get();
+            UserAuthDTO userAuthDTO = new UserAuthDTO();
+            userAuthDTO.setUserId(user.getUserId());
+            userAuthDTO.setUsername(user.getUsername());
+            userAuthDTO.setNickname(user.getNickname());
+            userAuthDTO.setPassword(user.getPassword());
+            userAuthDTO.setStatus(user.getStatus());
+            userAuthDTO.setRoles(Lists.newArrayList("USER"));
+            List<MallUserRole> userRoleList = userRoleRepository.findAllByUserId(user.getUserId());
+            if (!ObjectUtils.isEmpty(userRoleList)) {
+                Result<List<RoleInfo>> roleInfoResult = roleFeignClient.getRoleDetailList(userRoleList.stream().map(MallUserRole::getRoleId).map(String::valueOf).collect(Collectors.joining(",")));
+                if (Result.isSuccess(roleInfoResult)) {
+                    List<RoleInfo> roleInfoList = roleInfoResult.getData();
+                    List<String> roleCodeList = roleInfoList.stream().map(RoleInfo::getCode).collect(Collectors.toList());
+                    userAuthDTO.setRoles(roleCodeList);
+                }
+            }
+
+            user.setLoginTime(new Date());
+            userRepository.save(user);
+            return Optional.of(userAuthDTO);
+        }
+        return Optional.empty();
+    }
+
 
 }

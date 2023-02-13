@@ -1,7 +1,13 @@
 package com.jymj.mall.common.web.service;
 
+import org.springframework.util.ObjectUtils;
+
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
 
 /**
  * 基础service
@@ -58,5 +64,14 @@ public interface BaseService<T, V, D> {
      * @param entityList 实体列表
      * @return vo列表
      */
-    List<V> list2vo(List<T> entityList);
+    default List<V> list2vo(List<T> entityList) {
+        List<CompletableFuture<V>> futureList = Optional.of(entityList)
+                .orElse(org.assertj.core.util.Lists.newArrayList())
+                .stream().filter(entity -> !ObjectUtils.isEmpty(entity))
+                .map(entity -> CompletableFuture.supplyAsync(() -> entity2vo(entity))).collect(Collectors.toList());
+        return futureList.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
 }

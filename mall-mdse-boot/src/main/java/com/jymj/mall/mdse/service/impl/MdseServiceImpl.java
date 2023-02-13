@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -585,17 +586,14 @@ public class MdseServiceImpl implements MdseService {
             }
             mdseInfo.setSpecMap(specMapList);
         }
-
         if (SystemConstants.STATUS_OPEN.equals(show.getLabel())) {
             mdseInfo.setLabelInfoList(findLabelListByMdseId(mdseInfo.getMdseId()));
         }
-
         if (SystemConstants.STATUS_OPEN.equals(show.getPicture())) {
             List<PictureInfo> pictureInfoList = findPictureListByMdseId(mdseInfo.getMdseId());
             mdseInfo.setPictureList(pictureInfoList.stream().filter(pictureInfo -> pictureInfo.getType() == PictureType.MDSE_PIC).collect(Collectors.toList()));
             mdseInfo.setVideoList(pictureInfoList.stream().filter(pictureInfo -> pictureInfo.getType() == PictureType.MDSE_VIDEO).collect(Collectors.toList()));
         }
-
         if (SystemConstants.STATUS_OPEN.equals(show.getMfg()) && !ObjectUtils.isEmpty(entity.getMfgId())) {
             Optional<MdseMfg> mfgOptional = mfgService.findById(entity.getMfgId());
             if (mfgOptional.isPresent()) {
@@ -622,7 +620,7 @@ public class MdseServiceImpl implements MdseService {
             Result<ShopInfo> shopInfoResult = shopFeignClient.getShopById(entity.getShopId());
             if (Result.isSuccess(shopInfoResult)) {
                 mdseInfo.setShopInfo(shopInfoResult.getData());
-                mdseInfo.setShopInfoList(Lists.newArrayList(shopInfoResult.getData()));
+                mdseInfo.setLocation(new GeoPoint(shopInfoResult.getData().getLatitude(), shopInfoResult.getData().getLongitude()));
             }
         }
         return mdseInfo;
@@ -636,8 +634,6 @@ public class MdseServiceImpl implements MdseService {
         mdseInfo.setNumber(entity.getNumber());
         mdseInfo.setPrice(entity.getPrice());
         mdseInfo.setPostage(entity.getPostage());
-//        mdseInfo.setInventoryQuantity(entity.getInventoryQuantity());
-//        mdseInfo.setRemainingQuantity(entity.getRemainingQuantity());
         mdseInfo.setStartingQuantity(entity.getStartingQuantity());
         mdseInfo.setShowRemainingQuantity(entity.isShowRemainingQuantity());
         mdseInfo.setRefund(entity.isRefund());
@@ -649,6 +645,7 @@ public class MdseServiceImpl implements MdseService {
         mdseInfo.setStatus(entity.getStatus());
         mdseInfo.setMallId(entity.getMallId());
         mdseInfo.setClassify(entity.getClassify());
+        mdseInfo.setLocation(new GeoPoint(0.0, 0.0));
         return mdseInfo;
     }
 
@@ -804,7 +801,6 @@ public class MdseServiceImpl implements MdseService {
             if (!CollectionUtils.isEmpty(mdseIdSet)) {
                 CriteriaBuilder.In<Long> mdseIdIn = criteriaBuilder.in(root.get("mdseId").as(Long.class));
                 mdseIdSet.forEach(mdseIdIn::value);
-                System.out.println(mdseIdSet);
                 list.add(mdseIdIn);
             }
 
@@ -824,7 +820,6 @@ public class MdseServiceImpl implements MdseService {
 
     @Override
     public List<GroupInfo> findGroupListByMdseId(Long mdseId) {
-
         if (!ObjectUtils.isEmpty(mdseId)) {
             List<MdseGroup> groupList = groupService.findAllByMdseId(mdseId);
             return groupService.list2vo(groupList);

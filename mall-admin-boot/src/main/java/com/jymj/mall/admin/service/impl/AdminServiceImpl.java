@@ -17,7 +17,6 @@ import com.jymj.mall.admin.service.RoleService;
 import com.jymj.mall.admin.vo.AdminInfo;
 import com.jymj.mall.admin.vo.MenuInfo;
 import com.jymj.mall.admin.vo.RoleInfo;
-import com.jymj.mall.common.constants.SecurityConstants;
 import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.result.ResultCode;
@@ -241,7 +240,7 @@ public class AdminServiceImpl implements AdminService {
             adminAuthDTO = new AdminAuthDTO();
             adminAuthDTO.setUserId(admin.getAdminId());
             adminAuthDTO.setUsername(admin.getUsername());
-            adminAuthDTO.setPassword(SecurityConstants.PASSWORD_ENCODE + admin.getPassword());
+            adminAuthDTO.setPassword( admin.getPassword());
             adminAuthDTO.setStatus(admin.getStatus());
             adminAuthDTO.setDeptId(admin.getDeptId());
             List<SysAdminRole> adminRoleList = adminRoleRepository.findAllByAdminId(admin.getAdminId());
