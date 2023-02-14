@@ -56,7 +56,6 @@ public class SmsCodeAuthenticationProvider implements AuthenticationProvider {
         }
         //获取客户端id
         String clientId = RequestUtils.getOAuth2ClientId();
-        log.info("clientId：{}", clientId);
         //根据clientId判断是用户端还是后台管理端
         UserDetails userDetails = null;
         if (clientId.equals("admin-web")) {
