@@ -9,4 +9,6 @@ package com.jymj.mall.admin.config;
  * @date 2022-10-09
  */
 public class MonitorConfig {
+
+    private String adminServerUrl;
 }
