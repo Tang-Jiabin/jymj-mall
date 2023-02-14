@@ -21,4 +21,5 @@ include 'mall-pay-boot'
 include 'mall-pay-api'
 include 'mall-order-api'
 include 'mall-common-mq'
+include 'mall-common-sms'
 

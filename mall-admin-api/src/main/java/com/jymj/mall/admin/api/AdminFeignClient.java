@@ -19,16 +19,22 @@ import org.springframework.web.bind.annotation.PutMapping;
 @FeignClient(value = "mall-admin",contextId = "mall-admin")
 public interface AdminFeignClient {
 
-    @GetMapping("/api/v1/admin/{username}")
+    @GetMapping("/api/v1/admin/username/{username}")
     Result<AdminAuthDTO> loadAdminByUsername(@PathVariable String username);
+
+    @GetMapping("/api/v1/admin/mobile/{mobile}")
+    Result<AdminAuthDTO> loadAdminByMobile(@PathVariable String mobile);
 
     @PostMapping("/api/v1/admin")
     Result<AdminInfo> add(UpdateAdminDTO adminDTO);
 
     @PutMapping("/api/v1/admin")
     Result<AdminInfo> updateAdmin(UpdateAdminDTO updateAdminDTO);
+
     @GetMapping("/api/v1/admin/id/{adminId}/info")
     Result<AdminInfo> getAdminById(@PathVariable Long adminId);
+
     @GetMapping("/api/v1/admin/mobile/{mobile}/info")
     Result<AdminInfo> getAdminByMobile(@PathVariable String mobile);
+
 }

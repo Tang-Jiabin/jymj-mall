@@ -45,7 +45,7 @@ public class SysUserDetails implements org.springframework.security.core.userdet
         this.setMemberId(user.getUserId());
         this.setUsername(user.getUsername());
         this.setNickname(user.getNickname());
-        this.setOpenId(user.getUsername());
+        this.setOpenId(user.getOpenId());
         this.setPassword(SecurityConstants.PASSWORD_ENCODE + user.getPassword());
         this.setRoles(user.getRoles());
         this.setEnabled(GlobalConstants.STATUS_YES.equals(user.getStatus()));

@@ -23,6 +23,10 @@ public class UserAuthDTO {
      * 会员名(openId、mobile)
      */
     private String username;
+    /**
+     * 微信openId
+     */
+    private String openId;
 
     private String nickname;
 

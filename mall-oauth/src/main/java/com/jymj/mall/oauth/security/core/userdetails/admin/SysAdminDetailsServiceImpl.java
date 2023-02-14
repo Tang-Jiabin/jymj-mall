@@ -44,6 +44,19 @@ public class SysAdminDetailsServiceImpl implements UserDetailsService {
         return getUserDetails(userDetails);
     }
 
+    public UserDetails loadUserByMobile(String mobile) {
+        SysAdminDetails userDetails = null;
+        Result<AdminAuthDTO> result = adminFeignClient.loadAdminByMobile(mobile);
+        log.info("loadAdminByMobile:{}",result.toString());
+        if (Result.isSuccess(result)) {
+            AdminAuthDTO user = result.getData();
+            if (null != user) {
+                userDetails = new SysAdminDetails(user);
+            }
+        }
+        return getUserDetails(userDetails);
+    }
+
     private UserDetails getUserDetails(SysAdminDetails userDetails) {
         if (userDetails == null) {
             throw new UsernameNotFoundException(ResultCode.USER_NOT_EXIST.getMsg());
@@ -56,5 +69,6 @@ public class SysAdminDetailsServiceImpl implements UserDetailsService {
         }
         return userDetails;
     }
+
 
 }

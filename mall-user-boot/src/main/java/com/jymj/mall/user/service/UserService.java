@@ -27,4 +27,5 @@ public interface UserService extends BaseService<MallUser, UserInfo, UserDTO> {
 
     Optional<UserAuthDTO> loadUserByUsername(String username);
 
+    Optional<UserAuthDTO> loadUserByMobile(String mobile);
 }

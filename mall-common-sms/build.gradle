@@ -1,0 +1,14 @@
+
+dependencies {
+    api 'org.springframework.boot:spring-boot-configuration-processor:2.7.4'
+    implementation 'com.tencentcloudapi:tencentcloud-sdk-java:3.1.693'
+    implementation project(path: ':mall-common')
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation project(":mall-common")
+    implementation project(":mall-common-redis")
+}
+
+test {
+    useJUnitPlatform()
+}

@@ -23,8 +23,14 @@ import org.springframework.web.bind.annotation.*;
 public interface UserFeignClient {
 
 
-    @GetMapping("/api/v1/users/load/{openId}")
+    @GetMapping("/api/v1/users/openId/{openId}")
     Result<UserAuthDTO> loadUserByOpenId(@PathVariable String openId);
+
+    @GetMapping("/api/v1/users/username/{username}")
+    Result<UserAuthDTO> loadUserByUsername( @PathVariable String username);
+
+    @GetMapping("/api/v1/users/mobile/{mobile}")
+    Result<UserAuthDTO> loadUserByMobile(@PathVariable String mobile);
 
     @PostMapping("/api/v1/users")
     void addUser(UserDTO userDTO);
@@ -38,7 +44,4 @@ public interface UserFeignClient {
 
     @GetMapping("/api/v1/members/user/{userId}/info")
     Result<MemberInfo> getMemberByUserId(@PathVariable Long userId);
-
-    @GetMapping("/api/v1/users/username/{username}")
-    Result<UserAuthDTO> loadUserByUsername( @PathVariable String username);
 }

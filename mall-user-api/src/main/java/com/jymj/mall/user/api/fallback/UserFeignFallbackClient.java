@@ -53,5 +53,10 @@ public class UserFeignFallbackClient implements UserFeignClient {
         return Result.failed(ResultCode.DEGRADATION);
     }
 
+    @Override
+    public Result<UserAuthDTO> loadUserByMobile(String mobile) {
+        return Result.failed(ResultCode.DEGRADATION);
+    }
+
 
 }

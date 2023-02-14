@@ -930,7 +930,7 @@ public class MallOrderServiceImpl implements OrderService {
         //待收货
         Integer waitReceive = orderRepository.countByUserIdAndOrderStatus(userId, OrderStatusEnum.UNRECEIVED);
         //待评价
-        Integer waitEvaluate = orderRepository.countByUserIdAndOrderStatus(userId,OrderStatusEnum.UNEVALUATED);
+        Integer waitEvaluate = orderRepository.countByUserIdAndOrderStatus(userId, OrderStatusEnum.UNEVALUATED);
         //退款/售后
         Integer refund = orderRepository.countByUserIdAndOrderStatus(userId, OrderStatusEnum.AFTER_SALES);
 

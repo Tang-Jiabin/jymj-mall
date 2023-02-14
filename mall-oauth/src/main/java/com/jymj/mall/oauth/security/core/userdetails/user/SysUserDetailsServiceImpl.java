@@ -51,7 +51,7 @@ public class SysUserDetailsServiceImpl implements UserDetailsService {
      */
     public UserDetails loadUserByMobile(String mobile) {
         SysUserDetails sysUserDetails = null;
-        Result<UserAuthDTO> result = userFeignClient.loadUserByOpenId(mobile);
+        Result<UserAuthDTO> result = userFeignClient.loadUserByMobile(mobile);
         log.info("loadUserByMobile:{}",result.toString());
         if (Result.isSuccess(result)) {
             UserAuthDTO member = result.getData();

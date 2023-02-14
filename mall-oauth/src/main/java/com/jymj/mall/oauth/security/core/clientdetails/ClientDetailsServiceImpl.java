@@ -35,8 +35,9 @@ public class ClientDetailsServiceImpl implements ClientDetailsService {
     @Cacheable(cacheNames = "mall-oauth:auth:", key = "'oauth-client:'+#clientId")
     public ClientDetails loadClientByClientId(String clientId) {
         try {
+
             Optional<OauthClientDetails> oauthClientDetails = oauthClientDetailsRepository.findByClientId(clientId);
-            log.info("loadClient:{}",oauthClientDetails.toString());
+            log.info("clientId:{}  oauthClientDetails:{}",clientId,oauthClientDetails);
             if (oauthClientDetails.isPresent()) {
                 ClientAuthDTO client = client2dto(oauthClientDetails.get());
                 BaseClientDetails clientDetails = new BaseClientDetails(

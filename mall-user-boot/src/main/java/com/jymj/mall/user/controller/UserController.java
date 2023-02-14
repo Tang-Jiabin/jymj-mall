@@ -47,9 +47,9 @@ public class UserController {
 
 
     @ApiIgnore
-    @GetMapping("/load/{openid}")
-    public Result<UserAuthDTO> loadUserByOpenid(@PathVariable String openid) {
-        Optional<UserAuthDTO> userAuthOptional = userService.loadUserByOpenid(openid);
+    @GetMapping("/openId/{openId}")
+    public Result<UserAuthDTO> loadUserByOpenid(@PathVariable String openId) {
+        Optional<UserAuthDTO> userAuthOptional = userService.loadUserByOpenid(openId);
         return userAuthOptional.map(Result::success).orElse(Result.failed(ResultCode.USER_NOT_EXIST));
     }
 
@@ -57,6 +57,13 @@ public class UserController {
     @GetMapping("/username/{username}")
     public Result<UserAuthDTO> loadUserByUsername( @PathVariable String username){
         Optional<UserAuthDTO> userAuthOptional = userService.loadUserByUsername(username);
+        return userAuthOptional.map(Result::success).orElse(Result.failed(ResultCode.USER_NOT_EXIST));
+    }
+
+    @ApiIgnore
+    @GetMapping("/mobile/{mobile}")
+    public Result<UserAuthDTO> loadUserByMobile( @PathVariable String mobile){
+        Optional<UserAuthDTO> userAuthOptional = userService.loadUserByMobile(mobile);
         return userAuthOptional.map(Result::success).orElse(Result.failed(ResultCode.USER_NOT_EXIST));
     }
 

@@ -52,7 +52,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        log.info("load configure http");
         http.csrf().disable().authorizeRequests()
                 .antMatchers("/actuator/**").permitAll()
                 .antMatchers("/oauth/**","/oauth/token").permitAll()
@@ -94,6 +93,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public SmsCodeAuthenticationProvider smsCodeAuthenticationProvider() {
         SmsCodeAuthenticationProvider provider = new SmsCodeAuthenticationProvider();
         provider.setUserDetailsService(sysUserDetailsService);
+        provider.setAdminDetailsService(sysAdminDetailsService);
         provider.setRedisTemplate(redisTemplate);
         return provider;
     }

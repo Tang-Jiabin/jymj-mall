@@ -38,9 +38,15 @@ public class AdminController {
     private final AdminService adminService;
 
     @ApiIgnore
-    @GetMapping("/{username}")
+    @GetMapping("/username/{username}")
     public Result<AdminAuthDTO> loadAdminByUsername(@PathVariable String username) {
         AdminAuthDTO adminAuthDTO = adminService.getAuthInfoByUsername(username);
+        return Result.success(adminAuthDTO);
+    }
+    @ApiIgnore
+    @GetMapping("/mobile/{mobile}")
+    public Result<AdminAuthDTO> loadAdminByMobile(@PathVariable String mobile) {
+        AdminAuthDTO adminAuthDTO = adminService.getAuthInfoByMobile(mobile);
         return Result.success(adminAuthDTO);
     }
 

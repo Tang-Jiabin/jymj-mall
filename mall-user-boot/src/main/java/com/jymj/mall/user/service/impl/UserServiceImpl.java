@@ -21,6 +21,7 @@ import com.jymj.mall.user.repository.UserRepository;
 import com.jymj.mall.user.service.UserService;
 import com.jymj.mall.user.vo.UserInfo;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,37 +57,6 @@ public class UserServiceImpl implements UserService {
     private final MdseFeignClient mdseFeignClient;
     private final PasswordEncoder passwordEncoder;
 
-
-
-    @Override
-    public Optional<UserAuthDTO> loadUserByOpenid(String openid) {
-
-        Optional<MallUser> userOptional = userRepository.findByOpenid(openid);
-        if (userOptional.isPresent()) {
-            MallUser user = userOptional.get();
-            UserAuthDTO userAuthDTO = new UserAuthDTO();
-            userAuthDTO.setUserId(user.getUserId());
-            userAuthDTO.setUsername(user.getOpenid());
-            userAuthDTO.setNickname(user.getNickname());
-            userAuthDTO.setPassword(user.getPassword());
-            userAuthDTO.setStatus(user.getStatus());
-            userAuthDTO.setRoles(Lists.newArrayList("USER"));
-            List<MallUserRole> userRoleList = userRoleRepository.findAllByUserId(user.getUserId());
-            if (!ObjectUtils.isEmpty(userRoleList)) {
-                Result<List<RoleInfo>> roleInfoResult = roleFeignClient.getRoleDetailList(userRoleList.stream().map(MallUserRole::getRoleId).map(String::valueOf).collect(Collectors.joining(",")));
-                if (Result.isSuccess(roleInfoResult)) {
-                    List<RoleInfo> roleInfoList = roleInfoResult.getData();
-                    List<String> roleCodeList = roleInfoList.stream().map(RoleInfo::getCode).collect(Collectors.toList());
-                    userAuthDTO.setRoles(roleCodeList);
-                }
-            }
-
-            user.setLoginTime(new Date());
-            userRepository.save(user);
-            return Optional.of(userAuthDTO);
-        }
-        return Optional.empty();
-    }
 
     @Override
     public MallUser add(UserDTO dto) {
@@ -347,12 +317,30 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<UserAuthDTO> loadUserByOpenid(String openid) {
+        Optional<MallUser> userOptional = userRepository.findByOpenid(openid);
+        return getUserAuthDTO(userOptional);
+    }
+
+    @Override
     public Optional<UserAuthDTO> loadUserByUsername(String username) {
         Optional<MallUser> userOptional = userRepository.findByUsername(username);
+        return getUserAuthDTO(userOptional);
+    }
+
+    @Override
+    public Optional<UserAuthDTO> loadUserByMobile(String mobile) {
+        Optional<MallUser> userOptional = userRepository.findByMobile(mobile);
+        return getUserAuthDTO(userOptional);
+    }
+
+    @NotNull
+    private Optional<UserAuthDTO> getUserAuthDTO(Optional<MallUser> userOptional) {
         if (userOptional.isPresent()) {
             MallUser user = userOptional.get();
             UserAuthDTO userAuthDTO = new UserAuthDTO();
             userAuthDTO.setUserId(user.getUserId());
+            userAuthDTO.setOpenId(user.getOpenid());
             userAuthDTO.setUsername(user.getUsername());
             userAuthDTO.setNickname(user.getNickname());
             userAuthDTO.setPassword(user.getPassword());

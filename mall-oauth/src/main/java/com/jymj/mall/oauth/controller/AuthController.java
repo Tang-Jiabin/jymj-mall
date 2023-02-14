@@ -6,6 +6,7 @@ import com.jymj.mall.common.constants.SecurityConstants;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.oauth.utils.JwtUtils;
 import com.jymj.mall.oauth.utils.RequestUtils;
+import com.jymj.mall.service.TencentSMSService;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import io.swagger.annotations.Api;
@@ -19,6 +20,7 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.endpoint.TokenEndpoint;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.security.KeyPair;
 import java.security.Principal;
@@ -42,7 +44,8 @@ public class AuthController {
 
 
     private final TokenEndpoint tokenEndpoint;
-    private final RedisTemplate<String,String> redisTemplate;
+    private final TencentSMSService tencentSMSService;
+    private final RedisTemplate<String, String> redisTemplate;
     private final KeyPair keyPair;
 
     @ApiOperation(value = "授权")
@@ -95,6 +98,15 @@ public class AuthController {
         return Result.success("注销成功");
     }
 
+
+    @ApiOperation(value = "发送短信验证码")
+    @GetMapping("/sendSmsCode")
+    public Result<String> sendSmsCode(@RequestParam String mobile) {
+        tencentSMSService.sendSmsCode(mobile);
+        return Result.success("发送成功");
+    }
+
+    @ApiIgnore
     @ApiOperation(value = "获取公钥")
     @GetMapping("/public-key")
     public Map<String, Object> getPublicKey() {

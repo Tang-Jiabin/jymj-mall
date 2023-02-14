@@ -22,3 +22,4 @@ spring:
           - data-id: mall-redis.yaml
           - data-id: mall-zipkin-config.yaml
           - data-id: mall-monitor-client.yaml
+          - data-id: mall-tencent-sms.yaml

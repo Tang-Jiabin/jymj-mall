@@ -26,6 +26,7 @@ import com.jymj.mall.shop.api.VerifyFeignClient;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -231,28 +232,7 @@ public class AdminServiceImpl implements AdminService {
         return adminRepository.findById(adminId);
     }
 
-    @Override
-    public AdminAuthDTO getAuthInfoByUsername(String username) {
-        Optional<SysAdmin> adminOptional = adminRepository.findByUsernameAndDeleted(username, SystemConstants.DELETED_NO);
-        AdminAuthDTO adminAuthDTO = null;
-        if (adminOptional.isPresent()) {
-            SysAdmin admin = adminOptional.get();
-            adminAuthDTO = new AdminAuthDTO();
-            adminAuthDTO.setUserId(admin.getAdminId());
-            adminAuthDTO.setUsername(admin.getUsername());
-            adminAuthDTO.setPassword( admin.getPassword());
-            adminAuthDTO.setStatus(admin.getStatus());
-            adminAuthDTO.setDeptId(admin.getDeptId());
-            List<SysAdminRole> adminRoleList = adminRoleRepository.findAllByAdminId(admin.getAdminId());
-            List<Long> roleIdList = adminRoleList.stream().map(SysAdminRole::getRoleId).collect(Collectors.toList());
-            List<SysRole> roleList = roleService.findAllById(roleIdList);
-            List<String> roleStrList = Lists.newArrayList();
-            roleList.forEach(sysRole -> roleStrList.add(sysRole.getCode()));
-            adminAuthDTO.setRoles(roleStrList);
-        }
 
-        return adminAuthDTO;
-    }
 
 
     @Override
@@ -362,5 +342,39 @@ public class AdminServiceImpl implements AdminService {
         };
 
         return adminRepository.findAll(spec, pageable);
+    }
+
+    @Override
+    public AdminAuthDTO getAuthInfoByUsername(String username) {
+        Optional<SysAdmin> adminOptional = adminRepository.findByUsernameAndDeleted(username, SystemConstants.DELETED_NO);
+        return getAdminAuthDTO(adminOptional);
+    }
+
+    @Override
+    public AdminAuthDTO getAuthInfoByMobile(String mobile) {
+        Optional<SysAdmin> adminOptional = adminRepository.findByMobile(mobile);
+        return getAdminAuthDTO(adminOptional);
+    }
+
+    @Nullable
+    private AdminAuthDTO getAdminAuthDTO(Optional<SysAdmin> adminOptional) {
+        AdminAuthDTO adminAuthDTO = null;
+        if (adminOptional.isPresent()) {
+            SysAdmin admin = adminOptional.get();
+            adminAuthDTO = new AdminAuthDTO();
+            adminAuthDTO.setUserId(admin.getAdminId());
+            adminAuthDTO.setUsername(admin.getUsername());
+            adminAuthDTO.setPassword( admin.getPassword());
+            adminAuthDTO.setStatus(admin.getStatus());
+            adminAuthDTO.setDeptId(admin.getDeptId());
+            List<SysAdminRole> adminRoleList = adminRoleRepository.findAllByAdminId(admin.getAdminId());
+            List<Long> roleIdList = adminRoleList.stream().map(SysAdminRole::getRoleId).collect(Collectors.toList());
+            List<SysRole> roleList = roleService.findAllById(roleIdList);
+            List<String> roleStrList = Lists.newArrayList();
+            roleList.forEach(sysRole -> roleStrList.add(sysRole.getCode()));
+            adminAuthDTO.setRoles(roleStrList);
+        }
+
+        return adminAuthDTO;
     }
 }

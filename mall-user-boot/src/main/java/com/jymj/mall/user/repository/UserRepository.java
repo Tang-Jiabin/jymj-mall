@@ -20,4 +20,6 @@ public interface UserRepository extends JpaRepository<MallUser,Long>, JpaSpecifi
     Optional<MallUser> findByOpenid(String openid);
 
     Optional<MallUser> findByUsername(String username);
+
+    Optional<MallUser> findByMobile(String mobile);
 }

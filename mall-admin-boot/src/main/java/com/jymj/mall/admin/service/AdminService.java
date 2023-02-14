@@ -25,4 +25,6 @@ public interface AdminService extends BaseService<SysAdmin,AdminInfo,UpdateAdmin
     Optional<SysAdmin> findByMobile(String mobile);
 
     Page<SysAdmin> findPage(AdminPageQuery adminPageQuery);
+
+    AdminAuthDTO getAuthInfoByMobile(String mobile);
 }
