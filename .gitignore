@@ -12,6 +12,7 @@
 *.iml
 *.iws
 .idea/
+.murphy.yml
 
 # Maven
 target/

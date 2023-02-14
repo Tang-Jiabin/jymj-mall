@@ -33,6 +33,7 @@
 | springfox-swagger            | 3.0.0         | 接口文档         |
 | Redis                        | 7.0.4         | key-value数据库 |
 | PostgreSQL                   | 14.5          | 关系型数据库       |
+| Docker                       | 20.10.18      | 打包发布         |
 
 ### 模块说明
 
