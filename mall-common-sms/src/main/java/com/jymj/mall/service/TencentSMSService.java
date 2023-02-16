@@ -13,6 +13,7 @@ import com.tencentcloudapi.sms.v20210111.models.SendSmsResponse;
 import com.tencentcloudapi.sms.v20210111.models.SendStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -158,17 +159,12 @@ public class TencentSMSService {
      */
     public void sendSmsCode(String mobile) {
         //验证手机号是否正确
-        if (!mobile.matches("^1[3-9]\\d{9}$")) {
-            throw new RuntimeException("手机号格式不正确");
-        }
-        //给手机号添加前缀+86
-        if (!mobile.startsWith("+86")) {
-            mobile = "+86" + mobile;
-        }
+        mobile = getMobile(mobile);
         // 生成6位随机数
         String code = RandomUtil.randomNumbers(6);
         // 发送短信
         boolean send = send(mobile, properties.getCodeTemplateId(), new String[]{code, "5"});
+
         if (!send) {
             throw new RuntimeException("发送短信失败");
         }
@@ -176,5 +172,34 @@ public class TencentSMSService {
         String key = SecurityConstants.SMS_CODE_PREFIX + mobile.substring(3);
         redisTemplate.opsForValue().set(key, code, 5, TimeUnit.MINUTES);
 
+    }
+
+    /**
+     * 发送短信通知
+     *
+     * @param mobile 手机号
+     * @param name   姓名
+     * @param no     单号
+     */
+    public void sendSmsNotice(String mobile, String name, String no) {
+        mobile = getMobile(mobile);
+        // 发送短信
+        boolean send = send(mobile, properties.getNoticeTemplateId(), new String[]{name, no});
+        if (!send) {
+            throw new RuntimeException("发送短信失败");
+        }
+    }
+
+    @NotNull
+    private static String getMobile(String mobile) {
+        //验证手机号是否正确
+        if (!mobile.matches("^1[3-9]\\d{9}$")) {
+            throw new RuntimeException("手机号格式不正确");
+        }
+        //给手机号添加前缀+86
+        if (!mobile.startsWith("+86")) {
+            mobile = "+86" + mobile;
+        }
+        return mobile;
     }
 }

@@ -2,6 +2,7 @@ package com.jymj.mall.gateway.filter;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.StrUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,8 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -60,10 +63,11 @@ public class GatewayLogFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-
+        //优化下面代码
         ServerHttpRequest request = exchange.getRequest();
         String requestPath = request.getPath().pathWithinApplication().value();
         String requestMethod = request.getMethodValue();
+        String[] headers = {"X-Forwarded-For", "X-Real-IP", "Proxy-Client-IP", "WL-Proxy-Client-IP", "HTTP_CLIENT_IP", "HTTP_X_FORWARDED_FOR"};
 
         TraceLog traceLog = new TraceLog();
         traceLog.setRequestPath(requestPath);
@@ -227,6 +231,58 @@ public class GatewayLogFilter implements GlobalFilter, Ordered {
     @Override
     public int getOrder() {
         return -1;
+    }
+
+    // 多次反向代理后会有多个ip值 的分割符
+    private static final String IP_UTILS_FLAG = ",";
+    // 未知IP
+    private static final String UNKNOWN = "unknown";
+    // 本地 IP
+    private static final String LOCALHOST_IP = "0:0:0:0:0:0:0:1";
+    private static final String LOCALHOST_IP1 = "127.0.0.1";
+
+    private static String getIP(ServerHttpRequest request) {
+        // 根据 HttpHeaders 获取 请求 IP地址
+        String ip = request.getHeaders().getFirst("X-Forwarded-For");
+        if (CharSequenceUtil.isEmpty(ip) || UNKNOWN.equalsIgnoreCase(ip)) {
+            ip = request.getHeaders().getFirst("x-forwarded-for");
+            if (ip != null && ip.length() != 0 && !UNKNOWN.equalsIgnoreCase(ip)) {
+                // 多次反向代理后会有多个ip值，第一个ip才是真实ip
+                if (ip.contains(IP_UTILS_FLAG)) {
+                    ip = ip.split(IP_UTILS_FLAG)[0];
+                }
+            }
+        }
+        if (ip == null || ip.length() == 0 || UNKNOWN.equalsIgnoreCase(ip)) {
+            ip = request.getHeaders().getFirst("Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || UNKNOWN.equalsIgnoreCase(ip)) {
+            ip = request.getHeaders().getFirst("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || UNKNOWN.equalsIgnoreCase(ip)) {
+            ip = request.getHeaders().getFirst("HTTP_CLIENT_IP");
+        }
+        if (ip == null || ip.length() == 0 || UNKNOWN.equalsIgnoreCase(ip)) {
+            ip = request.getHeaders().getFirst("HTTP_X_FORWARDED_FOR");
+        }
+        if (ip == null || ip.length() == 0 || UNKNOWN.equalsIgnoreCase(ip)) {
+            ip = request.getHeaders().getFirst("X-Real-IP");
+        }
+        //兼容k8s集群获取ip
+        if (CharSequenceUtil.isEmpty(ip) || UNKNOWN.equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddress().getAddress().getHostAddress();
+            if (LOCALHOST_IP1.equalsIgnoreCase(ip) || LOCALHOST_IP.equalsIgnoreCase(ip)) {
+                //根据网卡取本机配置的IP
+                InetAddress iNet = null;
+                try {
+                    iNet = InetAddress.getLocalHost();
+                } catch (UnknownHostException e) {
+                    log.error("getClientIp error: ", e);
+                }
+                ip = iNet.getHostAddress();
+            }
+        }
+        return ip;
     }
 
     @Data
