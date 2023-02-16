@@ -92,6 +92,7 @@ public class UserOrderController {
         orderPageQuery.setUserId(UserUtils.getUserId());
         Page<MallOrder> page = orderService.findPage(orderPageQuery);
         List<MallOrderInfo> shoppingCartMdseInfoList = orderService.list2vo(page.getContent());
+        shoppingCartMdseInfoList.sort((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime()));
         PageVO<MallOrderInfo> pageVo = PageUtils.toPageVO(page, shoppingCartMdseInfoList);
         return Result.success(pageVo);
     }

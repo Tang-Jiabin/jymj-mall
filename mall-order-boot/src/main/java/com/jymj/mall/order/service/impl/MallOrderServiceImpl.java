@@ -113,7 +113,10 @@ public class MallOrderServiceImpl implements OrderService {
 
         List<OrderMdseDTO> orderMdseList = dto.getOrderMdseList();
         OrderDeliveryMethodEnum orderDeliveryMethod = dto.getOrderDeliveryMethod();
-
+        //配送方式
+        if (ObjectUtils.isEmpty(orderDeliveryMethod)) {
+            throw new BusinessException("配送方式不能为空");
+        }
         MallOrder mallOrder = new MallOrder();
         mallOrder.setOrderDeliveryMethod(orderDeliveryMethod);
         mallOrder.setOrderNo(IdUtil.getSnowflake(SystemConstants.WORK_ID, SystemConstants.MALL_ORDER_DATACENTER_ID).nextIdStr());
@@ -147,7 +150,7 @@ public class MallOrderServiceImpl implements OrderService {
         List<MallOrderMdseDetails> orderMdseDetailsList = saveOrderMdseDetailsList(orderMdseList, mallOrder.getOrderId());
 
         BigDecimal totalAmount = orderMdseDetailsList.stream()
-                .map(mdseDetail -> mdseDetail.getMdsePrice().setScale(2, RoundingMode.HALF_UP))
+                .map(mdseDetail -> mdseDetail.getMdsePrice().multiply(new BigDecimal(String.valueOf(mdseDetail.getQuantity()))).setScale(2, RoundingMode.HALF_UP))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         mallOrder.setTotalAmount(totalAmount);
@@ -182,6 +185,11 @@ public class MallOrderServiceImpl implements OrderService {
                 }
 
                 MdseInfo mdseInfo = mdseInfoResult.getData();
+                //判断商品是否上架
+                if (Objects.equals(mdseInfo.getStatus(), SystemConstants.STATUS_CLOSE)) {
+                    redissonLockUtil.unlock(key);
+                    throw new BusinessException("商品已下架");
+                }
 
                 if (mdseInfo.getClassify().equals(MdseConstants.MDSE_TYPE_CARD)) {
                     if (memberInfoResult == null) {
@@ -280,15 +288,13 @@ public class MallOrderServiceImpl implements OrderService {
             return specStr.toString();
         }).findFirst().orElse("");
 
-        BigDecimal price = stockInfo.getPrice();
-        BigDecimal mdsePrice = price.multiply(new BigDecimal(String.valueOf(orderMdseDTO.getQuantity())));
         orderMdseDetails.setStockId(stockInfo.getStockId());
         orderMdseDetails.setQuantity(orderMdseDTO.getQuantity());
         orderMdseDetails.setType(mdseInfo.getClassify());
         orderMdseDetails.setMdseName(mdseInfo.getName());
         orderMdseDetails.setMdseStockSpec(stockSpec);
         orderMdseDetails.setMdsePicture(pictureUrl);
-        orderMdseDetails.setMdsePrice(mdsePrice);
+        orderMdseDetails.setMdsePrice(stockInfo.getPrice());
         orderMdseDetails.setCardId(cardId);
         orderMdseDetails.setDeleted(SystemConstants.DELETED_NO);
         orderMdseDetails = orderMdseDetailsRepository.save(orderMdseDetails);
