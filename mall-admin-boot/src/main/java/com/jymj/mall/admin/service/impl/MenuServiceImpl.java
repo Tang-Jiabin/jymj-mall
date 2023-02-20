@@ -64,6 +64,10 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<SysMenu> findAllByAdminId(Long adminId) {
+
+        if (adminId.equals(SystemConstants.ROOT_ID) || adminId.equals(SystemConstants.ADMIN_ID)) {
+            return menuRepository.findAll();
+        }
         List<SysAdminRole> adminRoleList = adminRoleRepository.findAllByAdminId(adminId);
         if (!CollectionUtils.isEmpty(adminRoleList)) {
             return findAllByRoleIdIn(adminRoleList.stream().map(SysAdminRole::getRoleId).collect(Collectors.toList()));
@@ -83,6 +87,8 @@ public class MenuServiceImpl implements MenuService {
         menuInfo.setVisible(sysMenu.getVisible());
         menuInfo.setRedirect(sysMenu.getRedirect());
         menuInfo.setType(sysMenu.getType());
+        menuInfo.setCreateTime(sysMenu.getCreateTime());
+        menuInfo.setUpdateTime(sysMenu.getUpdateTime());
         return menuInfo;
     }
 
@@ -98,6 +104,7 @@ public class MenuServiceImpl implements MenuService {
         sysMenu.setVisible(dto.getVisible());
         sysMenu.setRedirect(dto.getRedirect());
         sysMenu.setType(dto.getType());
+        sysMenu.setDeleted(SystemConstants.DELETED_NO);
         return menuRepository.save(sysMenu);
     }
 

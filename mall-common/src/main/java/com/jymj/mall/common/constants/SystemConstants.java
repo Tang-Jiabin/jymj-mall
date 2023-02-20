@@ -25,6 +25,7 @@ public interface SystemConstants {
      */
     Long ROOT_DISTRICT_ID = 0L;
     Long ROOT_ID = 0L;
+    Long ADMIN_ID = 1L;
 
     /**
      * 未删除状态

@@ -1,9 +1,11 @@
 package com.jymj.mall.admin.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jymj.mall.common.enums.MenuTypeEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -49,4 +51,12 @@ public class MenuInfo {
 
     @ApiModelProperty("子级")
     private List<MenuInfo> children;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty("创建时间")
+    private Date createTime;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty("更新时间")
+    private Date updateTime;
 }
