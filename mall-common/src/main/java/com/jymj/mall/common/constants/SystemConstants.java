@@ -24,8 +24,8 @@ public interface SystemConstants {
      * 根行政区ID
      */
     Long ROOT_DISTRICT_ID = 0L;
-    Long ROOT_ID = 0L;
-    Long ADMIN_ID = 1L;
+    Long ROOT_ID = 1L;
+    Long ADMIN_ID = 2L;
 
     /**
      * 未删除状态

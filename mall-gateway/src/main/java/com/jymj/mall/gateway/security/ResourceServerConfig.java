@@ -92,10 +92,8 @@ public class ResourceServerConfig {
      */
     @Bean
     ServerAccessDeniedHandler accessDeniedHandler() {
-        return (exchange, denied) -> {
-            return Mono.defer(() -> Mono.just(exchange.getResponse()))
-                    .flatMap(response -> ResponseUtils.writeErrorInfo(response, ResultCode.ACCESS_UNAUTHORIZED));
-        };
+        return (exchange, denied) -> Mono.defer(() -> Mono.just(exchange.getResponse()))
+                .flatMap(response -> ResponseUtils.writeErrorInfo(response, ResultCode.ACCESS_UNAUTHORIZED));
     }
 
     /**
@@ -103,10 +101,8 @@ public class ResourceServerConfig {
      */
     @Bean
     ServerAuthenticationEntryPoint authenticationEntryPoint() {
-        return (exchange, e) -> {
-            return Mono.defer(() -> Mono.just(exchange.getResponse()))
-                    .flatMap(response -> ResponseUtils.writeErrorInfo(response, ResultCode.TOKEN_INVALID_OR_EXPIRED));
-        };
+        return (exchange, e) -> Mono.defer(() -> Mono.just(exchange.getResponse()))
+                .flatMap(response -> ResponseUtils.writeErrorInfo(response, ResultCode.TOKEN_INVALID_OR_EXPIRED));
     }
 
     /**

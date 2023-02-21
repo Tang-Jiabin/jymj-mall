@@ -81,6 +81,7 @@ public class ResourceServerManager implements ReactiveAuthorizationManager<Autho
                 }
             }
         }
+
         // 没有设置拦截规则拒绝
         if (!requireCheck) {
             if (!restfulPath.contains("actuator")) {
