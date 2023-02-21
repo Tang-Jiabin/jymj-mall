@@ -45,6 +45,12 @@ public class StockDTO {
     @ApiModelProperty("价格")
     private BigDecimal price;
 
+    @ApiModelProperty("原价")
+    private BigDecimal originalPrice;
+
+    @ApiModelProperty("折扣")
+    private String discount;
+
     @ApiModelProperty("总库存")
     private Integer totalInventory;
 

@@ -4,6 +4,7 @@ import com.jymj.mall.common.enums.EnumTypeInfo;
 import com.jymj.mall.common.enums.OrderDeliveryMethodEnum;
 import com.jymj.mall.common.enums.OrderPayMethodEnum;
 import com.jymj.mall.common.enums.OrderStatusEnum;
+import com.jymj.mall.common.exception.BusinessException;
 import com.jymj.mall.common.mq.MQConfig;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
@@ -83,6 +84,15 @@ public class UserOrderController {
                 .map(orderInfo -> Result.success(orderService.entity2vo(orderInfo)))
                 .orElse(Result.failed("订单不存在"));
 
+    }
+
+    @ApiOperation(value = "订单信息")
+    @GetMapping("/no/{orderNo}/info")
+    public Result<MallOrderInfo> getOrderByNo(@PathVariable String orderNo) {
+        Optional<MallOrder> orderOptional = orderService.findByOrderNo(orderNo);
+        MallOrder mallOrder = orderOptional.orElseThrow(() -> new BusinessException("订单不存在"));
+        MallOrderInfo orderInfo = orderService.entity2vo(mallOrder);
+        return Result.success(orderInfo);
     }
 
 

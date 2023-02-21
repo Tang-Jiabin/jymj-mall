@@ -15,9 +15,12 @@ import java.util.List;
  * @date 2022-09-01
  */
 @Repository
-public interface MdseStockRepository extends JpaRepository<MdseStock,Long> {
+public interface MdseStockRepository extends JpaRepository<MdseStock, Long> {
+
     List<MdseStock> findAllByMdseId(Long mdseId);
 
     List<MdseStock> findAllByRemainingStockGreaterThanEqual(Integer quantityGreaterThanOrEqual);
+
     List<MdseStock> findAllByRemainingStockLessThanEqual(Integer quantity);
-}
+
+   }

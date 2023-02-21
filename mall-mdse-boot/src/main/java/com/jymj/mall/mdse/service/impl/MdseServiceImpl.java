@@ -124,6 +124,7 @@ public class MdseServiceImpl implements MdseService {
         mdse.setDeleted(SystemConstants.DELETED_NO);
         mdse.setStatus(dto.getStatus() == null ? 2 : dto.getStatus());
         mdse.setClassify(MdseConstants.MDSE_TYPE_MDSE);
+        mdse.setDeliveryMethod(dto.getDeliveryMethod());
         if (Objects.nonNull(dto.getClassify())) {
             mdse.setClassify(dto.getClassify());
         }
@@ -318,12 +319,14 @@ public class MdseServiceImpl implements MdseService {
         if (!ObjectUtils.isEmpty(dto.getStatus())) {
             mallMdse.setStatus(dto.getStatus());
         }
-
         //卡生效规则
         if (Objects.nonNull(dto.getEffectiveRules())) {
             updateCardRules(dto, mallMdse);
         }
-
+        //配送方式
+        if (!ObjectUtils.isEmpty(dto.getDeliveryMethod())) {
+            mallMdse.setDeliveryMethod(dto.getDeliveryMethod());
+        }
         List<CompletableFuture<Void>> futureList = Lists.newArrayList();
         //卡商品信息
         if (!CollectionUtils.isEmpty(dto.getCardMdseList())) {
@@ -371,12 +374,18 @@ public class MdseServiceImpl implements MdseService {
         }
 
         if (!ObjectUtils.isEmpty(dto.getStockList())) {
-            CompletableFuture<Void> updateStockFuture = CompletableFuture.runAsync(() -> updateMdseStock(dto), executor).exceptionally(throwable -> {
-                log.error("更新商品规格失败:{}", dto.getVideoList());
-                throwable.printStackTrace();
-                throw new BusinessException("更新商品规格失败");
-            });
-            futureList.add(updateStockFuture);
+
+                MdseDTO mdseDTO = new MdseDTO();
+                mdseDTO.setMdseId(dto.getMdseId());
+                mdseDTO.setStockList(dto.getStockList());
+                updateMdseStock(mdseDTO);
+
+//            CompletableFuture<Void> updateStockFuture = CompletableFuture.runAsync(() -> updateMdseStock(dto), executor).exceptionally(throwable -> {
+//                log.error("更新商品规格失败:{}", dto.getVideoList());
+//                throwable.printStackTrace();
+//                throw new BusinessException("更新商品规格失败");
+//            });
+//            futureList.add(updateStockFuture);
         }
 
         if (!futureList.isEmpty()) {
@@ -450,7 +459,6 @@ public class MdseServiceImpl implements MdseService {
         //需要修改的库存
         List<StockDTO> updateMdseStockList = dto.getStockList().stream().filter(stockDTO -> mdseStockList.stream().map(MdseStock::getStockId).collect(Collectors.toList()).contains(stockDTO.getStockId())).collect(Collectors.toList());
         updateMdseStockList.forEach(stockService::update);
-
 
     }
 
@@ -576,6 +584,7 @@ public class MdseServiceImpl implements MdseService {
         }
         if (SystemConstants.STATUS_OPEN.equals(show.getStock())) {
             List<StockInfo> stockInfos = findStockListByMdseId(mdseInfo.getMdseId());
+
             mdseInfo.setStockList(stockInfos);
 
             List<SpecMap> specMapList = Lists.newArrayList();
@@ -645,6 +654,7 @@ public class MdseServiceImpl implements MdseService {
         mdseInfo.setStatus(entity.getStatus());
         mdseInfo.setMallId(entity.getMallId());
         mdseInfo.setClassify(entity.getClassify());
+        mdseInfo.setDeliveryMethod(entity.getDeliveryMethod());
         mdseInfo.setLocation(new GeoPoint(0.0, 0.0));
         return mdseInfo;
     }
@@ -831,6 +841,7 @@ public class MdseServiceImpl implements MdseService {
 
         if (!ObjectUtils.isEmpty(mdseId)) {
             List<MdseStock> stockList = stockService.findAllByMdseId(mdseId);
+
             return stockService.list2vo(stockList);
         }
         return Collections.emptyList();

@@ -113,4 +113,6 @@ public class MdseInfo {
     @ApiModelProperty("商品坐标")
     private GeoPoint location;
 
+    @ApiModelProperty("配送方式 1-快递 2-自提 3-快递+自提")
+    private Integer deliveryMethod;
 }

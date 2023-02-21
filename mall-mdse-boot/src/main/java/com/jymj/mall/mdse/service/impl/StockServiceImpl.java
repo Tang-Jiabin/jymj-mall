@@ -26,6 +26,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.EntityManager;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -51,6 +52,7 @@ public class StockServiceImpl implements StockService {
     private final MdseSpecRepository mdseSpecRepository;
     private final ThreadPoolTaskExecutor executor;
     private final MdseStockRepository stockRepository;
+    private final EntityManager entityManager;
 
     @Override
     public MdseStock add(StockDTO dto) {
@@ -71,6 +73,8 @@ public class StockServiceImpl implements StockService {
         stock.setTotalInventory(dto.getTotalInventory());
         stock.setRemainingStock(dto.getTotalInventory());
         stock.setNumber(dto.getNumber());
+        stock.setDiscount(dto.getDiscount());
+        stock.setOriginalPrice(dto.getOriginalPrice());
         stock.setDeleted(SystemConstants.DELETED_NO);
 
         stock = stockRepository.save(stock);
@@ -106,8 +110,18 @@ public class StockServiceImpl implements StockService {
                 update = true;
             }
 
+            if (dto.getOriginalPrice() != null && !Objects.equals(dto.getOriginalPrice(), stock.getOriginalPrice())) {
+                stock.setOriginalPrice(dto.getOriginalPrice());
+                update = true;
+            }
+
+            if (dto.getDiscount() != null && !Objects.equals(dto.getDiscount(), stock.getDiscount())) {
+                stock.setDiscount(dto.getDiscount());
+                update = true;
+            }
+
             if (dto.getTotalInventory() != null && !Objects.equals(dto.getTotalInventory(), stock.getRemainingStock())) {
-                int totalInventory = ~(stock.getRemainingStock() - dto.getTotalInventory()-1) + stock.getTotalInventory();
+                int totalInventory = ~(stock.getRemainingStock() - dto.getTotalInventory() - 1) + stock.getTotalInventory();
                 stock.setRemainingStock(dto.getTotalInventory());
                 stock.setTotalInventory(totalInventory);
                 update = true;
@@ -218,6 +232,9 @@ public class StockServiceImpl implements StockService {
         stockInfo.setSpecB(spec2vo(entity.getSpecB()));
         stockInfo.setSpecC(spec2vo(entity.getSpecC()));
         stockInfo.setPrice(entity.getPrice());
+
+        stockInfo.setOriginalPrice(entity.getOriginalPrice());
+        stockInfo.setDiscount(entity.getDiscount());
         stockInfo.setTotalInventory(entity.getTotalInventory());
         stockInfo.setRemainingStock(entity.getRemainingStock());
         stockInfo.setNumber(entity.getNumber());
@@ -264,7 +281,6 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public List<MdseStock> findAllByMdseId(Long mdseId) {
-
         return stockRepository.findAllByMdseId(mdseId);
     }
 
@@ -294,9 +310,9 @@ public class StockServiceImpl implements StockService {
     @Override
     public void lessInventory(StockDTO stockDTO) {
         Long stockId = stockDTO.getStockId();
-        String key = String.format("mall-mdse:stock:less:%d",stockId);
+        String key = String.format("mall-mdse:stock:less:%d", stockId);
         Boolean lock = redissonLockUtil.lock(key);
-        if (Boolean.TRUE.equals(lock)){
+        if (Boolean.TRUE.equals(lock)) {
             Integer inventory = stockDTO.getTotalInventory();
             if (ObjectUtils.isEmpty(stockId) || ObjectUtils.isEmpty(inventory)) {
                 redissonLockUtil.unlock(key);
@@ -309,7 +325,7 @@ public class StockServiceImpl implements StockService {
                     throw new BusinessException("库存不足");
                 }
                 stock.setRemainingStock(stock.getRemainingStock() - inventory);
-                stockRepository.save(stock);
+                stockRepository.saveAndFlush(stock);
             });
             redissonLockUtil.unlock(key);
         }

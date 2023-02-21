@@ -87,20 +87,4 @@ public class MemberController {
         PageVO<MemberInfo> pageVo = PageUtils.toPageVO(page, mallMemberList);
         return Result.success(pageVo);
     }
-
-    public static void main(String[] args) {
-        //计算圆周率
-        double pi = 0;
-        long denominator = 1;
-        long flag = 1;
-        long a = 1000000000000000000L;
-        for (long i = 0; i < a; i++) {
-            pi += flag * 1.0 / denominator;
-            denominator += 2;
-            flag = -flag;
-        }
-        pi *= 4;
-        System.out.println(pi);
-
-    }
 }
