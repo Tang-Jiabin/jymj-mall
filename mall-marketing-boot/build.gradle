@@ -1,0 +1,9 @@
+
+dependencies {
+    implementation project(":mall-common")
+    implementation project(":mall-common-web")
+}
+
+test {
+    useJUnitPlatform()
+}

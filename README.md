@@ -55,4 +55,5 @@
 | mall-search       | 搜索服务                |
 | mall-shop         | 店铺服务                |
 | mall-user         | 用户服务                |
+| mall-marketing    | 营销服务                |
 
