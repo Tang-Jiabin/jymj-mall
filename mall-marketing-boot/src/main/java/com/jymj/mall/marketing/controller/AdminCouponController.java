@@ -5,8 +5,10 @@ import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.vo.PageVO;
 import com.jymj.mall.marketing.dto.CouponDTO;
 import com.jymj.mall.marketing.dto.CouponPageQuery;
+import com.jymj.mall.marketing.dto.UserCouponDTO;
 import com.jymj.mall.marketing.entity.MallCoupon;
 import com.jymj.mall.marketing.service.CouponService;
+import com.jymj.mall.marketing.service.UserCouponService;
 import com.jymj.mall.marketing.vo.CouponInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -32,6 +34,7 @@ import java.util.List;
 public class AdminCouponController {
 
     private final CouponService couponService;
+    private final UserCouponService userCouponService;
 
     @ApiOperation(value = "新增优惠券")
     @PostMapping
@@ -67,6 +70,27 @@ public class AdminCouponController {
     @GetMapping("/{id}/info")
     public Result<CouponInfo> get(@ApiParam("优惠券id") @PathVariable Long id) {
         return couponService.findById(id).map(coupon -> Result.success(couponService.entity2vo(coupon))).orElse(Result.failed("优惠券不存在"));
+    }
+
+    @ApiOperation(value = "新增用户优惠券")
+    @PostMapping("/user")
+    public Result<Object> addUserCoupon(@RequestBody UserCouponDTO userCouponDTO) {
+        userCouponService.add(userCouponDTO);
+        return Result.success();
+    }
+
+    @ApiOperation(value = "删除用户优惠券")
+    @DeleteMapping("/user/{ids}")
+    public Result<Object> deleteUserCoupon(@ApiParam("删除，多个id用英文逗号分割") @PathVariable String ids) {
+        userCouponService.delete(ids);
+        return Result.success();
+    }
+
+    @ApiOperation(value = "修改用户优惠券")
+    @PutMapping("/user")
+    public Result<Object> updateUserCoupon(@RequestBody UserCouponDTO userCouponDTO) {
+        userCouponService.update(userCouponDTO);
+        return Result.success();
     }
 
 }

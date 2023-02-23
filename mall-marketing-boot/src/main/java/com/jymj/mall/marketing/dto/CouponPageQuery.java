@@ -1,6 +1,7 @@
 package com.jymj.mall.marketing.dto;
 
 import com.jymj.mall.common.web.dto.BasePageQueryDTO;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -15,4 +16,15 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class CouponPageQuery extends BasePageQueryDTO {
+
+    @ApiModelProperty("商品id")
+    private Long mdseId;
+
+    @ApiModelProperty("商品分类id")
+    private Long mdseCategoryId;
+
+    @ApiModelProperty("用户id")
+    private Long userId;
+
+
 }

@@ -12,4 +12,5 @@ dependencies {
     implementation project(":mall-user-api")
     implementation project(":mall-admin-api")
     implementation project(":mall-mdse-api")
+    implementation project(":mall-marketing-api")
 }

@@ -20,6 +20,3 @@ ENTRYPOINT ["java", "-Xmx1024m", "-Djava.security.egd=file:/dev/./urandom", "-ja
 
 # 声明运行时容器提供服务端口，仅仅是声明
 EXPOSE 9140
-
-
-

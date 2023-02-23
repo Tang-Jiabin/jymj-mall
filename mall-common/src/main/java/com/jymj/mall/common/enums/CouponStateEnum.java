@@ -19,8 +19,9 @@ public enum CouponStateEnum implements BaseEnum<Integer>{
      * 优惠券状态
      */
     NORMAL(1, "正常"),
-    EXPIRED(2, "已过期"),
-    USED(3, "已使用");
+    INEFFECTIVE(2, "未生效"),
+    EXPIRED(3, "已过期"),
+    USED(4, "已使用");
 
 
     @Getter

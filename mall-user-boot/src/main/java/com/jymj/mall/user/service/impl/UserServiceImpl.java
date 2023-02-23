@@ -5,8 +5,11 @@ import com.google.common.collect.Sets;
 import com.jymj.mall.admin.api.RoleFeignClient;
 import com.jymj.mall.admin.vo.RoleInfo;
 import com.jymj.mall.common.constants.SystemConstants;
+import com.jymj.mall.common.enums.CouponStateEnum;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
+import com.jymj.mall.marketing.api.MarketingFeignClient;
+import com.jymj.mall.marketing.dto.UserCouponDTO;
 import com.jymj.mall.mdse.api.MdseFeignClient;
 import com.jymj.mall.mdse.dto.MdsePurchaseRecordDTO;
 import com.jymj.mall.user.dto.UserAuthDTO;
@@ -56,6 +59,7 @@ public class UserServiceImpl implements UserService {
     private final ThreadPoolTaskExecutor executor;
     private final MdseFeignClient mdseFeignClient;
     private final PasswordEncoder passwordEncoder;
+    private final MarketingFeignClient marketingFeignClient;
 
 
     @Override
@@ -96,6 +100,16 @@ public class UserServiceImpl implements UserService {
         userRole.setUserId(user.getUserId());
         userRole.setDeleted(SystemConstants.DELETED_NO);
         userRoleRepository.save(userRole);
+
+        //发放新人优惠券
+        MallUser finalUser = user;
+        executor.execute(() -> {
+            UserCouponDTO userCouponDTO = new UserCouponDTO();
+            userCouponDTO.setUserId(finalUser.getUserId());
+            userCouponDTO.setCouponTemplateId(1L);
+            userCouponDTO.setStatus(CouponStateEnum.NORMAL);
+            marketingFeignClient.addUserCoupon(userCouponDTO);
+        });
 
         return user;
     }

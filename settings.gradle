@@ -23,4 +23,5 @@ include 'mall-order-api'
 include 'mall-common-mq'
 include 'mall-common-sms'
 include 'mall-marketing-boot'
+include 'mall-marketing-api'
 
