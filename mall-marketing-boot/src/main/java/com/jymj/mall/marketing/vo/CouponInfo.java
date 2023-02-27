@@ -23,6 +23,9 @@ public class CouponInfo {
     @ApiModelProperty("优惠券ID")
     private Long couponId;
 
+    @ApiModelProperty("商城ID")
+    private Long mallId;
+
     @ApiModelProperty("优惠券名称")
     private String name;
 

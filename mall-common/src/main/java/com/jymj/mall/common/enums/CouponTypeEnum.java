@@ -20,8 +20,9 @@ public enum CouponTypeEnum implements BaseEnum<Integer> {
     DISCOUNT(2, "折扣券"),
     EXCHANGE(3, "兑换券"),
     CASH(4, "代金券"),
-    FREE_SHIPPING(5, "免邮券"),
-    OTHER(6, "其他券");
+    FULL_GIFT(5, "满赠券"),
+    FREE_SHIPPING(6, "免邮券"),
+    OTHER(7, "其他券");
 
     @Getter
     private final Integer value;

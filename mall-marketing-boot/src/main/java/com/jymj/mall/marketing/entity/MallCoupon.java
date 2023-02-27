@@ -110,5 +110,6 @@ public class MallCoupon extends BaseEntity {
     @ApiModelProperty("不适用商品分类")
     private String notProductCategoryIds;
 
-
+    @ApiModelProperty("商城id")
+    private Long mallId;
 }

@@ -53,6 +53,9 @@ public class MallOrderMdseDetails extends BaseEntity {
     @ApiModelProperty("库存id")
     private Long stockId;
 
+    @ApiModelProperty("商城id")
+    private Long mallId;
+
     @ApiModelProperty("店铺id")
     private Long shopId;
 
@@ -89,4 +92,6 @@ public class MallOrderMdseDetails extends BaseEntity {
     @ApiModelProperty("库存减少方式")
     private InventoryReductionMethod inventoryReductionMethod;
 
+    @ApiModelProperty("商品分类id")
+    private Long mdseTypeId;
 }

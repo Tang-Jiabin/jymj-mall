@@ -1,8 +1,12 @@
 package com.jymj.mall.marketing.service.impl;
 
 import com.google.common.collect.Lists;
+import com.jymj.mall.admin.api.AdminFeignClient;
+import com.jymj.mall.admin.vo.AdminInfo;
 import com.jymj.mall.common.constants.SystemConstants;
+import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
+import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.marketing.dto.CouponDTO;
 import com.jymj.mall.marketing.dto.CouponPageQuery;
 import com.jymj.mall.marketing.entity.MallCoupon;
@@ -42,14 +46,21 @@ import java.util.stream.Collectors;
 public class CouponServiceImpl implements CouponService {
 
     private final CouponRepository couponRepository;
-
     private final ThreadPoolTaskExecutor executor;
+    private final AdminFeignClient adminFeignClient;
 
     @Override
     public MallCoupon add(CouponDTO dto) {
 
-        //CouponDTO转换为MallCoupon
         MallCoupon coupon = new MallCoupon();
+
+        Long adminId = UserUtils.getAdminId();
+        Result<AdminInfo> adminInfoResult =adminFeignClient.getAdminById(adminId);
+        if(Result.isSuccess(adminInfoResult)){
+            AdminInfo adminInfo = adminInfoResult.getData();
+            coupon.setMallId(adminInfo.getMallId());
+        }
+
         coupon.setName(dto.getName());
         coupon.setType(dto.getType());
         coupon.setFullAmount(dto.getFullAmount());
@@ -217,6 +228,7 @@ public class CouponServiceImpl implements CouponService {
         }
         CouponInfo vo = new CouponInfo();
         vo.setCouponId(entity.getCouponId());
+        vo.setMallId(entity.getMallId());
         vo.setName(entity.getName());
         vo.setType(entity.getType());
         vo.setFullAmount(entity.getFullAmount());
@@ -241,6 +253,7 @@ public class CouponServiceImpl implements CouponService {
         vo.setNotProductIds(entity.getNotProductIds());
         vo.setProductCategoryIds(entity.getProductCategoryIds());
         vo.setNotProductCategoryIds(entity.getNotProductCategoryIds());
+
         return vo;
     }
 

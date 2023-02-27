@@ -4,6 +4,8 @@ import cn.hutool.core.util.IdUtil;
 import com.google.common.collect.Lists;
 import com.jymj.mall.common.constants.MdseConstants;
 import com.jymj.mall.common.constants.SystemConstants;
+import com.jymj.mall.common.enums.CouponStateEnum;
+import com.jymj.mall.common.enums.CouponTypeEnum;
 import com.jymj.mall.common.enums.OrderDeliveryMethodEnum;
 import com.jymj.mall.common.enums.OrderStatusEnum;
 import com.jymj.mall.common.exception.BusinessException;
@@ -11,6 +13,8 @@ import com.jymj.mall.common.redis.RedissonLockUtil;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.util.UserUtils;
+import com.jymj.mall.marketing.api.CouponFeignClient;
+import com.jymj.mall.marketing.vo.UserCouponInfo;
 import com.jymj.mall.mdse.api.MdseFeignClient;
 import com.jymj.mall.mdse.api.MdseStockFeignClient;
 import com.jymj.mall.mdse.dto.MdseDTO;
@@ -36,7 +40,6 @@ import com.jymj.mall.order.service.OrderService;
 import com.jymj.mall.order.vo.MallOrderDeliveryDetailsInfo;
 import com.jymj.mall.order.vo.MallOrderInfo;
 import com.jymj.mall.order.vo.MallOrderMdseDetailsInfo;
-import com.jymj.mall.shop.api.ShopFeignClient;
 import com.jymj.mall.shop.dto.VerifyOrderMdse;
 import com.jymj.mall.shop.vo.ShopInfo;
 import com.jymj.mall.user.api.UserAddressFeignClient;
@@ -49,12 +52,14 @@ import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.util.Sets;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -87,7 +92,7 @@ public class MallOrderServiceImpl implements OrderService {
     private final RedissonLockUtil redissonLockUtil;
     private final MdseStockFeignClient mdseStockFeignClient;
     private final UserAddressFeignClient addressFeignClient;
-    private final ShopFeignClient shopFeignClient;
+    private final CouponFeignClient couponFeignClient;
     private final MallOrderRepository orderRepository;
     private final ThreadPoolTaskExecutor executor;
     private final MallOrderMdseDetailsRepository orderMdseDetailsRepository;
@@ -105,210 +110,50 @@ public class MallOrderServiceImpl implements OrderService {
 
         Long userId = UserUtils.getUserId();
         Long addressId = dto.getAddressId();
-        /*
-         * TODO 优惠券和活动目前没有 预留字段
-         *  List<Long> couponIdList = dto.getCouponIdList();
-         *  List<Long> promotionIdList = dto.getPromotionIdList();
-         */
-
         List<OrderMdseDTO> orderMdseList = dto.getOrderMdseList();
         OrderDeliveryMethodEnum orderDeliveryMethod = dto.getOrderDeliveryMethod();
-        //配送方式
-        if (ObjectUtils.isEmpty(orderDeliveryMethod)) {
-            throw new BusinessException("配送方式不能为空");
-        }
-        MallOrder mallOrder = new MallOrder();
-        mallOrder.setOrderDeliveryMethod(orderDeliveryMethod);
-        mallOrder.setOrderNo(IdUtil.getSnowflake(SystemConstants.WORK_ID, SystemConstants.MALL_ORDER_DATACENTER_ID).nextIdStr());
-        mallOrder.setOrderStatus(OrderStatusEnum.UNPAID);
-        mallOrder.setUserId(userId);
-        mallOrder.setDeleted(SystemConstants.DELETED_NO);
-        mallOrder.setRemarks(dto.getRemarks());
-        mallOrder = orderRepository.save(mallOrder);
-
-        if (orderDeliveryMethod == OrderDeliveryMethodEnum.EXPRESS) {
-            if (ObjectUtils.isEmpty(addressId)) {
-                throw new BusinessException("地址不能为空");
-            }
-            Result<AddressInfo> addressInfoResult = addressFeignClient.getAddressById(addressId);
-            if (!Result.isSuccess(addressInfoResult)) {
-                throw new BusinessException("地址信息错误");
-            }
-            AddressInfo addressInfo = addressInfoResult.getData();
-            MallOrderDeliveryDetails orderDeliveryDetails = new MallOrderDeliveryDetails();
-            orderDeliveryDetails.setOrderDeliveryMethod(OrderDeliveryMethodEnum.EXPRESS);
-            orderDeliveryDetails.setAddressId(addressId);
-            orderDeliveryDetails.setAddressee(addressInfo.getName());
-            orderDeliveryDetails.setMobile(addressInfo.getMobile());
-            orderDeliveryDetails.setDetailedAddress(addressInfo.getRegion() + "" + addressInfo.getDetailedAddress());
-            orderDeliveryDetails.setOrderId(mallOrder.getOrderId());
-            orderDeliveryDetails.setDeleted(SystemConstants.DELETED_NO);
-            orderDeliveryDetails = orderDeliveryDetailsRepository.save(orderDeliveryDetails);
-            mallOrder.setOrderDeliveryDetailsId(orderDeliveryDetails.getOrderDeliveryDetailsId());
-        }
-
+        Assert.notNull(orderDeliveryMethod, "配送方式不能为空");
+        Assert.notNull(orderMdseList, "商品不能为空");
+        //保存订单基本信息
+        MallOrder mallOrder = saveOrderBaseInfo(dto, userId, orderDeliveryMethod);
+        //保存订单收货地址信息
+        saveOrderAddressInfo(addressId, orderDeliveryMethod, mallOrder);
+        //保存订单商品信息
         List<MallOrderMdseDetails> orderMdseDetailsList = saveOrderMdseDetailsList(orderMdseList, mallOrder.getOrderId());
-
+        //订单总金额
         BigDecimal totalAmount = orderMdseDetailsList.stream()
                 .map(mdseDetail -> mdseDetail.getMdsePrice().multiply(new BigDecimal(String.valueOf(mdseDetail.getQuantity()))).setScale(2, RoundingMode.HALF_UP))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
         mallOrder.setTotalAmount(totalAmount);
-        mallOrder.setAmountPayable(totalAmount);
+        //应付金额
+        BigDecimal payableAmount = totalAmount;
+        //运费金额
+        BigDecimal freightAmount = BigDecimal.ZERO;
 
+        //优惠券及活动
+        List<Long> couponIdList = dto.getCouponIdList();
+        List<Long> promotionIdList = dto.getPromotionIdList();
+        List<UserCouponInfo> userCouponInfoList = getUserCouponInfoList(couponIdList);
+        //校验优惠券
+        Map<CouponTypeEnum, UserCouponInfo> couponMap = checkCoupon(userCouponInfoList);
+        //校验满减券
+        payableAmount = checkFullReductionCoupon(orderMdseDetailsList, payableAmount, couponMap);
+        //校验折扣券
+        payableAmount = checkDiscountCoupon(orderMdseDetailsList, payableAmount, couponMap);
+        //校验代金券
+        payableAmount = checkCashCoupon(orderMdseDetailsList, payableAmount, couponMap);
+        //校验兑换券
+        List<MallOrderMdseDetails> exchangeMdseDetailsList = checkExchangeCoupon(orderMdseDetailsList, payableAmount, couponMap);
+        //校验满赠券
+        List<MallOrderMdseDetails> presentMdseDetailsList = checkFullPresentCoupon(orderMdseDetailsList, payableAmount, couponMap);
+        //校验免邮券
+        freightAmount = checkFreeShippingCoupon(orderMdseDetailsList, freightAmount, couponMap);
+        mallOrder.setOrderCouponIds(couponIdList.stream().map(String::valueOf).collect(Collectors.joining(",")));
+
+        //应付金额 = 订单总金额 - 优惠券金额 + 运费金额
+        mallOrder.setAmountPayable(payableAmount.add(freightAmount));
 
         return orderRepository.save(mallOrder);
-    }
-
-    /**
-     * 保存订单商品详情集合
-     *
-     * @param orderMdseList 订单商品id集合
-     * @param orderId       订单id
-     * @return 订单商品详情集合
-     */
-    private List<MallOrderMdseDetails> saveOrderMdseDetailsList(List<OrderMdseDTO> orderMdseList, Long orderId) {
-        List<MallOrderMdseDetails> orderMdseDetailsList = Lists.newArrayList();
-        Result<MemberInfo> memberInfoResult = null;
-        MdseInfoShow show = MdseInfoShow.builder().stock(SystemConstants.STATUS_OPEN).shop(SystemConstants.STATUS_OPEN).picture(SystemConstants.STATUS_OPEN).build();
-        for (OrderMdseDTO orderMdseDTO : orderMdseList) {
-
-            String key = String.format("mall-order:order:mdse:%d:stock:%d", orderMdseDTO.getMdseId(), orderMdseDTO.getStockId());
-            Boolean lock = redissonLockUtil.lock(key);
-            if (Boolean.TRUE.equals(lock)) {
-
-                Result<MdseInfo> mdseInfoResult = mdseFeignClient.getMdseOptionalById(orderMdseDTO.getMdseId(), show);
-
-                if (!Result.isSuccess(mdseInfoResult)) {
-                    redissonLockUtil.unlock(key);
-                    throw new BusinessException("商品信息错误");
-                }
-
-                MdseInfo mdseInfo = mdseInfoResult.getData();
-                //判断商品是否上架
-                if (Objects.equals(mdseInfo.getStatus(), SystemConstants.STATUS_CLOSE)) {
-                    redissonLockUtil.unlock(key);
-                    throw new BusinessException("商品已下架");
-                }
-
-                if (mdseInfo.getClassify().equals(MdseConstants.MDSE_TYPE_CARD)) {
-                    if (memberInfoResult == null) {
-                        memberInfoResult = userFeignClient.getMemberByUserId(UserUtils.getUserId());
-                    }
-
-                    if (!Result.isSuccess(memberInfoResult)) {
-                        throw new BusinessException("请先填写会员基本信息");
-                    }
-
-                }
-
-                MallOrderMdseDetails mdseDetailsList = saveMdseDetails(orderId, 0L, mdseInfo, orderMdseDTO);
-                orderMdseDetailsList.add(mdseDetailsList);
-
-                redissonLockUtil.unlock(key);
-            } else {
-                throw new BusinessException("创建订单失败");
-            }
-
-        }
-
-        return orderMdseDetailsList;
-    }
-
-    /**
-     * 保存订单商品详情
-     *
-     * @param orderId      订单id
-     * @param cardId       订单商品详情id
-     * @param mdseInfo     商品信息
-     * @param orderMdseDTO 商品id信息
-     * @return 订单商品详情
-     */
-    private MallOrderMdseDetails saveMdseDetails(Long orderId, Long cardId, MdseInfo mdseInfo, OrderMdseDTO orderMdseDTO) {
-
-        MallOrderMdseDetails orderMdseDetails = new MallOrderMdseDetails();
-        orderMdseDetails.setOrderId(orderId);
-        orderMdseDetails.setMdseId(mdseInfo.getMdseId());
-        orderMdseDetails.setUsageStatus(SystemConstants.STATUS_CLOSE);
-        orderMdseDetails.setNumber(mdseInfo.getNumber());
-        StockInfo stockInfo = mdseInfo.getStockList()
-                .stream()
-                .filter(info -> info.getStockId().equals(orderMdseDTO.getStockId()))
-                .findFirst()
-                .orElseThrow(() -> new BusinessException("库存信息错误"));
-        if (stockInfo.getRemainingStock() < orderMdseDTO.getQuantity()) {
-            throw new BusinessException("库存不足");
-        }
-
-        //创建订单减库存
-        orderMdseDetails.setInventoryReductionMethod(mdseInfo.getInventoryReductionMethod());
-        if (mdseInfo.getInventoryReductionMethod() == InventoryReductionMethod.CREATE_ORDER) {
-            StockDTO stockDTO = new StockDTO();
-            stockDTO.setStockId(stockInfo.getStockId());
-            stockDTO.setTotalInventory(orderMdseDTO.getQuantity());
-            mdseStockFeignClient.lessMdseStock(stockDTO);
-            MallOrderMdseDetails finalOrderMdseDetails = orderMdseDetails;
-            executor.execute(() -> mdseFeignClient.updateMdseSalesVolume(MdseDTO.builder().mdseId(finalOrderMdseDetails.getMdseId()).salesVolume(orderMdseDTO.getQuantity()).build()));
-        }
-
-        if (MdseConstants.MDSE_TYPE_MDSE.equals(mdseInfo.getClassify())) {
-            ShopInfo shopInfo = Optional.of(mdseInfo.getShopInfo())
-                    .orElseThrow(() -> new BusinessException("店铺信息错误"));
-            orderMdseDetails.setShopId(shopInfo.getShopId());
-            orderMdseDetails.setShopName(shopInfo.getName());
-        }
-
-
-        String pictureUrl = mdseInfo.getPictureList()
-                .stream()
-                .filter(info -> !ObjectUtils.isEmpty(info.getStockId()) && info.getStockId().equals(stockInfo.getStockId()))
-                .findFirst()
-                .orElse(ObjectUtils.isEmpty(mdseInfo.getPictureList()) ? PictureInfo.builder().url("").build() : mdseInfo.getPictureList().get(0)).getUrl();
-
-
-        String stockSpec = Stream.of(stockInfo).map(stock -> {
-            StringBuilder specStr = new StringBuilder();
-            if (!ObjectUtils.isEmpty(stock.getSpecA())) {
-                specStr.append(stock.getSpecA().getKey());
-                specStr.append(":");
-                specStr.append(stock.getSpecA().getValue());
-            }
-            if (!ObjectUtils.isEmpty(stock.getSpecB())) {
-                specStr.append(" ");
-                specStr.append(stock.getSpecB().getKey());
-                specStr.append(":");
-                specStr.append(stock.getSpecB().getValue());
-            }
-            if (!ObjectUtils.isEmpty(stock.getSpecC())) {
-                specStr.append(" ");
-                specStr.append(stock.getSpecC().getKey());
-                specStr.append(":");
-                specStr.append(stock.getSpecC().getValue());
-            }
-            return specStr.toString();
-        }).findFirst().orElse("");
-
-        orderMdseDetails.setStockId(stockInfo.getStockId());
-        orderMdseDetails.setQuantity(orderMdseDTO.getQuantity());
-        orderMdseDetails.setType(mdseInfo.getClassify());
-        orderMdseDetails.setMdseName(mdseInfo.getName());
-        orderMdseDetails.setMdseStockSpec(stockSpec);
-        orderMdseDetails.setMdsePicture(pictureUrl);
-        orderMdseDetails.setMdsePrice(stockInfo.getPrice());
-        orderMdseDetails.setCardId(cardId);
-        orderMdseDetails.setDeleted(SystemConstants.DELETED_NO);
-        orderMdseDetails = orderMdseDetailsRepository.save(orderMdseDetails);
-        if (mdseInfo.getClassify().equals(MdseConstants.MDSE_TYPE_CARD)) {
-            List<MdseInfo> mdseInfoList = mdseInfo.getMdseInfoList();
-            mdseInfoList.forEach(info -> saveMdseDetails(orderId, mdseInfo.getMdseId(), info, OrderMdseDTO.builder()
-                    .mdseId(info.getMdseId())
-                    .quantity(info.getStartingQuantity())
-                    .shopId(Objects.nonNull(info.getShopInfo()) ? Objects.nonNull(info.getShopInfo().getShopId()) ? info.getShopInfo().getShopId() : 0L : 0L)
-                    .stockId(info.getStockList().get(0).getStockId())
-                    .build()));
-        }
-
-        return orderMdseDetails;
     }
 
     /**
@@ -778,6 +623,12 @@ public class MallOrderServiceImpl implements OrderService {
 
     }
 
+    /**
+     * 创建店铺商品订单
+     *
+     * @param createOrder    订单信息
+     * @param orderMdseDetailsList 商品信息
+     */
     private void createSingleCardOrder(List<MallOrderMdseDetails> orderMdseDetailsList, MallOrder createOrder, MallOrderMdseDetails cardDetail) {
 
         //计算金额
@@ -926,6 +777,12 @@ public class MallOrderServiceImpl implements OrderService {
         orderMdseDetailsRepository.save(orderMdseDetails);
     }
 
+    /**
+     * 根据用户id查询订单数量
+     *
+     * @param userId 用户id
+     * @return 订单数量
+     */
     @Override
     public Map<String, Integer> findOrderNumberByUserId(Long userId) {
 
@@ -947,6 +804,449 @@ public class MallOrderServiceImpl implements OrderService {
         map.put("UNEVALUATED", waitEvaluate);
         map.put("AFTER_SALES", refund);
         return map;
+    }
+
+    /**
+     * 保存订单基本信息
+     * @param dto 订单信息
+     * @param userId 用户id
+     * @param orderDeliveryMethod 配送方式
+     */
+    @NotNull
+    private MallOrder saveOrderBaseInfo(OrderDTO dto, Long userId, OrderDeliveryMethodEnum orderDeliveryMethod) {
+        MallOrder mallOrder = new MallOrder();
+        mallOrder.setOrderDeliveryMethod(orderDeliveryMethod);
+        mallOrder.setOrderNo(IdUtil.getSnowflake(SystemConstants.WORK_ID, SystemConstants.MALL_ORDER_DATACENTER_ID).nextIdStr());
+        mallOrder.setOrderStatus(OrderStatusEnum.UNPAID);
+        mallOrder.setUserId(userId);
+        mallOrder.setDeleted(SystemConstants.DELETED_NO);
+        mallOrder.setRemarks(dto.getRemarks());
+        mallOrder = orderRepository.save(mallOrder);
+        return mallOrder;
+    }
+
+    /**
+     * 保存订单地址
+     *
+     * @param addressId           收货地址id
+     * @param orderDeliveryMethod 配送方式
+     * @param mallOrder          订单信息
+     */
+    private void saveOrderAddressInfo(Long addressId, OrderDeliveryMethodEnum orderDeliveryMethod, MallOrder mallOrder) {
+        if (orderDeliveryMethod == OrderDeliveryMethodEnum.EXPRESS) {
+            Assert.notNull(addressId, "收货地址不能为空");
+            Result<AddressInfo> addressInfoResult = addressFeignClient.getAddressById(addressId);
+            if (!Result.isSuccess(addressInfoResult)) {
+                throw new BusinessException("地址信息错误");
+            }
+            AddressInfo addressInfo = addressInfoResult.getData();
+            MallOrderDeliveryDetails orderDeliveryDetails = new MallOrderDeliveryDetails();
+            orderDeliveryDetails.setOrderDeliveryMethod(OrderDeliveryMethodEnum.EXPRESS);
+            orderDeliveryDetails.setAddressId(addressId);
+            orderDeliveryDetails.setAddressee(addressInfo.getName());
+            orderDeliveryDetails.setMobile(addressInfo.getMobile());
+            orderDeliveryDetails.setDetailedAddress(addressInfo.getRegion() + "" + addressInfo.getDetailedAddress());
+            orderDeliveryDetails.setOrderId(mallOrder.getOrderId());
+            orderDeliveryDetails.setDeleted(SystemConstants.DELETED_NO);
+            orderDeliveryDetails = orderDeliveryDetailsRepository.save(orderDeliveryDetails);
+            mallOrder.setOrderDeliveryDetailsId(orderDeliveryDetails.getOrderDeliveryDetailsId());
+        }
+    }
+
+    /**
+     * 保存订单商品详情集合
+     *
+     * @param orderMdseList 订单商品id集合
+     * @param orderId       订单id
+     * @return 订单商品详情集合
+     */
+    private List<MallOrderMdseDetails> saveOrderMdseDetailsList(List<OrderMdseDTO> orderMdseList, Long orderId) {
+        List<MallOrderMdseDetails> orderMdseDetailsList = Lists.newArrayList();
+        Result<MemberInfo> memberInfoResult = null;
+        MdseInfoShow show = MdseInfoShow.builder().stock(SystemConstants.STATUS_OPEN).shop(SystemConstants.STATUS_OPEN).picture(SystemConstants.STATUS_OPEN).type(SystemConstants.STATUS_OPEN).build();
+        for (OrderMdseDTO orderMdseDTO : orderMdseList) {
+
+            String key = String.format("mall-order:order:mdse:%d:stock:%d", orderMdseDTO.getMdseId(), orderMdseDTO.getStockId());
+            Boolean lock = redissonLockUtil.lock(key);
+            if (Boolean.TRUE.equals(lock)) {
+
+                Result<MdseInfo> mdseInfoResult = mdseFeignClient.getMdseOptionalById(orderMdseDTO.getMdseId(), show);
+
+                if (!Result.isSuccess(mdseInfoResult)) {
+                    redissonLockUtil.unlock(key);
+                    throw new BusinessException("商品信息错误");
+                }
+
+                MdseInfo mdseInfo = mdseInfoResult.getData();
+                //判断商品是否上架
+                if (Objects.equals(mdseInfo.getStatus(), SystemConstants.STATUS_CLOSE)) {
+                    redissonLockUtil.unlock(key);
+                    throw new BusinessException("商品已下架");
+                }
+
+                if (mdseInfo.getClassify().equals(MdseConstants.MDSE_TYPE_CARD)) {
+                    if (memberInfoResult == null) {
+                        memberInfoResult = userFeignClient.getMemberByUserId(UserUtils.getUserId());
+                    }
+
+                    if (!Result.isSuccess(memberInfoResult)) {
+                        throw new BusinessException("请先填写会员基本信息");
+                    }
+
+                }
+
+                MallOrderMdseDetails mdseDetailsList = saveMdseDetails(orderId, 0L, mdseInfo, orderMdseDTO);
+                orderMdseDetailsList.add(mdseDetailsList);
+
+                redissonLockUtil.unlock(key);
+            } else {
+                throw new BusinessException("创建订单失败");
+            }
+
+        }
+
+        return orderMdseDetailsList;
+    }
+
+    /**
+     * 保存订单商品详情
+     *
+     * @param orderId      订单id
+     * @param cardId       订单商品详情id
+     * @param mdseInfo     商品信息
+     * @param orderMdseDTO 商品id信息
+     * @return 订单商品详情
+     */
+    private MallOrderMdseDetails saveMdseDetails(Long orderId, Long cardId, MdseInfo mdseInfo, OrderMdseDTO orderMdseDTO) {
+
+        MallOrderMdseDetails orderMdseDetails = new MallOrderMdseDetails();
+        orderMdseDetails.setOrderId(orderId);
+        orderMdseDetails.setMdseId(mdseInfo.getMdseId());
+        orderMdseDetails.setMallId(mdseInfo.getMallId());
+        orderMdseDetails.setUsageStatus(SystemConstants.STATUS_CLOSE);
+        orderMdseDetails.setNumber(mdseInfo.getNumber());
+        if (mdseInfo.getTypeInfo() != null) {
+            orderMdseDetails.setMdseTypeId(mdseInfo.getTypeInfo().getTypeId());
+        }
+        StockInfo stockInfo = mdseInfo.getStockList()
+                .stream()
+                .filter(info -> info.getStockId().equals(orderMdseDTO.getStockId()))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException("库存信息错误"));
+        if (stockInfo.getRemainingStock() < orderMdseDTO.getQuantity()) {
+            throw new BusinessException("库存不足");
+        }
+
+        //创建订单减库存
+        orderMdseDetails.setInventoryReductionMethod(mdseInfo.getInventoryReductionMethod());
+        if (mdseInfo.getInventoryReductionMethod() == InventoryReductionMethod.CREATE_ORDER) {
+            StockDTO stockDTO = new StockDTO();
+            stockDTO.setStockId(stockInfo.getStockId());
+            stockDTO.setTotalInventory(orderMdseDTO.getQuantity());
+            mdseStockFeignClient.lessMdseStock(stockDTO);
+            MallOrderMdseDetails finalOrderMdseDetails = orderMdseDetails;
+            executor.execute(() -> mdseFeignClient.updateMdseSalesVolume(MdseDTO.builder().mdseId(finalOrderMdseDetails.getMdseId()).salesVolume(orderMdseDTO.getQuantity()).build()));
+        }
+
+        if (MdseConstants.MDSE_TYPE_MDSE.equals(mdseInfo.getClassify())) {
+            ShopInfo shopInfo = Optional.of(mdseInfo.getShopInfo())
+                    .orElseThrow(() -> new BusinessException("店铺信息错误"));
+            orderMdseDetails.setShopId(shopInfo.getShopId());
+            orderMdseDetails.setShopName(shopInfo.getName());
+        }
+
+
+        String pictureUrl = mdseInfo.getPictureList()
+                .stream()
+                .filter(info -> !ObjectUtils.isEmpty(info.getStockId()) && info.getStockId().equals(stockInfo.getStockId()))
+                .findFirst()
+                .orElse(ObjectUtils.isEmpty(mdseInfo.getPictureList()) ? PictureInfo.builder().url("").build() : mdseInfo.getPictureList().get(0)).getUrl();
+
+
+        String stockSpec = Stream.of(stockInfo).map(stock -> {
+            StringBuilder specStr = new StringBuilder();
+            if (!ObjectUtils.isEmpty(stock.getSpecA())) {
+                specStr.append(stock.getSpecA().getKey());
+                specStr.append(":");
+                specStr.append(stock.getSpecA().getValue());
+            }
+            if (!ObjectUtils.isEmpty(stock.getSpecB())) {
+                specStr.append(" ");
+                specStr.append(stock.getSpecB().getKey());
+                specStr.append(":");
+                specStr.append(stock.getSpecB().getValue());
+            }
+            if (!ObjectUtils.isEmpty(stock.getSpecC())) {
+                specStr.append(" ");
+                specStr.append(stock.getSpecC().getKey());
+                specStr.append(":");
+                specStr.append(stock.getSpecC().getValue());
+            }
+            return specStr.toString();
+        }).findFirst().orElse("");
+
+        orderMdseDetails.setStockId(stockInfo.getStockId());
+        orderMdseDetails.setQuantity(orderMdseDTO.getQuantity());
+        orderMdseDetails.setType(mdseInfo.getClassify());
+        orderMdseDetails.setMdseName(mdseInfo.getName());
+        orderMdseDetails.setMdseStockSpec(stockSpec);
+        orderMdseDetails.setMdsePicture(pictureUrl);
+        orderMdseDetails.setMdsePrice(stockInfo.getPrice());
+        orderMdseDetails.setCardId(cardId);
+        orderMdseDetails.setDeleted(SystemConstants.DELETED_NO);
+        orderMdseDetails = orderMdseDetailsRepository.save(orderMdseDetails);
+        if (mdseInfo.getClassify().equals(MdseConstants.MDSE_TYPE_CARD)) {
+            List<MdseInfo> mdseInfoList = mdseInfo.getMdseInfoList();
+            mdseInfoList.forEach(info -> saveMdseDetails(orderId, mdseInfo.getMdseId(), info, OrderMdseDTO.builder()
+                    .mdseId(info.getMdseId())
+                    .quantity(info.getStartingQuantity())
+                    .shopId(Objects.nonNull(info.getShopInfo()) ? Objects.nonNull(info.getShopInfo().getShopId()) ? info.getShopInfo().getShopId() : 0L : 0L)
+                    .stockId(info.getStockList().get(0).getStockId())
+                    .build()));
+        }
+
+        return orderMdseDetails;
+    }
+
+    /**
+     * 查询用户优惠券信息
+     * @param couponIdList 优惠券id集合
+     * @return 优惠券信息
+     */
+    private List<UserCouponInfo> getUserCouponInfoList(List<Long> couponIdList) {
+
+        if (!couponIdList.isEmpty()) {
+            String couponIds = couponIdList.stream().map(String::valueOf).collect(Collectors.joining(","));
+            Result<List<UserCouponInfo>> userCouponResult = couponFeignClient.getUserCoupon(couponIds);
+            if (Result.isSuccess(userCouponResult)) {
+                List<UserCouponInfo> userCouponInfoList = userCouponResult.getData();
+                if (!CollectionUtils.isEmpty(userCouponInfoList)) {
+                    return userCouponInfoList;
+                }
+            } else {
+                log.error("获取用户优惠券失败:{}", userCouponResult);
+                throw new BusinessException("获取用户优惠券失败");
+            }
+        }
+        return Lists.newArrayList();
+    }
+
+    /**
+     * 校验优惠券信息
+     * @param userCouponInfoList 优惠券信息
+     * @return 优惠券信息
+     */
+    private Map<CouponTypeEnum, UserCouponInfo> checkCoupon(List<UserCouponInfo> userCouponInfoList) {
+
+        Map<CouponTypeEnum, UserCouponInfo> couponMap = new HashMap<>();
+
+        if (!userCouponInfoList.isEmpty()) {
+            for (UserCouponInfo userCouponInfo : userCouponInfoList) {
+                //校验优惠券状态是否可用
+                if (userCouponInfo.getStatus() != CouponStateEnum.NORMAL) {
+                    throw new BusinessException("优惠券不可用");
+                }
+                //校验优惠券是否在使用期限内
+                if (userCouponInfo.getEffectiveTime().after(new Date()) || userCouponInfo.getInvalidTime().before(new Date())) {
+                    throw new BusinessException("优惠券不在使用期限内");
+                }
+                //相同类型的优惠券只能使用一张
+                if (userCouponInfo.getType() == CouponTypeEnum.FULL_REDUCTION) {
+                    if (couponMap.get(CouponTypeEnum.FULL_REDUCTION) != null) {
+                        throw new BusinessException("满减券只能使用一张");
+                    }
+                    couponMap.put(CouponTypeEnum.FULL_REDUCTION, userCouponInfo);
+                }
+                if (userCouponInfo.getType() == CouponTypeEnum.DISCOUNT) {
+                    if (couponMap.get(CouponTypeEnum.DISCOUNT) != null) {
+                        throw new BusinessException("折扣券只能使用一张");
+                    }
+                    couponMap.put(CouponTypeEnum.DISCOUNT, userCouponInfo);
+                }
+                if (userCouponInfo.getType() == CouponTypeEnum.EXCHANGE) {
+                    if (couponMap.get(CouponTypeEnum.EXCHANGE) != null) {
+                        throw new BusinessException("兑换券只能使用一张");
+                    }
+                    couponMap.put(CouponTypeEnum.EXCHANGE, userCouponInfo);
+                }
+                if (userCouponInfo.getType() == CouponTypeEnum.CASH) {
+                    if (couponMap.get(CouponTypeEnum.CASH) != null) {
+                        throw new BusinessException("代金券只能使用一张");
+                    }
+                    couponMap.put(CouponTypeEnum.CASH, userCouponInfo);
+                }
+                if (userCouponInfo.getType() == CouponTypeEnum.FULL_GIFT) {
+                    if (couponMap.get(CouponTypeEnum.FULL_GIFT) != null) {
+                        throw new BusinessException("满赠券只能使用一张");
+                    }
+                    couponMap.put(CouponTypeEnum.FULL_GIFT, userCouponInfo);
+                }
+                if (userCouponInfo.getType() == CouponTypeEnum.FREE_SHIPPING) {
+                    if (couponMap.get(CouponTypeEnum.FREE_SHIPPING) != null) {
+                        throw new BusinessException("免邮券只能使用一张");
+                    }
+                    couponMap.put(CouponTypeEnum.FREE_SHIPPING, userCouponInfo);
+                }
+                if (userCouponInfo.getType() == CouponTypeEnum.OTHER) {
+                    if (couponMap.get(CouponTypeEnum.OTHER) != null) {
+                        throw new BusinessException("相同类型优惠券只能使用一张");
+                    }
+                    couponMap.put(CouponTypeEnum.OTHER, userCouponInfo);
+                }
+
+            }
+        }
+        return couponMap;
+    }
+
+    /**
+     * 校验满减券
+     * @param orderMdseDetailsList 订单商品明细
+     * @param payableAmount 应付金额
+     * @param couponMap 优惠券信息
+     * @return 应付金额
+     */
+    private BigDecimal checkFullReductionCoupon(List<MallOrderMdseDetails> orderMdseDetailsList, BigDecimal payableAmount, Map<CouponTypeEnum, UserCouponInfo> couponMap) {
+        UserCouponInfo fullReductionCoupon = couponMap.get(CouponTypeEnum.FULL_REDUCTION);
+
+        if (fullReductionCoupon != null) {
+            //校验满减券是否满足条件 1-全部商品 2-指定商品 3-指定商品不可用 4-指定分类 5-指定分类不可用
+            Integer productType = fullReductionCoupon.getProductType();
+            BigDecimal mdseTotalAmount = BigDecimal.ZERO;
+
+            //全部商品
+            if (productType == 1) {
+                mdseTotalAmount = orderMdseDetailsList.stream()
+                        .filter(mdseDetail -> mdseDetail.getMallId().equals(fullReductionCoupon.getMallId()))
+                        .map(mdseDetail -> mdseDetail.getMdsePrice().multiply(new BigDecimal(String.valueOf(mdseDetail.getQuantity()))).setScale(2, RoundingMode.HALF_UP))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+            }
+
+            //指定商品
+            if (productType == 2) {
+                String productIds = fullReductionCoupon.getProductIds();
+                List<Long> mdseIdList = Arrays.stream(productIds.split(",")).map(Long::valueOf).collect(Collectors.toList());
+                //包含指定商品的订单商品总金额
+                mdseTotalAmount = orderMdseDetailsList.stream()
+                        .filter(mdseDetail -> mdseDetail.getMallId().equals(fullReductionCoupon.getMallId()))
+                        .filter(mdseDetail -> mdseIdList.contains(mdseDetail.getMdseId()))
+                        .map(mdseDetail -> mdseDetail.getMdsePrice().multiply(new BigDecimal(String.valueOf(mdseDetail.getQuantity()))).setScale(2, RoundingMode.HALF_UP))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+            }
+
+            //指定商品不可用
+            if (productType == 3) {
+                String productIds = fullReductionCoupon.getNotProductIds();
+                List<Long> mdseIdList = Arrays.stream(productIds.split(",")).map(Long::valueOf).collect(Collectors.toList());
+                //不包含指定商品的订单商品总金额
+                mdseTotalAmount = orderMdseDetailsList.stream()
+                        .filter(mdseDetail -> mdseDetail.getMallId().equals(fullReductionCoupon.getMallId()))
+                        .filter(mdseDetail -> !mdseIdList.contains(mdseDetail.getMdseId()))
+                        .map(mdseDetail -> mdseDetail.getMdsePrice().multiply(new BigDecimal(String.valueOf(mdseDetail.getQuantity()))).setScale(2, RoundingMode.HALF_UP))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+            }
+
+            //指定分类
+            if (productType == 4) {
+                String productCategoryIds = fullReductionCoupon.getProductCategoryIds();
+                List<Long> mdseCategoryIdList = Arrays.stream(productCategoryIds.split(",")).map(Long::valueOf).collect(Collectors.toList());
+                //包含指定分类的订单商品总金额
+                mdseTotalAmount = orderMdseDetailsList.stream()
+                        .filter(mdseDetail -> mdseDetail.getMallId().equals(fullReductionCoupon.getMallId()))
+                        .filter(mdseDetail -> mdseCategoryIdList.contains(mdseDetail.getMdseTypeId()))
+                        .map(mdseDetail -> mdseDetail.getMdsePrice().multiply(new BigDecimal(String.valueOf(mdseDetail.getQuantity()))).setScale(2, RoundingMode.HALF_UP))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+            }
+
+            //指定分类不可用
+            if (productType == 5) {
+                String productCategoryIds = fullReductionCoupon.getNotProductCategoryIds();
+                List<Long> mdseCategoryIdList = Arrays.stream(productCategoryIds.split(",")).map(Long::valueOf).collect(Collectors.toList());
+                //不包含指定分类的订单商品总金额
+                mdseTotalAmount = orderMdseDetailsList.stream()
+                        .filter(mdseDetail -> mdseDetail.getMallId().equals(fullReductionCoupon.getMallId()))
+                        .filter(mdseDetail -> !mdseCategoryIdList.contains(mdseDetail.getMdseTypeId()))
+                        .map(mdseDetail -> mdseDetail.getMdsePrice().multiply(new BigDecimal(String.valueOf(mdseDetail.getQuantity()))).setScale(2, RoundingMode.HALF_UP))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+            }
+
+            if (mdseTotalAmount.compareTo(fullReductionCoupon.getFullAmount()) < 0) {
+                throw new BusinessException("满减券不满足使用条件");
+            }
+            //满减券抵扣金额
+            BigDecimal deductionAmount = fullReductionCoupon.getAmount();
+            payableAmount = payableAmount.subtract(deductionAmount);
+            //应付金额不能小于等于0
+            if (payableAmount.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new BusinessException("应付金额不能小于等于0");
+            }
+        }
+        return payableAmount;
+    }
+
+    /**
+     * 校验折扣券
+     *
+     * @param orderMdseDetailsList 订单商品明细
+     * @param payableAmount 应付金额
+     * @param couponMap 优惠券信息
+     * @return 应付金额
+     */
+    private BigDecimal checkDiscountCoupon(List<MallOrderMdseDetails> orderMdseDetailsList, BigDecimal payableAmount, Map<CouponTypeEnum, UserCouponInfo> couponMap) {
+        // TODO: 2021/10/14 校验折扣券
+        return payableAmount.add(BigDecimal.ZERO);
+    }
+
+    /**
+     * 校验代金券
+     *
+     * @param orderMdseDetailsList 订单商品明细
+     * @param payableAmount 应付金额
+     * @param couponMap 优惠券信息
+     * @return 应付金额
+     */
+    private BigDecimal checkCashCoupon(List<MallOrderMdseDetails> orderMdseDetailsList, BigDecimal payableAmount, Map<CouponTypeEnum, UserCouponInfo> couponMap) {
+        // TODO: 2021/10/14 校验代金券
+        return payableAmount.add(BigDecimal.ZERO);
+    }
+
+    /**
+     * 校验兑换券
+     *
+     * @param orderMdseDetailsList 订单商品明细
+     * @param payableAmount 应付金额
+     * @param couponMap 优惠券信息
+     * @return 订单商品明细
+     */
+    private List<MallOrderMdseDetails> checkExchangeCoupon(List<MallOrderMdseDetails> orderMdseDetailsList, BigDecimal payableAmount, Map<CouponTypeEnum, UserCouponInfo> couponMap) {
+        // TODO: 2021/10/14 校验兑换券
+        return orderMdseDetailsList;
+    }
+
+    /**
+     * 校验满赠券
+     *
+     * @param orderMdseDetailsList 订单商品明细
+     * @param payableAmount 应付金额
+     * @param couponMap 优惠券信息
+     * @return 订单商品明细
+     */
+    private List<MallOrderMdseDetails> checkFullPresentCoupon(List<MallOrderMdseDetails> orderMdseDetailsList, BigDecimal payableAmount, Map<CouponTypeEnum, UserCouponInfo> couponMap) {
+        // TODO: 2021/10/14 校验满赠券
+        return orderMdseDetailsList;
+    }
+
+    /**
+     * 校验免邮券
+     *
+     * @param orderMdseDetailsList 订单商品明细
+     * @param freightAmount 运费金额
+     * @param couponMap 优惠券信息
+     * @return 运费金额
+     */
+    private BigDecimal checkFreeShippingCoupon(List<MallOrderMdseDetails> orderMdseDetailsList, BigDecimal freightAmount, Map<CouponTypeEnum, UserCouponInfo> couponMap) {
+        // TODO: 2021/10/14 校验免邮券
+        return freightAmount.add(BigDecimal.ZERO);
     }
 
 }

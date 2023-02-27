@@ -54,7 +54,6 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         Assert.notNull(dto.getCouponTemplateId(), "优惠券模板ID不能为空");
         Assert.notNull(dto.getUserId(), "用户ID不能为空");
-        Assert.notNull(dto.getStatus(), "优惠券状态不能为空");
 
         UserCoupon entity = new UserCoupon();
         entity.setCouponTemplateId(dto.getCouponTemplateId());
@@ -64,6 +63,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         MallCoupon mallCoupon = mallCouponOptional.orElseThrow(() -> new RuntimeException("优惠券模板不存在"));
 
+        entity.setMallId(mallCoupon.getMallId());
         entity.setName(mallCoupon.getName());
         entity.setType(mallCoupon.getType());
         entity.setStatus(dto.getStatus());
@@ -87,7 +87,7 @@ public class UserCouponServiceImpl implements UserCouponService {
     public Optional<UserCoupon> update(UserCouponDTO dto) {
 
         Assert.notNull(dto.getCouponId(), "id不能为空");
-        Assert.notNull(dto.getStatus(), "状态不能为空");
+        Assert.notNull(dto.getUserId(), "用户id不能为空");
 
         Optional<UserCoupon> optional = findById(dto.getCouponId());
 
@@ -119,7 +119,7 @@ public class UserCouponServiceImpl implements UserCouponService {
     public UserCouponInfo entity2vo(UserCoupon entity) {
         UserCouponInfo vo = new UserCouponInfo();
         vo.setCouponId(entity.getCouponId());
-        vo.setUserId(entity.getUserId());
+        vo.setMallId(entity.getMallId());
         vo.setName(entity.getName());
         vo.setType(entity.getType());
         vo.setStatus(entity.getStatus());
@@ -135,7 +135,6 @@ public class UserCouponServiceImpl implements UserCouponService {
         vo.setNotProductIds(entity.getNotProductIds());
         vo.setProductCategoryIds(entity.getProductCategoryIds());
         vo.setNotProductCategoryIds(entity.getNotProductCategoryIds());
-
         return vo;
     }
 
@@ -164,10 +163,27 @@ public class UserCouponServiceImpl implements UserCouponService {
             if (!ObjectUtils.isEmpty(couponPageQuery.getUserId())) {
                 list.add(criteriaBuilder.equal(root.get("userId").as(Long.class), couponPageQuery.getUserId()));
             }
+            if (!ObjectUtils.isEmpty(couponPageQuery.getStatus())) {
+                list.add(criteriaBuilder.equal(root.get("status").as(Integer.class), couponPageQuery.getStatus()));
+            }
 
             return criteriaBuilder.and(list.toArray(p));
         };
 
         return userCouponRepository.findAll(spec, pageable);
+    }
+
+    @Override
+    public List<UserCoupon> findByIds(String ids) {
+        List<Long> idList = Arrays.stream(ids.split(",")).filter(id -> !ObjectUtils.isEmpty(id)).map(Long::parseLong).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(idList)) {
+            if (idList.size() == 1) {
+                Optional<UserCoupon> optional = userCouponRepository.findById(idList.get(0));
+                return optional.map(Lists::newArrayList).orElse(Lists.newArrayList());
+            }else {
+                return userCouponRepository.findAllById(idList);
+            }
+        }
+        return Lists.newArrayList();
     }
 }

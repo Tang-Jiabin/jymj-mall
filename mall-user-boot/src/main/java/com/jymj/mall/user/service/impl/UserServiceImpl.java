@@ -8,7 +8,7 @@ import com.jymj.mall.common.constants.SystemConstants;
 import com.jymj.mall.common.enums.CouponStateEnum;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
-import com.jymj.mall.marketing.api.MarketingFeignClient;
+import com.jymj.mall.marketing.api.CouponFeignClient;
 import com.jymj.mall.marketing.dto.UserCouponDTO;
 import com.jymj.mall.mdse.api.MdseFeignClient;
 import com.jymj.mall.mdse.dto.MdsePurchaseRecordDTO;
@@ -24,6 +24,7 @@ import com.jymj.mall.user.repository.UserRepository;
 import com.jymj.mall.user.service.UserService;
 import com.jymj.mall.user.vo.UserInfo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
@@ -49,6 +50,7 @@ import java.util.stream.Collectors;
  * @email seven_tjb@163.com
  * @date 2022-08-04
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -59,7 +61,7 @@ public class UserServiceImpl implements UserService {
     private final ThreadPoolTaskExecutor executor;
     private final MdseFeignClient mdseFeignClient;
     private final PasswordEncoder passwordEncoder;
-    private final MarketingFeignClient marketingFeignClient;
+    private final CouponFeignClient couponFeignClient;
 
 
     @Override
@@ -101,14 +103,15 @@ public class UserServiceImpl implements UserService {
         userRole.setDeleted(SystemConstants.DELETED_NO);
         userRoleRepository.save(userRole);
 
-        //发放新人优惠券
+        //TODO 发放新人优惠券 此处应该使用MQ异步处理 为了方便演示直接使用线程池
         MallUser finalUser = user;
         executor.execute(() -> {
             UserCouponDTO userCouponDTO = new UserCouponDTO();
             userCouponDTO.setUserId(finalUser.getUserId());
-            userCouponDTO.setCouponTemplateId(1L);
+            userCouponDTO.setCouponTemplateId(2L);
             userCouponDTO.setStatus(CouponStateEnum.NORMAL);
-            marketingFeignClient.addUserCoupon(userCouponDTO);
+            Result<Object> result = couponFeignClient.addUserCoupon(userCouponDTO);
+            log.info("发放新人优惠券结果:{}", result);
         });
 
         return user;

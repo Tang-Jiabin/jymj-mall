@@ -79,4 +79,7 @@ public class MallOrder extends BaseEntity {
     @ApiModelProperty("配送方式")
     private OrderDeliveryMethodEnum orderDeliveryMethod;
 
+    @ApiModelProperty("订单使用优惠券id")
+    private String orderCouponIds;
+
 }

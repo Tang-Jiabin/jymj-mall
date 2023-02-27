@@ -1,5 +1,6 @@
 package com.jymj.mall.marketing.dto;
 
+import com.jymj.mall.common.enums.CouponStateEnum;
 import com.jymj.mall.common.web.dto.BasePageQueryDTO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -25,6 +26,9 @@ public class CouponPageQuery extends BasePageQueryDTO {
 
     @ApiModelProperty("用户id")
     private Long userId;
+
+    @ApiModelProperty("优惠券状态")
+    private CouponStateEnum status;
 
 
 }

@@ -4,6 +4,7 @@ import com.jymj.mall.common.enums.CouponTypeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -41,6 +42,7 @@ public class CouponDTO {
     @ApiModelProperty("生效类型 1-立即生效 2-指定时间生效 3-领取后N天生效")
     private Integer effectiveType;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty("生效时间")
     private Date effectiveTime;
 
@@ -50,6 +52,7 @@ public class CouponDTO {
     @ApiModelProperty("失效类型 1-永久有效 2-指定时间失效 3-领取后N天失效")
     private Integer invalidType;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty("失效时间")
     private Date invalidTime;
 

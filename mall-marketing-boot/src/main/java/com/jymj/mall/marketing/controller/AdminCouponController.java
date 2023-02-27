@@ -7,9 +7,11 @@ import com.jymj.mall.marketing.dto.CouponDTO;
 import com.jymj.mall.marketing.dto.CouponPageQuery;
 import com.jymj.mall.marketing.dto.UserCouponDTO;
 import com.jymj.mall.marketing.entity.MallCoupon;
+import com.jymj.mall.marketing.entity.UserCoupon;
 import com.jymj.mall.marketing.service.CouponService;
 import com.jymj.mall.marketing.service.UserCouponService;
 import com.jymj.mall.marketing.vo.CouponInfo;
+import com.jymj.mall.marketing.vo.UserCouponInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -91,6 +93,14 @@ public class AdminCouponController {
     public Result<Object> updateUserCoupon(@RequestBody UserCouponDTO userCouponDTO) {
         userCouponService.update(userCouponDTO);
         return Result.success();
+    }
+
+    @ApiOperation(value = "查询用户优惠券")
+    @GetMapping("/user/{ids}")
+    public Result<List<UserCouponInfo>> getUserCoupon(@ApiParam @PathVariable String ids) {
+        List<UserCoupon> userCouponList = userCouponService.findByIds(ids);
+        List<UserCouponInfo> userCouponInfoList = userCouponService.list2vo(userCouponList);
+        return Result.success(userCouponInfoList);
     }
 
 }

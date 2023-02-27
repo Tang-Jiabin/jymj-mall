@@ -1,6 +1,7 @@
 package com.jymj.mall.marketing;
 
 
+import com.jymj.mall.admin.api.AdminFeignClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -22,7 +23,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableJpaAuditing
 @EnableDiscoveryClient
 @SpringBootApplication(scanBasePackages = {"com.jymj.mall.*"})
-@EnableFeignClients(clients = {})
+@EnableFeignClients(clients = {AdminFeignClient.class})
 public class MallMarketingApplication {
 
     public static void main(String[] args) {

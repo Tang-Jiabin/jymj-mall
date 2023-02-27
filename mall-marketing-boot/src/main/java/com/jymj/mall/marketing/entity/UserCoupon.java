@@ -39,6 +39,9 @@ public class UserCoupon extends BaseEntity {
     @SequenceGenerator(name = "mall_user_coupon_coupon_id_seq",sequenceName = "mall_user_coupon_coupon_id_seq",allocationSize = 1)
     private Long couponId;
 
+    @ApiModelProperty("商城ID")
+    private Long mallId;
+
     @ApiModelProperty("优惠券模板ID")
     private Long couponTemplateId;
 

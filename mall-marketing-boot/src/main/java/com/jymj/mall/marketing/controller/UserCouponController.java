@@ -28,7 +28,7 @@ import java.util.List;
  * @email seven_tjb@163.com
  * @date 2023-02-23
  */
-@Api(tags = "管理端优惠券")
+@Api(tags = "用户端优惠券")
 @RestController
 @RequestMapping("/api/v1/user/coupon")
 @RequiredArgsConstructor

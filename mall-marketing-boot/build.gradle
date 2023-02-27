@@ -3,6 +3,7 @@ dependencies {
     implementation project(":mall-common")
     implementation project(":mall-common-web")
     implementation project(":mall-marketing-api")
+    implementation project(":mall-admin-api")
 }
 
 test {
