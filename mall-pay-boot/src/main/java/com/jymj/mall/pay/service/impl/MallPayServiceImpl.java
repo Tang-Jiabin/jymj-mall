@@ -145,6 +145,7 @@ public class MallPayServiceImpl implements MallPayService {
         return WxPayRefundRequest.newBuilder()
                 .outTradeNo(orderInfo.getOrderNo())
                 .outRefundNo(orderInfo.getOrderNo() + "-" + RandomUtil.randomNumbers(4))
+                .totalFee(BaseWxPayRequest.yuanToFen(orderInfo.getAmountActuallyPaid().toString()))
                 .refundFee(BaseWxPayRequest.yuanToFen(orderInfo.getAmountActuallyPaid().toString())).build();
     }
 

@@ -5,11 +5,9 @@ import com.google.common.collect.Sets;
 import com.jymj.mall.admin.api.RoleFeignClient;
 import com.jymj.mall.admin.vo.RoleInfo;
 import com.jymj.mall.common.constants.SystemConstants;
-import com.jymj.mall.common.enums.CouponStateEnum;
 import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.marketing.api.CouponFeignClient;
-import com.jymj.mall.marketing.dto.UserCouponDTO;
 import com.jymj.mall.mdse.api.MdseFeignClient;
 import com.jymj.mall.mdse.dto.MdsePurchaseRecordDTO;
 import com.jymj.mall.user.dto.UserAuthDTO;
@@ -105,14 +103,14 @@ public class UserServiceImpl implements UserService {
 
         //TODO 发放新人优惠券 此处应该使用MQ异步处理 为了方便演示直接使用线程池
         MallUser finalUser = user;
-        executor.execute(() -> {
-            UserCouponDTO userCouponDTO = new UserCouponDTO();
-            userCouponDTO.setUserId(finalUser.getUserId());
-            userCouponDTO.setCouponTemplateId(2L);
-            userCouponDTO.setStatus(CouponStateEnum.NORMAL);
-            Result<Object> result = couponFeignClient.addUserCoupon(userCouponDTO);
-            log.info("发放新人优惠券结果:{}", result);
-        });
+//        executor.execute(() -> {
+//            UserCouponDTO userCouponDTO = new UserCouponDTO();
+//            userCouponDTO.setUserId(finalUser.getUserId());
+//            userCouponDTO.setCouponTemplateId(1L);
+//            userCouponDTO.setStatus(CouponStateEnum.NORMAL);
+//            Result<Object> result = couponFeignClient.addUserCoupon(userCouponDTO);
+//            log.info("发放新人优惠券结果:{}", result);
+//        });
 
         return user;
     }

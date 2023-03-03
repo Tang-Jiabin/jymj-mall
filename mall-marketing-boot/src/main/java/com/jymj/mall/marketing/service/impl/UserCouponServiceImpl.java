@@ -2,6 +2,7 @@ package com.jymj.mall.marketing.service.impl;
 
 import com.google.common.collect.Lists;
 import com.jymj.mall.common.constants.SystemConstants;
+import com.jymj.mall.common.enums.CouponStateEnum;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.marketing.dto.CouponPageQuery;
 import com.jymj.mall.marketing.dto.UserCouponDTO;
@@ -23,10 +24,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import javax.persistence.criteria.Predicate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -163,8 +161,17 @@ public class UserCouponServiceImpl implements UserCouponService {
             if (!ObjectUtils.isEmpty(couponPageQuery.getUserId())) {
                 list.add(criteriaBuilder.equal(root.get("userId").as(Long.class), couponPageQuery.getUserId()));
             }
-            if (!ObjectUtils.isEmpty(couponPageQuery.getStatus())) {
-                list.add(criteriaBuilder.equal(root.get("status").as(Integer.class), couponPageQuery.getStatus()));
+            if (!ObjectUtils.isEmpty(couponPageQuery.getState())) {
+                list.add(criteriaBuilder.equal(root.get("status").as(CouponStateEnum.class), couponPageQuery.getState()));
+            }
+            if (!ObjectUtils.isEmpty(couponPageQuery.getMdseId())) {
+                list.add(criteriaBuilder.or(criteriaBuilder.or(criteriaBuilder.equal(root.get("productType").as(Integer.class), 1)), criteriaBuilder.notLike(root.get("notProductIds").as(String.class), "%" + couponPageQuery.getMdseId() + "%"), criteriaBuilder.like(root.get("productIds").as(String.class), "%" + couponPageQuery.getMdseId() + "%")));
+            }
+            if (!ObjectUtils.isEmpty(couponPageQuery.getMdseCategoryId())) {
+                list.add(criteriaBuilder.or(criteriaBuilder.or(criteriaBuilder.equal(root.get("productType").as(Integer.class), 1), criteriaBuilder.notLike(root.get("notProductCategoryIds").as(String.class), "%" + couponPageQuery.getMdseCategoryId() + "%")), criteriaBuilder.like(root.get("productCategoryIds").as(String.class), "%" + couponPageQuery.getMdseCategoryId() + "%")));
+            }
+            if (!ObjectUtils.isEmpty(couponPageQuery.getEffectiveTime()) && !ObjectUtils.isEmpty(couponPageQuery.getInvalidTime())) {
+                list.add(criteriaBuilder.between(root.get("effectiveTime").as(Date.class), couponPageQuery.getEffectiveTime(), couponPageQuery.getInvalidTime()));
             }
 
             return criteriaBuilder.and(list.toArray(p));
@@ -180,10 +187,25 @@ public class UserCouponServiceImpl implements UserCouponService {
             if (idList.size() == 1) {
                 Optional<UserCoupon> optional = userCouponRepository.findById(idList.get(0));
                 return optional.map(Lists::newArrayList).orElse(Lists.newArrayList());
-            }else {
+            } else {
                 return userCouponRepository.findAllById(idList);
             }
         }
         return Lists.newArrayList();
+    }
+
+    @Override
+    public List<UserCoupon> findByUserId(Long userId) {
+        return userCouponRepository.findByUserId(userId);
+    }
+
+    @Override
+    public List<UserCoupon> findAllByCouponTemplateId(Long couponId) {
+        return userCouponRepository.findAllByCouponTemplateId(couponId);
+    }
+
+    @Override
+    public Long getNumber(Long userId) {
+        return userCouponRepository.countByUserIdAndStatus(userId, CouponStateEnum.NORMAL);
     }
 }

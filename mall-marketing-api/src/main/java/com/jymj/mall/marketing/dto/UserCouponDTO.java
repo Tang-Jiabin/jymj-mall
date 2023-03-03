@@ -4,7 +4,10 @@ import com.jymj.mall.common.enums.CouponStateEnum;
 import com.jymj.mall.common.enums.CouponTypeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -18,6 +21,9 @@ import java.util.Date;
  * @date 2023-02-23
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @ApiModel("用户优惠券")
 public class UserCouponDTO {
 

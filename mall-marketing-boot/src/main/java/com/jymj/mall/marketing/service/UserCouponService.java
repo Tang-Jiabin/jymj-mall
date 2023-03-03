@@ -21,4 +21,10 @@ public interface UserCouponService extends BaseService<UserCoupon, UserCouponInf
     Page<UserCoupon> findPage(CouponPageQuery couponPageQuery);
 
     List<UserCoupon> findByIds(String ids);
+
+    List<UserCoupon> findByUserId(Long userId);
+
+    List<UserCoupon> findAllByCouponTemplateId(Long couponId);
+
+    Long getNumber(Long userId);
 }

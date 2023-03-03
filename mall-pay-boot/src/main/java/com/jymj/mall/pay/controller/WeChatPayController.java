@@ -10,6 +10,7 @@ import com.github.binarywang.wxpay.bean.result.WxPayRefundResult;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.jymj.mall.common.result.Result;
+import com.jymj.mall.pay.dto.OrderRefund;
 import com.jymj.mall.pay.service.MallPayService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -66,10 +67,20 @@ public class WeChatPayController {
      */
     @ApiOperation(value = "退款")
     @PostMapping("/refund")
-    public WxPayRefundResult refund(@RequestParam String orderNo) throws WxPayException {
+    public Result refund(@RequestBody OrderRefund orderRefund) {
 
-        WxPayRefundRequest request = mallPayService.refund(orderNo);
-        return this.weChatPayService.refund(request);
+        WxPayRefundRequest request = mallPayService.refund(orderRefund.getOrderNo());
+        WxPayRefundResult refund = null;
+        try {
+            refund = weChatPayService.refund(request);
+            log.info("退款成功！订单号：{}", orderRefund.getOrderNo());
+            log.info("退款结果：{}", refund);
+            return Result.success();
+        } catch (WxPayException e) {
+            log.error("退款失败！订单号：{},原因:{}", orderRefund.getOrderNo(), e.getErrCodeDes());
+            e.printStackTrace();
+            return Result.failed( e.getErrCodeDes());
+        }
     }
 
 
@@ -187,7 +198,6 @@ public class WeChatPayController {
 //    public WxPayRefundQueryResult refundQuery(@RequestBody WxPayRefundQueryRequest wxPayRefundQueryRequest) throws WxPayException {
 //        return this.weChatPayService.refundQuery(wxPayRefundQueryRequest);
 //    }
-
     @ApiOperation(value = "支付回调通知处理")
     @PostMapping("/notify/order")
     public String parseOrderNotifyResult(@RequestBody String xmlData) throws WxPayException {

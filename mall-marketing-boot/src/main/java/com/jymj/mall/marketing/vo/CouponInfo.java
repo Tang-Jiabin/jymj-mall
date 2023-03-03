@@ -98,4 +98,20 @@ public class CouponInfo {
     @ApiModelProperty("不适用商品分类")
     private String notProductCategoryIds;
 
+    @ApiModelProperty("未领取")
+    private Integer unreceived;
+
+    @ApiModelProperty("已领取")
+    private Integer received;
+
+    @ApiModelProperty("未使用")
+    private Integer unused;
+
+    @ApiModelProperty("已使用")
+    private Integer used;
+
+    @ApiModelProperty("已过期")
+    private Integer expired;
+
+
 }

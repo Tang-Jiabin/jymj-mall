@@ -14,7 +14,7 @@ public interface PayConstants {
     /**
      * 支付主题
      */
-    String SUBJECT = "點亮鄉村-商城订单";
+    String SUBJECT = "Light up 生活-商城订单";
     /**
      * 微信支付交易类型 JSAPI
      * JSAPI--公众号支付

@@ -58,4 +58,10 @@ public class UserCouponController {
                 .orElse(Result.failed("优惠券不存在"));
     }
 
+    @ApiOperation(value = "查询优惠券数量")
+    @GetMapping("/number")
+    public Result<Long> getNumber() {
+        return Result.success(userCouponService.getNumber(UserUtils.getUserId()));
+    }
+
 }

@@ -12,5 +12,4 @@ dependencies {
     implementation project(":mall-order-api")
     implementation project(":mall-user-api")
     implementation project(":mall-pay-api")
-
 }

@@ -89,4 +89,10 @@ public class MdsePageQuery extends BasePageQueryDTO {
     private Double lat;
     private Double lon;
 
+    @ApiModelProperty("商品ids")
+    private String mdseIds;
+
+    @ApiModelProperty("分类ids")
+    private String typeIds;
+
 }

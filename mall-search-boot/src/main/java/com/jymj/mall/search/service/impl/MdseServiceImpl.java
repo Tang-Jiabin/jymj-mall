@@ -89,6 +89,17 @@ public class MdseServiceImpl implements MdseService {
         Pageable pageable = PageUtils.getPageable(mdsePageQuery);
         nativeSearchQueryBuilder.withPageable(pageable);
 
+        //商品ids查询
+        if (mdsePageQuery.getMdseIds() != null) {
+            List<Long> mdseIdList = Arrays.stream(mdsePageQuery.getMdseIds().split(",")).filter(id -> !ObjectUtils.isEmpty(id)).map(Long::parseLong).collect(Collectors.toList());
+            boolQueryBuilder.filter(QueryBuilders.termsQuery("mdseId", mdseIdList));
+        }
+
+        //商品分类ids查询
+        if (mdsePageQuery.getTypeIds() != null) {
+            List<Long> mdseTypeIdList = Arrays.stream(mdsePageQuery.getTypeIds().split(",")).filter(id -> !ObjectUtils.isEmpty(id)).map(Long::parseLong).collect(Collectors.toList());
+            boolQueryBuilder.filter(QueryBuilders.termsQuery("typeInfo.typeId", mdseTypeIdList));
+        }
 
 
         SearchHits<MdseInfo> searchHitsResult = elasticsearchRestTemplate.search(nativeSearchQueryBuilder.build(), MdseInfo.class);

@@ -14,6 +14,7 @@ import com.jymj.mall.common.result.Result;
 import com.jymj.mall.common.web.util.PageUtils;
 import com.jymj.mall.common.web.util.UserUtils;
 import com.jymj.mall.marketing.api.CouponFeignClient;
+import com.jymj.mall.marketing.dto.UserCouponDTO;
 import com.jymj.mall.marketing.vo.UserCouponInfo;
 import com.jymj.mall.mdse.api.MdseFeignClient;
 import com.jymj.mall.mdse.api.MdseStockFeignClient;
@@ -117,7 +118,8 @@ public class MallOrderServiceImpl implements OrderService {
         //保存订单基本信息
         MallOrder mallOrder = saveOrderBaseInfo(dto, userId, orderDeliveryMethod);
         //保存订单收货地址信息
-        saveOrderAddressInfo(addressId, orderDeliveryMethod, mallOrder);
+        MallOrderDeliveryDetails mallOrderDeliveryDetails = saveOrderAddressInfo(addressId, orderDeliveryMethod, mallOrder.getOrderId());
+        mallOrder.setOrderDeliveryDetailsId(mallOrderDeliveryDetails.getOrderDeliveryDetailsId());
         //保存订单商品信息
         List<MallOrderMdseDetails> orderMdseDetailsList = saveOrderMdseDetailsList(orderMdseList, mallOrder.getOrderId());
         //订单总金额
@@ -148,9 +150,9 @@ public class MallOrderServiceImpl implements OrderService {
         List<MallOrderMdseDetails> presentMdseDetailsList = checkFullPresentCoupon(orderMdseDetailsList, payableAmount, couponMap);
         //校验免邮券
         freightAmount = checkFreeShippingCoupon(orderMdseDetailsList, freightAmount, couponMap);
-        mallOrder.setOrderCouponIds(couponIdList.stream().map(String::valueOf).collect(Collectors.joining(",")));
+        mallOrder.setOrderCouponIds(userCouponInfoList.stream().map(UserCouponInfo::getCouponId).map(String::valueOf).collect(Collectors.joining(",")));
 
-        //应付金额 = 订单总金额 - 优惠券金额 + 运费金额
+        //应付金额 = 订单总金额 - 优惠金额 + 运费金额
         mallOrder.setAmountPayable(payableAmount.add(freightAmount));
 
         return orderRepository.save(mallOrder);
@@ -177,6 +179,7 @@ public class MallOrderServiceImpl implements OrderService {
             boolean update = false;
             if (!ObjectUtils.isEmpty(dto.getStatusEnum())) {
                 updateOrderStatus(dto.getStatusEnum(), mallOrder);
+                mallOrder.setOrderStatus(dto.getStatusEnum());
                 update = true;
             }
             if (!ObjectUtils.isEmpty(dto.getAddressId())) {
@@ -248,7 +251,7 @@ public class MallOrderServiceImpl implements OrderService {
         }
 
 
-        mallOrder.setOrderStatus(statusEnum);
+
     }
 
     /**
@@ -272,10 +275,6 @@ public class MallOrderServiceImpl implements OrderService {
                     Integer quantity = orderMdseDetails.getQuantity();
                     mdseStockFeignClient.lessMdseStock(StockDTO.builder().stockId(stockId).totalInventory(-quantity).build());
                     mdseFeignClient.updateMdseSalesVolume(MdseDTO.builder().mdseId(orderMdseDetails.getMdseId()).salesVolume(-quantity).build());
-                    //退款
-                    executor.execute(() -> {
-
-                    });
                 }
             }
         }
@@ -618,6 +617,11 @@ public class MallOrderServiceImpl implements OrderService {
             if (member) {
                 CompletableFuture.runAsync(() -> userFeignClient.updateUser(UserDTO.builder().userId(createOrder.getUserId()).memberLevel(1).build()), executor);
             }
+            //核销优惠券
+            if (StringUtils.hasText(mallOrder.getOrderCouponIds())) {
+                List<Long> couponIdList = Arrays.stream(mallOrder.getOrderCouponIds().split(",")).map(Long::valueOf).collect(Collectors.toList());
+                couponIdList.forEach(couponId -> CompletableFuture.runAsync(() -> couponFeignClient.updateUserCoupon(UserCouponDTO.builder().userId(createOrder.getUserId()).couponId(couponId).build()), executor));
+            }
         }
 
 
@@ -626,7 +630,7 @@ public class MallOrderServiceImpl implements OrderService {
     /**
      * 创建店铺商品订单
      *
-     * @param createOrder    订单信息
+     * @param createOrder          订单信息
      * @param orderMdseDetailsList 商品信息
      */
     private void createSingleCardOrder(List<MallOrderMdseDetails> orderMdseDetailsList, MallOrder createOrder, MallOrderMdseDetails cardDetail) {
@@ -702,7 +706,7 @@ public class MallOrderServiceImpl implements OrderService {
 
     private MallOrder createOrder(MallOrder createOrder) {
         MallOrder cardOrder = new MallOrder();
-        cardOrder.setOrderNo(IdUtil.getSnowflake(SystemConstants.WORK_ID, SystemConstants.MALL_ORDER_DATACENTER_ID).nextIdStr());
+        cardOrder.setOrderNo(createOrder.getOrderNo());
         cardOrder.setOrderStatus(createOrder.getOrderStatus());
         cardOrder.setUserId(createOrder.getUserId());
         cardOrder.setTotalAmount(createOrder.getTotalAmount());
@@ -712,7 +716,9 @@ public class MallOrderServiceImpl implements OrderService {
         cardOrder.setPayTime(createOrder.getPayTime());
         cardOrder.setRemarks(createOrder.getRemarks());
         cardOrder.setOrderDeliveryMethod(createOrder.getOrderDeliveryMethod());
+        cardOrder.setOrderDeliveryDetailsId(createOrder.getOrderDeliveryDetailsId());
         cardOrder.setDeleted(SystemConstants.DELETED_NO);
+        cardOrder.setOrderCouponIds(createOrder.getOrderCouponIds());
         cardOrder = orderRepository.save(cardOrder);
         return cardOrder;
     }
@@ -808,8 +814,9 @@ public class MallOrderServiceImpl implements OrderService {
 
     /**
      * 保存订单基本信息
-     * @param dto 订单信息
-     * @param userId 用户id
+     *
+     * @param dto                 订单信息
+     * @param userId              用户id
      * @param orderDeliveryMethod 配送方式
      */
     @NotNull
@@ -830,27 +837,27 @@ public class MallOrderServiceImpl implements OrderService {
      *
      * @param addressId           收货地址id
      * @param orderDeliveryMethod 配送方式
-     * @param mallOrder          订单信息
+     * @param mallOrder           订单信息
+     * @return
      */
-    private void saveOrderAddressInfo(Long addressId, OrderDeliveryMethodEnum orderDeliveryMethod, MallOrder mallOrder) {
-        if (orderDeliveryMethod == OrderDeliveryMethodEnum.EXPRESS) {
-            Assert.notNull(addressId, "收货地址不能为空");
-            Result<AddressInfo> addressInfoResult = addressFeignClient.getAddressById(addressId);
-            if (!Result.isSuccess(addressInfoResult)) {
-                throw new BusinessException("地址信息错误");
-            }
-            AddressInfo addressInfo = addressInfoResult.getData();
-            MallOrderDeliveryDetails orderDeliveryDetails = new MallOrderDeliveryDetails();
-            orderDeliveryDetails.setOrderDeliveryMethod(OrderDeliveryMethodEnum.EXPRESS);
-            orderDeliveryDetails.setAddressId(addressId);
-            orderDeliveryDetails.setAddressee(addressInfo.getName());
-            orderDeliveryDetails.setMobile(addressInfo.getMobile());
-            orderDeliveryDetails.setDetailedAddress(addressInfo.getRegion() + "" + addressInfo.getDetailedAddress());
-            orderDeliveryDetails.setOrderId(mallOrder.getOrderId());
-            orderDeliveryDetails.setDeleted(SystemConstants.DELETED_NO);
-            orderDeliveryDetails = orderDeliveryDetailsRepository.save(orderDeliveryDetails);
-            mallOrder.setOrderDeliveryDetailsId(orderDeliveryDetails.getOrderDeliveryDetailsId());
+    private MallOrderDeliveryDetails saveOrderAddressInfo(Long addressId, OrderDeliveryMethodEnum orderDeliveryMethod, Long orderId) {
+
+        Assert.notNull(addressId, "收货地址不能为空");
+        Result<AddressInfo> addressInfoResult = addressFeignClient.getAddressById(addressId);
+        if (!Result.isSuccess(addressInfoResult)) {
+            throw new BusinessException("地址信息错误");
         }
+        AddressInfo addressInfo = addressInfoResult.getData();
+        MallOrderDeliveryDetails orderDeliveryDetails = new MallOrderDeliveryDetails();
+        orderDeliveryDetails.setOrderDeliveryMethod(orderDeliveryMethod);
+        orderDeliveryDetails.setAddressId(addressId);
+        orderDeliveryDetails.setAddressee(addressInfo.getName());
+        orderDeliveryDetails.setMobile(addressInfo.getMobile());
+        orderDeliveryDetails.setDetailedAddress(addressInfo.getRegion() + "" + addressInfo.getDetailedAddress());
+        orderDeliveryDetails.setOrderId(orderId);
+        orderDeliveryDetails.setDeleted(SystemConstants.DELETED_NO);
+        return orderDeliveryDetailsRepository.save(orderDeliveryDetails);
+
     }
 
     /**
@@ -1010,12 +1017,13 @@ public class MallOrderServiceImpl implements OrderService {
 
     /**
      * 查询用户优惠券信息
+     *
      * @param couponIdList 优惠券id集合
      * @return 优惠券信息
      */
     private List<UserCouponInfo> getUserCouponInfoList(List<Long> couponIdList) {
 
-        if (!couponIdList.isEmpty()) {
+        if (couponIdList != null && !couponIdList.isEmpty()) {
             String couponIds = couponIdList.stream().map(String::valueOf).collect(Collectors.joining(","));
             Result<List<UserCouponInfo>> userCouponResult = couponFeignClient.getUserCoupon(couponIds);
             if (Result.isSuccess(userCouponResult)) {
@@ -1033,6 +1041,7 @@ public class MallOrderServiceImpl implements OrderService {
 
     /**
      * 校验优惠券信息
+     *
      * @param userCouponInfoList 优惠券信息
      * @return 优惠券信息
      */
@@ -1101,9 +1110,10 @@ public class MallOrderServiceImpl implements OrderService {
 
     /**
      * 校验满减券
+     *
      * @param orderMdseDetailsList 订单商品明细
-     * @param payableAmount 应付金额
-     * @param couponMap 优惠券信息
+     * @param payableAmount        应付金额
+     * @param couponMap            优惠券信息
      * @return 应付金额
      */
     private BigDecimal checkFullReductionCoupon(List<MallOrderMdseDetails> orderMdseDetailsList, BigDecimal payableAmount, Map<CouponTypeEnum, UserCouponInfo> couponMap) {
@@ -1188,8 +1198,8 @@ public class MallOrderServiceImpl implements OrderService {
      * 校验折扣券
      *
      * @param orderMdseDetailsList 订单商品明细
-     * @param payableAmount 应付金额
-     * @param couponMap 优惠券信息
+     * @param payableAmount        应付金额
+     * @param couponMap            优惠券信息
      * @return 应付金额
      */
     private BigDecimal checkDiscountCoupon(List<MallOrderMdseDetails> orderMdseDetailsList, BigDecimal payableAmount, Map<CouponTypeEnum, UserCouponInfo> couponMap) {
@@ -1201,8 +1211,8 @@ public class MallOrderServiceImpl implements OrderService {
      * 校验代金券
      *
      * @param orderMdseDetailsList 订单商品明细
-     * @param payableAmount 应付金额
-     * @param couponMap 优惠券信息
+     * @param payableAmount        应付金额
+     * @param couponMap            优惠券信息
      * @return 应付金额
      */
     private BigDecimal checkCashCoupon(List<MallOrderMdseDetails> orderMdseDetailsList, BigDecimal payableAmount, Map<CouponTypeEnum, UserCouponInfo> couponMap) {
@@ -1214,8 +1224,8 @@ public class MallOrderServiceImpl implements OrderService {
      * 校验兑换券
      *
      * @param orderMdseDetailsList 订单商品明细
-     * @param payableAmount 应付金额
-     * @param couponMap 优惠券信息
+     * @param payableAmount        应付金额
+     * @param couponMap            优惠券信息
      * @return 订单商品明细
      */
     private List<MallOrderMdseDetails> checkExchangeCoupon(List<MallOrderMdseDetails> orderMdseDetailsList, BigDecimal payableAmount, Map<CouponTypeEnum, UserCouponInfo> couponMap) {
@@ -1227,8 +1237,8 @@ public class MallOrderServiceImpl implements OrderService {
      * 校验满赠券
      *
      * @param orderMdseDetailsList 订单商品明细
-     * @param payableAmount 应付金额
-     * @param couponMap 优惠券信息
+     * @param payableAmount        应付金额
+     * @param couponMap            优惠券信息
      * @return 订单商品明细
      */
     private List<MallOrderMdseDetails> checkFullPresentCoupon(List<MallOrderMdseDetails> orderMdseDetailsList, BigDecimal payableAmount, Map<CouponTypeEnum, UserCouponInfo> couponMap) {
@@ -1240,8 +1250,8 @@ public class MallOrderServiceImpl implements OrderService {
      * 校验免邮券
      *
      * @param orderMdseDetailsList 订单商品明细
-     * @param freightAmount 运费金额
-     * @param couponMap 优惠券信息
+     * @param freightAmount        运费金额
+     * @param couponMap            优惠券信息
      * @return 运费金额
      */
     private BigDecimal checkFreeShippingCoupon(List<MallOrderMdseDetails> orderMdseDetailsList, BigDecimal freightAmount, Map<CouponTypeEnum, UserCouponInfo> couponMap) {
