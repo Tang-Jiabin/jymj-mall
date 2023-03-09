@@ -61,14 +61,46 @@ public class UserCouponServiceImpl implements UserCouponService {
 
         MallCoupon mallCoupon = mallCouponOptional.orElseThrow(() -> new RuntimeException("优惠券模板不存在"));
 
+
+        //生效类型 1：领取后立即生效 2：领取后指定时间生效 3：领取后指定天数生效
+        if (mallCoupon.getEffectiveType() == 1) {
+            entity.setEffectiveTime(new Date());
+        }
+        if (mallCoupon.getEffectiveType() == 2) {
+            entity.setEffectiveTime(mallCoupon.getEffectiveTime());
+        }
+        if (mallCoupon.getEffectiveType() == 3) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(new Date());
+            calendar.add(Calendar.DAY_OF_MONTH, mallCoupon.getEffectiveDays());
+            entity.setEffectiveTime(calendar.getTime());
+        }
+
+        //失效类型  1-永久有效 2-指定时间失效 3-领取后N天失效
+        if (mallCoupon.getInvalidType() == 1) {
+            //默认时间为三年
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(new Date());
+            calendar.add(Calendar.YEAR, 3);
+            entity.setInvalidTime(calendar.getTime());
+        }
+        if (mallCoupon.getInvalidType() == 2) {
+            entity.setInvalidTime(mallCoupon.getInvalidTime());
+        }
+        if (mallCoupon.getInvalidType() == 3) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(new Date());
+            calendar.add(Calendar.DAY_OF_MONTH, mallCoupon.getInvalidDays());
+            entity.setInvalidTime(calendar.getTime());
+        }
+
+
         entity.setMallId(mallCoupon.getMallId());
         entity.setName(mallCoupon.getName());
         entity.setType(mallCoupon.getType());
         entity.setStatus(dto.getStatus());
         entity.setFullAmount(mallCoupon.getFullAmount());
         entity.setAmount(mallCoupon.getAmount());
-        entity.setEffectiveTime(mallCoupon.getEffectiveTime());
-        entity.setInvalidTime(mallCoupon.getInvalidTime());
         entity.setShare(mallCoupon.getShare());
         entity.setDescription(mallCoupon.getDescription());
         entity.setPicUrl(mallCoupon.getPicUrl());
@@ -133,6 +165,28 @@ public class UserCouponServiceImpl implements UserCouponService {
         vo.setNotProductIds(entity.getNotProductIds());
         vo.setProductCategoryIds(entity.getProductCategoryIds());
         vo.setNotProductCategoryIds(entity.getNotProductCategoryIds());
+        //判断是否生效
+        if (entity.getEffectiveTime().getTime() <= new Date().getTime()) {
+            vo.setStatus(CouponStateEnum.NORMAL);
+        } else {
+            vo.setStatus(CouponStateEnum.INEFFECTIVE);
+        }
+
+        //判断是否失效
+        if (entity.getInvalidTime().getTime() <= new Date().getTime()) {
+            vo.setStatus(CouponStateEnum.EXPIRED);
+            //更新优惠券状态
+            UserCouponDTO dto = new UserCouponDTO();
+            dto.setCouponId(entity.getCouponId());
+            dto.setUserId(entity.getUserId());
+            dto.setStatus(CouponStateEnum.EXPIRED);
+
+            executor.execute(() -> {
+                update(dto);
+                // TODO 发送优惠券失效通知
+            });
+        }
+
         return vo;
     }
 
